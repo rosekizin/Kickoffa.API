@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36203.30
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kickoffa.API", "src\Kickoffa.API\Kickoffa.API.csproj", "{60B36CEE-E162-47B8-9031-A1C5C1020F3F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kickoffa.API.Application", "src\Kickoffa.API.Application\Kickoffa.API.Application.csproj", "{C90B10DA-A2EC-457B-AE20-B390BDB86C80}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kickoffa.API.Domain", "src\Kickoffa.API.Domain\Kickoffa.API.Domain.csproj", "{7B5BB434-3311-4C94-A4BD-29F25A9CC724}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kickoffa.API.Contracts", "src\Kickoffa.API.Contracts\Kickoffa.API.Contracts.csproj", "{F21045DA-2C6E-4B7D-9647-43A6A52358B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kickoffa.API.Application.UnitTests", "tests\Kickoffa.API.Application.UnitTests\Kickoffa.API.Application.UnitTests.csproj", "{DCA6C229-F581-47D5-A245-86945C445BA8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kickoffa.API.AspNet.Infrastructure", "Kickoffa.API.AspNet.Infrastructure\Kickoffa.API.AspNet.Infrastructure.csproj", "{1B12D946-59D7-4A6A-8288-11D3213E8C1F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{60B36CEE-E162-47B8-9031-A1C5C1020F3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60B36CEE-E162-47B8-9031-A1C5C1020F3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60B36CEE-E162-47B8-9031-A1C5C1020F3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60B36CEE-E162-47B8-9031-A1C5C1020F3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C90B10DA-A2EC-457B-AE20-B390BDB86C80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C90B10DA-A2EC-457B-AE20-B390BDB86C80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C90B10DA-A2EC-457B-AE20-B390BDB86C80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C90B10DA-A2EC-457B-AE20-B390BDB86C80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B5BB434-3311-4C94-A4BD-29F25A9CC724}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B5BB434-3311-4C94-A4BD-29F25A9CC724}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B5BB434-3311-4C94-A4BD-29F25A9CC724}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B5BB434-3311-4C94-A4BD-29F25A9CC724}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F21045DA-2C6E-4B7D-9647-43A6A52358B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F21045DA-2C6E-4B7D-9647-43A6A52358B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F21045DA-2C6E-4B7D-9647-43A6A52358B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F21045DA-2C6E-4B7D-9647-43A6A52358B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCA6C229-F581-47D5-A245-86945C445BA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCA6C229-F581-47D5-A245-86945C445BA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCA6C229-F581-47D5-A245-86945C445BA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCA6C229-F581-47D5-A245-86945C445BA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B12D946-59D7-4A6A-8288-11D3213E8C1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B12D946-59D7-4A6A-8288-11D3213E8C1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B12D946-59D7-4A6A-8288-11D3213E8C1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B12D946-59D7-4A6A-8288-11D3213E8C1F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A7C5E792-C2F9-4555-B6F4-C96CFFD01B6A}
+	EndGlobalSection
+EndGlobal
