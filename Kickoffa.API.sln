@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kickoffa.API.Contracts", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kickoffa.API.Application.UnitTests", "tests\Kickoffa.API.Application.UnitTests\Kickoffa.API.Application.UnitTests.csproj", "{DCA6C229-F581-47D5-A245-86945C445BA8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kickoffa.API.AspNet.Infrastructure", "Kickoffa.API.AspNet.Infrastructure\Kickoffa.API.AspNet.Infrastructure.csproj", "{1B12D946-59D7-4A6A-8288-11D3213E8C1F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kickoffa.API.AspNet.Infrastructure", "src\Kickoffa.API.AspNet.Infrastructure\Kickoffa.API.AspNet.Infrastructure.csproj", "{1B12D946-59D7-4A6A-8288-11D3213E8C1F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
