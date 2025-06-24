@@ -1,4 +1,4 @@
-using Kickoffa.API.Domain.Models.Customer;
+using Kickoffa.API.Domain.Models.FreelancerCustomer;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kickoffa.API.Data.EntityFramework.Mapping
