@@ -1,6 +1,11 @@
+using Kickoffa.API.AspNet.Infrastructure.Configuration.Data;
+using Kickoffa.API.AspNet.Infrastructure.Extensions.ServiceCollection;
+using Kickoffa.API.AspNet.Infrastructure.Wrappers;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var configurationWrapper = new ConfigurationWrapper(builder.Configuration);
 
 builder.Services.AddControllers()
 	.AddJsonOptions(options =>
@@ -11,6 +16,9 @@ builder.Services.AddControllers()
 // Add Swagger (Swashbuckle)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Register Database
+builder.Services.AddDatabase(new PostgreDbConfiguration(configurationWrapper));
 
 // Register services
 
