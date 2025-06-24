@@ -78,3 +78,72 @@ artifacts/
 
 # Local secrets (optional, if you use this)
 secrets.json
+
+# React/Next.js Frontend
+web/node_modules/
+web/.next/
+web/out/
+web/dist/
+web/.env*.local
+web/.vercel
+web/*.tgz
+web/*.tar.gz
+web/.DS_Store
+web/Thumbs.db
+
+# npm
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*
+
+# Runtime data
+web/pids
+web/*.pid
+web/*.seed
+web/*.pid.lock
+
+# Coverage directory used by tools like istanbul
+web/coverage/
+web/.nyc_output
+
+# Dependency directories
+web/jspm_packages/
+
+# Optional npm cache directory
+web/.npm
+
+# Optional eslint cache
+web/.eslintcache
+
+# Microbundle cache
+web/.rpt2_cache/
+web/.rts2_cache_cjs/
+web/.rts2_cache_es/
+web/.rts2_cache_umd/
+
+# Optional REPL history
+web/.node_repl_history
+
+# Output of 'npm pack'
+web/*.tgz
+
+# Yarn Integrity file
+web/.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+web/.cache
+web/.parcel-cache
+
+# Next.js build output
+web/.next
+
+# Nuxt.js build / generate output
+web/.nuxt
+
+# Storybook build outputs
+web/.out
+web/.storybook-out
+
+# Temporary folders
+web/tmp/
+web/temp/
