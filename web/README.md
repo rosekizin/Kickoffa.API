@@ -1,6 +1,6 @@
 # Kickoffa Frontend
 
-Frontend da aplicação Kickoffa - Sistema de gestão para times e competições de futebol.
+Frontend da aplicação Kickoffa - Portal de onboarding para freelancers.
 
 ## Stack Tecnológica
 
@@ -68,21 +68,31 @@ npm start
 
 ## Funcionalidades Principais
 
+### Portal de Onboarding
+- Link único sem necessidade de login para clientes
+- Coleta estruturada de informações antes do projeto
+- Interface mobile-first com drag-and-drop
+
 ### Editor de Briefing
-- Editor rich text com TipTap
-- Suporte a imagens, links e formatação
-- Auto-save opcional
+- Editor rich text com TipTap (interface moderna)
+- Suporte a imagens, links e formatação avançada
+- Upload direto de mídia integrado
 - Exportação em JSON e HTML
 
-### Gestão de Times
-- CRUD completo de times
-- Upload de logos
-- Gestão de jogadores
+### Checklist Interativo
+- Itens configuráveis (checkbox, upload, texto, assinatura)
+- Barra de progresso em tempo real
+- Validação de arquivos e campos obrigatórios
 
-### Controle de Partidas
-- Agendamento de partidas
-- Acompanhamento em tempo real
-- Histórico de resultados
+### Notificações Automáticas
+- Lembretes via WhatsApp/e-mail para clientes
+- Alertas instantâneos para freelancers
+- Acompanhamento de prazos
+
+### Prova de Escopo
+- PDF de evidência com hash e timestamp
+- ZIP com todos os uploads
+- Proteção legal para freelancers
 
 ## Integração com Backend
 

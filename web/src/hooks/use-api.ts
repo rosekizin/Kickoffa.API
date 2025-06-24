@@ -1,79 +1,153 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
-import { Team, Player, Match, CreateTeamRequest, CreatePlayerRequest, CreateMatchRequest } from '@/types'
+import {
+  Checklist,
+  Section,
+  Item,
+  CreateChecklistRequest,
+  CreateSectionRequest,
+  CreateItemRequest,
+  UpdateItemStatusRequest,
+  PublicChecklistView
+} from '@/types'
 
-// Teams
-export const useTeams = () => {
+// Checklists (para freelancers autenticados)
+export const useChecklists = () => {
   return useQuery({
-    queryKey: ['teams'],
+    queryKey: ['checklists'],
     queryFn: async () => {
-      const response = await api.get<Team[]>('/teams')
+      const response = await api.get<Checklist[]>('/checklists')
       return response.data
     }
   })
 }
 
-export const useCreateTeam = () => {
+export const useChecklist = (id: string) => {
+  return useQuery({
+    queryKey: ['checklist', id],
+    queryFn: async () => {
+      const response = await api.get<Checklist>(`/checklists/${id}`)
+      return response.data
+    },
+    enabled: !!id
+  })
+}
+
+export const useCreateChecklist = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async (data: CreateTeamRequest) => {
-      const response = await api.post<Team>('/teams', data)
+    mutationFn: async (data: CreateChecklistRequest) => {
+      const response = await api.post<Checklist>('/checklists', data)
       return response.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teams'] })
+      queryClient.invalidateQueries({ queryKey: ['checklists'] })
     }
   })
 }
 
-// Players
-export const usePlayers = (teamId?: string) => {
-  return useQuery({
-    queryKey: ['players', teamId],
-    queryFn: async () => {
-      const url = teamId ? `/players?teamId=${teamId}` : '/players'
-      const response = await api.get<Player[]>(url)
-      return response.data
-    }
-  })
-}
-
-export const useCreatePlayer = () => {
+// Sections
+export const useCreateSection = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async (data: CreatePlayerRequest) => {
-      const response = await api.post<Player>('/players', data)
+    mutationFn: async (data: CreateSectionRequest) => {
+      const response = await api.post<Section>('/sections', data)
+      return response.data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['checklist', variables.checklistId] })
+    }
+  })
+}
+
+export const useUpdateSection = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateSectionRequest> }) => {
+      const response = await api.put<Section>(`/sections/${id}`, data)
       return response.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['players'] })
+      queryClient.invalidateQueries({ queryKey: ['checklists'] })
     }
   })
 }
 
-// Matches
-export const useMatches = () => {
-  return useQuery({
-    queryKey: ['matches'],
-    queryFn: async () => {
-      const response = await api.get<Match[]>('/matches')
-      return response.data
-    }
-  })
-}
-
-export const useCreateMatch = () => {
+// Items
+export const useCreateItem = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async (data: CreateMatchRequest) => {
-      const response = await api.post<Match>('/matches', data)
+    mutationFn: async (data: CreateItemRequest) => {
+      const response = await api.post<Item>('/items', data)
       return response.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['matches'] })
+      queryClient.invalidateQueries({ queryKey: ['checklists'] })
+    }
+  })
+}
+
+// Upload de mídia para briefing
+export const useUploadBriefingMedia = () => {
+  return useMutation({
+    mutationFn: async ({ file, sectionId }: { file: File; sectionId: string }) => {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('sectionId', sectionId)
+
+      const response = await api.post('/briefing-media/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      return response.data
+    }
+  })
+}
+
+// APIs públicas (sem autenticação) para clientes
+export const usePublicChecklist = (token: string) => {
+  return useQuery({
+    queryKey: ['public-checklist', token],
+    queryFn: async () => {
+      const response = await api.get<PublicChecklistView>(`/public/checklist/${token}`)
+      return response.data
+    },
+    enabled: !!token
+  })
+}
+
+export const useUpdateItemStatus = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: UpdateItemStatusRequest) => {
+      const response = await api.post('/public/item-status', data)
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['public-checklist'] })
+    }
+  })
+}
+
+export const useUploadFile = () => {
+  return useMutation({
+    mutationFn: async ({ file, itemId }: { file: File; itemId: string }) => {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('itemId', itemId)
+
+      const response = await api.post('/public/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      return response.data
     }
   })
 }
