@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,6 +17,7 @@ import {
 
 export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('')
+  const router = useRouter()
 
   // Mock data - será substituído por dados reais da API
   const stats = {
@@ -85,7 +87,10 @@ export default function Dashboard() {
               <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
               <p className="text-sm text-gray-600">Bem-vindo de volta! Aqui está um resumo dos seus projetos.</p>
             </div>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={() => router.push('/checklists/new')}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Novo Checklist
             </Button>
@@ -194,7 +199,11 @@ export default function Dashboard() {
                         />
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/checklists/${checklist.id}`)}
+                    >
                       Ver Detalhes
                     </Button>
                   </div>
