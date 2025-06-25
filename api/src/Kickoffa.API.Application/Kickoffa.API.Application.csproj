@@ -7,7 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Kickoffa.API.Domain\Kickoffa.API.Domain.csproj" />
+    <ProjectReference Include="..\Kickoffa.API.Contracts\Kickoffa.API.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

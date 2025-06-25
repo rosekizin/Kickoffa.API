@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kickoffa.API.Data\Kickoffa.API.Data.csproj" />
+    <ProjectReference Include="..\Kickoffa.API.Application\Kickoffa.API.Application.csproj" />
   </ItemGroup>
 
 </Project>

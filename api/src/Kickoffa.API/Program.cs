@@ -19,9 +19,10 @@ builder.Services.AddSwaggerGen();
 
 // Register Database
 builder.Services.AddDatabase(new PostgreDbConfiguration(configurationWrapper));
+builder.Services.AddRepositories();
 
 // Register services
-
+builder.Services.AddApplicationServices();
 
 // Handlers
 
