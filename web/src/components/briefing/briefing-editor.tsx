@@ -1,6 +1,6 @@
 'use client'
 
-import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react'
+import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
@@ -21,7 +21,12 @@ import {
   Redo,
   ChevronDown,
   Type,
-  Terminal
+  Terminal,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+
 } from 'lucide-react'
 
 interface BriefingEditorProps {
@@ -63,15 +68,15 @@ const Tooltip = ({ content, children }: TooltipProps) => {
 
   return (
     <div
-      className="relative"
+      className="relative inline-block"
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
     >
       {children}
       {isVisible && (
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap z-50">
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded whitespace-nowrap z-[9999] pointer-events-none">
           {content}
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black"></div>
         </div>
       )}
     </div>
@@ -86,8 +91,6 @@ export const BriefingEditor = ({
 }: BriefingEditorProps) => {
   const [headingDropdownOpen, setHeadingDropdownOpen] = useState(false)
   const [listDropdownOpen, setListDropdownOpen] = useState(false)
-  const [linkUrl, setLinkUrl] = useState('')
-  const [showLinkInput, setShowLinkInput] = useState(false)
 
   // Fechar dropdowns quando clicar fora
   useEffect(() => {
@@ -195,21 +198,14 @@ export const BriefingEditor = ({
 
   const addLink = useCallback(() => {
     if (!editor) return
-    setShowLinkInput(true)
+
+    const url = window.prompt('URL do link:')
+    if (url && url.trim()) {
+      editor.chain().focus().setLink({ href: url.trim() }).run()
+    }
   }, [editor])
 
-  const handleLinkSubmit = useCallback(() => {
-    if (!editor || !linkUrl.trim()) return
 
-    editor.chain().focus().setLink({ href: linkUrl }).run()
-    setLinkUrl('')
-    setShowLinkInput(false)
-  }, [editor, linkUrl])
-
-  const handleLinkCancel = useCallback(() => {
-    setLinkUrl('')
-    setShowLinkInput(false)
-  }, [])
 
   const toggleHeading = useCallback((level: 1 | 2 | 3 | 4) => {
     if (!editor) return
@@ -263,6 +259,26 @@ export const BriefingEditor = ({
   const toggleBlockquote = useCallback(() => {
     if (!editor) return
     editor.chain().focus().toggleBlockquote().run()
+  }, [editor])
+
+  // Funções de alinhamento (implementação básica com CSS)
+  const setTextAlign = useCallback((alignment: 'left' | 'center' | 'right' | 'justify') => {
+    if (!editor) return
+
+    // Como não temos a extensão TextAlign, vamos usar uma abordagem alternativa
+    const { from, to } = editor.state.selection
+    const tr = editor.state.tr
+
+    editor.state.doc.nodesBetween(from, to, (node, pos) => {
+      if (node.type.name === 'paragraph' || node.type.name.includes('heading')) {
+        const attrs = { ...node.attrs, textAlign: alignment }
+        tr.setNodeMarkup(pos, undefined, attrs)
+      }
+    })
+
+    if (tr.docChanged) {
+      editor.view.dispatch(tr)
+    }
   }, [editor])
 
   if (!editor) {
@@ -511,6 +527,53 @@ export const BriefingEditor = ({
 
         <div className="w-px h-6 bg-gray-600 mx-2" />
 
+        {/* Text Alignment */}
+        <Tooltip content="Alinhar à esquerda">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTextAlign('left')}
+            className="h-8 w-8 p-0 text-gray-300 hover:text-white hover:bg-gray-700"
+          >
+            <AlignLeft className="h-4 w-4" />
+          </Button>
+        </Tooltip>
+
+        <Tooltip content="Centralizar">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTextAlign('center')}
+            className="h-8 w-8 p-0 text-gray-300 hover:text-white hover:bg-gray-700"
+          >
+            <AlignCenter className="h-4 w-4" />
+          </Button>
+        </Tooltip>
+
+        <Tooltip content="Alinhar à direita">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTextAlign('right')}
+            className="h-8 w-8 p-0 text-gray-300 hover:text-white hover:bg-gray-700"
+          >
+            <AlignRight className="h-4 w-4" />
+          </Button>
+        </Tooltip>
+
+        <Tooltip content="Justificar">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTextAlign('justify')}
+            className="h-8 w-8 p-0 text-gray-300 hover:text-white hover:bg-gray-700"
+          >
+            <AlignJustify className="h-4 w-4" />
+          </Button>
+        </Tooltip>
+
+        <div className="w-px h-6 bg-gray-600 mx-2" />
+
         {/* Link */}
         <Tooltip content="Inserir link">
           <Button
@@ -546,48 +609,6 @@ export const BriefingEditor = ({
           editor={editor}
           className="min-h-[350px] focus:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[350px]"
         />
-
-        {/* Link Input Bubble */}
-        {showLinkInput && editor && (
-          <BubbleMenu
-            editor={editor}
-            tippyOptions={{ duration: 100 }}
-            className="bg-gray-800 border border-gray-600 rounded-md shadow-lg p-3 flex items-center gap-2"
-          >
-            <input
-              type="text"
-              value={linkUrl}
-              onChange={(e) => setLinkUrl(e.target.value)}
-              placeholder="Cole um link..."
-              className="bg-gray-700 text-white px-3 py-1 rounded text-sm border-none outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  handleLinkSubmit()
-                } else if (e.key === 'Escape') {
-                  e.preventDefault()
-                  handleLinkCancel()
-                }
-              }}
-            />
-            <Button
-              size="sm"
-              onClick={handleLinkSubmit}
-              className="h-7 px-2 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              ✓
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleLinkCancel}
-              className="h-7 px-2 text-gray-300 hover:text-white hover:bg-gray-700"
-            >
-              ✕
-            </Button>
-          </BubbleMenu>
-        )}
       </div>
 
       {/* Save Actions */}

@@ -26,6 +26,7 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const pathname = usePathname()
 
   const navigation = [
@@ -111,18 +112,35 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       </div>
 
       {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
+      <div className={`hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col transition-all duration-300 ${
+        sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'
+      }`}>
         <div className="flex flex-col flex-grow bg-white border-r border-gray-200 shadow-sm">
           {/* Logo */}
-          <div className="flex items-center h-16 px-4 border-b border-gray-200">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+          <div className="flex items-center h-16 px-4 border-b border-gray-200 justify-between">
+            {!sidebarCollapsed && (
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <Zap className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  Kickoffa
+                </span>
+              </div>
+            )}
+            {sidebarCollapsed && (
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center mx-auto">
                 <Zap className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                Kickoffa
-              </span>
-            </div>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
+            >
+              {sidebarCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
+            </Button>
           </div>
 
           {/* Navigation */}
@@ -135,39 +153,57 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                   item.current
                     ? 'bg-blue-100 text-blue-900'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                }`}
+                } ${sidebarCollapsed ? 'justify-center' : ''}`}
+                title={sidebarCollapsed ? item.name : ''}
               >
-                <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                {item.name}
+                <item.icon className={`h-5 w-5 flex-shrink-0 ${sidebarCollapsed ? '' : 'mr-3'}`} />
+                {!sidebarCollapsed && item.name}
               </Link>
             ))}
           </nav>
 
           {/* CTA Button */}
           <div className="border-t border-gray-200 p-4">
-            <Button className="w-full bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Checklist
-            </Button>
+            {sidebarCollapsed ? (
+              <Button
+                className="w-full bg-blue-600 hover:bg-blue-700 h-10 p-0"
+                title="Novo Checklist"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Checklist
+              </Button>
+            )}
           </div>
 
           {/* User info */}
           <div className="border-t border-gray-200 p-4">
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                <User className="h-5 w-5 text-gray-600" />
+            {sidebarCollapsed ? (
+              <div className="flex justify-center">
+                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center" title="João Silva">
+                  <User className="h-5 w-5 text-gray-600" />
+                </div>
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700">João Silva</p>
-                <p className="text-xs text-gray-500">joao@exemplo.com</p>
+            ) : (
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                  <User className="h-5 w-5 text-gray-600" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-700">João Silva</p>
+                  <p className="text-xs text-gray-500">joao@exemplo.com</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'}`}>
         {/* Top bar */}
         <div className="sticky top-0 z-40 bg-white shadow-sm border-b border-gray-200">
           <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">

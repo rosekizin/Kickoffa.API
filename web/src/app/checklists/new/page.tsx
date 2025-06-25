@@ -5,11 +5,11 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { BriefingEditor } from '@/components/briefing/briefing-editor'
 import { ChecklistItemEditor } from '@/components/shared/checklist-item-editor'
 import { Button } from '@/components/ui/button'
-import { 
-  Save, 
-  Eye, 
-  Plus, 
-  FileText, 
+import {
+  Save,
+  Eye,
+  Plus,
+  FileText,
   CheckSquare,
   GripVertical,
   Trash2,
@@ -105,7 +105,7 @@ export default function NewChecklistPage() {
           {/* Header */}
           <div className="p-6 border-b border-gray-200">
             <h1 className="text-xl font-bold text-gray-900 mb-4">Novo Checklist</h1>
-            
+
             {/* Basic Info */}
             <div className="space-y-4">
               <div>
@@ -120,7 +120,7 @@ export default function NewChecklistPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Descrição
@@ -133,7 +133,7 @@ export default function NewChecklistPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Prazo
@@ -209,7 +209,7 @@ export default function NewChecklistPage() {
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
-                  
+
                   {section.type === 'checklist' && section.items && (
                     <div className="mt-2 text-xs text-gray-500">
                       {section.items.length} item{section.items.length !== 1 ? 's' : ''}
@@ -238,7 +238,7 @@ export default function NewChecklistPage() {
               <Save className="h-4 w-4 mr-2" />
               Salvar Rascunho
             </Button>
-            
+
             <Button
               onClick={handlePublishChecklist}
               disabled={!title.trim() || sections.length === 0}
@@ -248,7 +248,7 @@ export default function NewChecklistPage() {
               <Share2 className="h-4 w-4 mr-2" />
               Publicar
             </Button>
-            
+
             <Button
               onClick={() => setShowPreview(!showPreview)}
               variant="ghost"
