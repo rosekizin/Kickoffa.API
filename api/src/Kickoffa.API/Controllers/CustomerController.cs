@@ -38,6 +38,6 @@ public sealed class CustomerController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var response = await _customerService.CreateAsync(request, cancellationToken);
-        return CreatedAtAction(nameof(GetByIdAsync), new { id = response.Id }, response);
-    }
+		return Created($"/api/customer/{response.Id}", response);
+	}
 }

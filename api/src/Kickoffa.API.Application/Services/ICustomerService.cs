@@ -7,7 +7,7 @@ namespace Kickoffa.API.Application.Services;
 /// </summary>
 public interface ICustomerService
 {
-	Task<CustomerResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+	Task<CustomerResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 	
 	/// <summary>
 	/// Cria um novo customer

@@ -25,9 +25,12 @@ public sealed class CustomerService : ICustomerService
         _createCustomerFactory = createCustomerFactory ?? throw new ArgumentNullException(nameof(createCustomerFactory));
     }
 
-	public async Task<CustomerResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+	public async Task<CustomerResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
 	{
 		var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
+
+		if (customer is null)
+			return null;
 
 		return new CustomerResponse
 		{
