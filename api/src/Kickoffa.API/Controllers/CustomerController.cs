@@ -19,9 +19,7 @@ public sealed class CustomerController : ControllerBase
     }
 
 	[HttpGet("{id:guid}")]
-	public async Task<ActionResult<CustomerResponse>> GetByIdAsync(
-		Guid id,
-		CancellationToken cancellationToken = default)
+	public async Task<ActionResult<CustomerResponse>> GetByIdAsync([FromRoute] Guid id, CancellationToken cancellationToken)
 	{
 		var customer = await _customerService.GetByIdAsync(id, cancellationToken);
 		return customer is null ? NotFound() : Ok(customer);
@@ -33,9 +31,7 @@ public sealed class CustomerController : ControllerBase
 	/// <param name="cancellationToken">Token de cancelamento</param>
 	/// <returns>Customer criado</returns>
 	[HttpPost]
-    public async Task<ActionResult<CustomerResponse>> CreateAsync(
-        [FromBody] CreateCustomerRequest request,
-        CancellationToken cancellationToken = default)
+    public async Task<ActionResult<CustomerResponse>> CreateAsync([FromBody] CreateCustomerRequest request, CancellationToken cancellationToken)
     {
         var response = await _customerService.CreateAsync(request, cancellationToken);
 		return Created($"/api/customer/{response.Id}", response);
