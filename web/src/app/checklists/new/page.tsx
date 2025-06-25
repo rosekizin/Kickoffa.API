@@ -43,7 +43,7 @@ export default function NewChecklistPage() {
       order: sections.length + 1,
       items: type === 'checklist' ? [] : undefined
     }
-    
+
     setSections(prev => [...prev, newSection])
     setActiveSection(newSection.id)
   }
@@ -260,9 +260,61 @@ export default function NewChecklistPage() {
           </div>
         </div>
 
-        {/* Right Panel - Editor */}
+        {/* Right Panel - Editor/Preview */}
         <div className="flex-1 bg-gray-50">
-          {activeSecData ? (
+          {showPreview ? (
+            /* Preview Mode */
+            <div className="h-full flex flex-col">
+              <div className="bg-white border-b border-gray-200 p-6">
+                <h2 className="text-2xl font-bold text-gray-900">{title || 'Título do Checklist'}</h2>
+                {description && <p className="text-gray-600 mt-2">{description}</p>}
+                {deadline && <p className="text-sm text-gray-500 mt-2">Prazo: {deadline}</p>}
+              </div>
+              <div className="flex-1 p-6 overflow-auto">
+                {sections.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                    <p>Nenhuma seção criada ainda</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {sections.map((section) => (
+                      <div key={section.id} className="bg-white rounded-lg border border-gray-200 p-6">
+                        <h3 className="text-lg font-semibold mb-4 flex items-center">
+                          {section.type === 'briefing' ? (
+                            <FileText className="h-5 w-5 text-blue-600 mr-2" />
+                          ) : (
+                            <CheckSquare className="h-5 w-5 text-green-600 mr-2" />
+                          )}
+                          {section.title}
+                        </h3>
+                        {section.type === 'briefing' ? (
+                          <div
+                            className="prose max-w-none"
+                            dangerouslySetInnerHTML={{ __html: section.contentHtml || '<p>Conteúdo do briefing...</p>' }}
+                          />
+                        ) : (
+                          <div className="space-y-3">
+                            {section.items?.length ? (
+                              section.items.map((item, index) => (
+                                <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded">
+                                  <CheckSquare className="h-4 w-4 text-gray-400" />
+                                  <span>{item.title || `Item ${index + 1}`}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-gray-500 italic">Nenhum item adicionado</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : activeSecData ? (
+            /* Editor Mode */
             <div className="h-full flex flex-col">
               {/* Section Header */}
               <div className="bg-white border-b border-gray-200 p-6">
