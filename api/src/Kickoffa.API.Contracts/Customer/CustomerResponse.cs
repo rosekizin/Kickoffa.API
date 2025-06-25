@@ -3,7 +3,7 @@ namespace Kickoffa.API.Contracts.Customer;
 /// <summary>
 /// Response da criação de um customer
 /// </summary>
-public sealed record CreateCustomerResponse
+public sealed record CustomerResponse
 {
     public required Guid Id { get; init; }
     public required string FirstName { get; init; }

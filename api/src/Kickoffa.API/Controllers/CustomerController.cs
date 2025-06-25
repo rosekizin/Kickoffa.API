@@ -18,18 +18,26 @@ public sealed class CustomerController : ControllerBase
         _customerService = customerService;
     }
 
-    /// <summary>
-    /// Cria um novo customer
-    /// </summary>
-    /// <param name="request">Dados do customer a ser criado</param>
-    /// <param name="cancellationToken">Token de cancelamento</param>
-    /// <returns>Customer criado</returns>
-    [HttpPost]
-    public async Task<ActionResult<CreateCustomerResponse>> CreateAsync(
+	[HttpGet("{id:guid}")]
+	public async Task<ActionResult<CustomerResponse>> GetByIdAsync(
+		Guid id,
+		CancellationToken cancellationToken = default)
+	{
+		var customer = await _customerService.GetByIdAsync(id, cancellationToken);
+		return customer is null ? NotFound() : Ok(customer);
+	}
+	/// <summary>
+	/// Cria um novo customer
+	/// </summary>
+	/// <param name="request">Dados do customer a ser criado</param>
+	/// <param name="cancellationToken">Token de cancelamento</param>
+	/// <returns>Customer criado</returns>
+	[HttpPost]
+    public async Task<ActionResult<CustomerResponse>> CreateAsync(
         [FromBody] CreateCustomerRequest request,
         CancellationToken cancellationToken = default)
     {
         var response = await _customerService.CreateAsync(request, cancellationToken);
-        return CreatedAtAction(nameof(CreateAsync), new { id = response.Id }, response);
+        return CreatedAtAction(nameof(GetByIdAsync), new { id = response.Id }, response);
     }
 }

@@ -7,11 +7,13 @@ namespace Kickoffa.API.Application.Services;
 /// </summary>
 public interface ICustomerService
 {
-    /// <summary>
-    /// Cria um novo customer
-    /// </summary>
-    /// <param name="request">Request com os dados do customer</param>
-    /// <param name="cancellationToken">Token de cancelamento</param>
-    /// <returns>Response com os dados do customer criado</returns>
-    Task<CreateCustomerResponse> CreateAsync(CreateCustomerRequest request, CancellationToken cancellationToken = default);
+	Task<CustomerResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+	
+	/// <summary>
+	/// Cria um novo customer
+	/// </summary>
+	/// <param name="request">Request com os dados do customer</param>
+	/// <param name="cancellationToken">Token de cancelamento</param>
+	/// <returns>Response com os dados do customer criado</returns>
+	Task<CustomerResponse> CreateAsync(CreateCustomerRequest request, CancellationToken cancellationToken);
 }

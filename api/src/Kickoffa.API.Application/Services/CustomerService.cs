@@ -25,14 +25,33 @@ public sealed class CustomerService : ICustomerService
         _createCustomerFactory = createCustomerFactory ?? throw new ArgumentNullException(nameof(createCustomerFactory));
     }
 
+	public async Task<CustomerResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+	{
+		var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
+
+		return new CustomerResponse
+		{
+			Id = customer.Id,
+			FirstName = customer.FirstName,
+			LastName = customer.LastName,
+			Email = customer.Email,
+			Cpf = customer.Cpf,
+			Cnpj = customer.Cnpj,
+			PhoneNumber = customer.PhoneNumber,
+			Address = customer.Address,
+			CreatedDateUtc = customer.CreatedDateUtc,
+			LastUpdatedDateUtc = customer.LastUpdatedDateUtc
+		};
+	}
+	
     /// <summary>
-    /// Cria um novo customer
-    /// </summary>
-    /// <param name="request">Request com os dados do customer</param>
-    /// <param name="cancellationToken">Token de cancelamento</param>
-    /// <returns>Response com os dados do customer criado</returns>
-    /// <exception cref="ArgumentNullException">Quando request é null</exception>
-    public async Task<CreateCustomerResponse> CreateAsync(CreateCustomerRequest request, CancellationToken cancellationToken = default)
+	/// Cria um novo customer
+	/// </summary>
+	/// <param name="request">Request com os dados do customer</param>
+	/// <param name="cancellationToken">Token de cancelamento</param>
+	/// <returns>Response com os dados do customer criado</returns>
+	/// <exception cref="ArgumentNullException">Quando request é null</exception>
+	public async Task<CustomerResponse> CreateAsync(CreateCustomerRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -44,7 +63,7 @@ public sealed class CustomerService : ICustomerService
         await _customerRepository.SaveChangesAsync(cancellationToken);
 
         // Mapear para response
-        return new CreateCustomerResponse
+        return new CustomerResponse
         {
             Id = customer.Id,
             FirstName = customer.FirstName,
