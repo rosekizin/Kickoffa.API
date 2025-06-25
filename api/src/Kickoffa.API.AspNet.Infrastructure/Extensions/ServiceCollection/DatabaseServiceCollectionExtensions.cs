@@ -43,11 +43,11 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.ServiceCollection
 				}
 			});
 
-			// Configurar pool de conexões para melhor performance
-			services.AddDbContextPool<KickoffaDbContext>(options =>
-			{
-				options.UseNpgsql(connectionString);
-			});
+			// Configurar pool de conexões para melhor performance. Fazer isso vai fazer com o Db context seja singleton
+			//services.AddDbContextPool<KickoffaDbContext>(options =>
+			//{
+			//	options.UseNpgsql(connectionString);
+			//});
 
 			return services;
 		}
