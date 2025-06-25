@@ -3,8 +3,8 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
-import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
+import TextAlign from '@tiptap/extension-text-align'
 import { useCallback, useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,7 +12,6 @@ import {
   Italic,
   Strikethrough,
   Code,
-  Link as LinkIcon,
   Image as ImageIcon,
   List,
   ListOrdered,
@@ -74,9 +73,9 @@ const Tooltip = ({ content, children }: TooltipProps) => {
     >
       {children}
       {isVisible && (
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded whitespace-nowrap z-[9999] pointer-events-none">
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-black text-white text-xs rounded whitespace-nowrap z-[9999] pointer-events-none">
           {content}
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black"></div>
+          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-black"></div>
         </div>
       )}
     </div>
@@ -146,11 +145,10 @@ export const BriefingEditor = ({
           class: 'max-w-full h-auto rounded-lg',
         },
       }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-blue-600 hover:text-blue-800 underline',
-        },
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+        alignments: ['left', 'center', 'right', 'justify'],
+        defaultAlignment: 'left',
       }),
       Placeholder.configure({
         placeholder,
@@ -169,6 +167,8 @@ export const BriefingEditor = ({
       },
     },
   })
+
+
 
   const handleSave = () => {
     if (!editor) return
@@ -196,14 +196,7 @@ export const BriefingEditor = ({
     input.click()
   }, [editor])
 
-  const addLink = useCallback(() => {
-    if (!editor) return
 
-    const url = window.prompt('URL do link:')
-    if (url && url.trim()) {
-      editor.chain().focus().setLink({ href: url.trim() }).run()
-    }
-  }, [editor])
 
 
 
@@ -261,25 +254,7 @@ export const BriefingEditor = ({
     editor.chain().focus().toggleBlockquote().run()
   }, [editor])
 
-  // Funções de alinhamento (implementação básica com CSS)
-  const setTextAlign = useCallback((alignment: 'left' | 'center' | 'right' | 'justify') => {
-    if (!editor) return
 
-    // Como não temos a extensão TextAlign, vamos usar uma abordagem alternativa
-    const { from, to } = editor.state.selection
-    const tr = editor.state.tr
-
-    editor.state.doc.nodesBetween(from, to, (node, pos) => {
-      if (node.type.name === 'paragraph' || node.type.name.includes('heading')) {
-        const attrs = { ...node.attrs, textAlign: alignment }
-        tr.setNodeMarkup(pos, undefined, attrs)
-      }
-    })
-
-    if (tr.docChanged) {
-      editor.view.dispatch(tr)
-    }
-  }, [editor])
 
   if (!editor) {
     return (
@@ -532,8 +507,12 @@ export const BriefingEditor = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setTextAlign('left')}
-            className="h-8 w-8 p-0 text-gray-300 hover:text-white hover:bg-gray-700"
+            onClick={() => editor.chain().focus().setTextAlign('left').run()}
+            className={`h-8 w-8 p-0 ${
+              editor.isActive({ textAlign: 'left' })
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-300 hover:text-white hover:bg-gray-700'
+            }`}
           >
             <AlignLeft className="h-4 w-4" />
           </Button>
@@ -543,8 +522,12 @@ export const BriefingEditor = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setTextAlign('center')}
-            className="h-8 w-8 p-0 text-gray-300 hover:text-white hover:bg-gray-700"
+            onClick={() => editor.chain().focus().setTextAlign('center').run()}
+            className={`h-8 w-8 p-0 ${
+              editor.isActive({ textAlign: 'center' })
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-300 hover:text-white hover:bg-gray-700'
+            }`}
           >
             <AlignCenter className="h-4 w-4" />
           </Button>
@@ -554,8 +537,12 @@ export const BriefingEditor = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setTextAlign('right')}
-            className="h-8 w-8 p-0 text-gray-300 hover:text-white hover:bg-gray-700"
+            onClick={() => editor.chain().focus().setTextAlign('right').run()}
+            className={`h-8 w-8 p-0 ${
+              editor.isActive({ textAlign: 'right' })
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-300 hover:text-white hover:bg-gray-700'
+            }`}
           >
             <AlignRight className="h-4 w-4" />
           </Button>
@@ -565,30 +552,18 @@ export const BriefingEditor = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setTextAlign('justify')}
-            className="h-8 w-8 p-0 text-gray-300 hover:text-white hover:bg-gray-700"
+            onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+            className={`h-8 w-8 p-0 ${
+              editor.isActive({ textAlign: 'justify' })
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-300 hover:text-white hover:bg-gray-700'
+            }`}
           >
             <AlignJustify className="h-4 w-4" />
           </Button>
         </Tooltip>
 
-        <div className="w-px h-6 bg-gray-600 mx-2" />
 
-        {/* Link */}
-        <Tooltip content="Inserir link">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={addLink}
-            className={`h-8 w-8 p-0 ${
-              editor.isActive('link')
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-300 hover:text-white hover:bg-gray-700'
-            }`}
-          >
-            <LinkIcon className="h-4 w-4" />
-          </Button>
-        </Tooltip>
 
         {/* Image */}
         <Tooltip content="Inserir imagem">
@@ -609,6 +584,8 @@ export const BriefingEditor = ({
           editor={editor}
           className="min-h-[350px] focus:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[350px]"
         />
+
+
       </div>
 
       {/* Save Actions */}
