@@ -169,27 +169,29 @@ export function SortableSectionList({
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext 
-        items={sections.map(s => s.id)} 
-        strategy={verticalListSortingStrategy}
+    <div className="w-full">
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
       >
-        <div className="space-y-2">
-          {sections.map((section) => (
-            <SortableSection
-              key={section.id}
-              section={section}
-              isActive={activeSection === section.id}
-              onClick={() => onSectionClick(section.id)}
-              onDelete={() => onSectionDelete(section.id)}
-            />
-          ))}
-        </div>
-      </SortableContext>
-    </DndContext>
+        <SortableContext
+          items={sections.map(s => s.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-2 w-full">
+            {sections.map((section) => (
+              <SortableSection
+                key={section.id}
+                section={section}
+                isActive={activeSection === section.id}
+                onClick={() => onSectionClick(section.id)}
+                onDelete={() => onSectionDelete(section.id)}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+    </div>
   )
 }

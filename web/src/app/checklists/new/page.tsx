@@ -112,14 +112,73 @@ export default function NewChecklistPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex h-screen">
-        {/* Left Panel - Structure */}
-        <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-          {/* Header */}
-          <div className="p-6 border-b border-gray-200">
-            <h1 className="text-xl font-bold text-gray-900 mb-4">Novo Checklist</h1>
+      <div className="flex flex-col h-screen">
+        {/* Top Header with Action Buttons */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Novo Checklist</h1>
+            <div className="flex items-center space-x-2 mt-1">
+              <span className="text-sm text-gray-500">
+                {title || 'Sem título'}
+              </span>
+              <span className="text-gray-300">•</span>
+              <span className="text-sm text-gray-500">
+                {sections.length} seção{sections.length !== 1 ? 'ões' : ''}
+              </span>
+              {sections.length > 0 && (
+                <>
+                  <span className="text-gray-300">•</span>
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Rascunho
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
 
+          {/* Action Buttons as Icons */}
+          <div className="flex items-center space-x-2">
+            <Button
+              onClick={() => setShowPreview(!showPreview)}
+              variant="ghost"
+              size="sm"
+              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              title={showPreview ? 'Ocultar Preview' : 'Visualizar Preview'}
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+
+            <div className="h-4 w-px bg-gray-300"></div>
+
+            <Button
+              onClick={handleSaveChecklist}
+              disabled={!title.trim()}
+              variant="ghost"
+              size="sm"
+              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-50"
+              title="Salvar Rascunho"
+            >
+              <Save className="h-4 w-4" />
+            </Button>
+
+            <Button
+              onClick={handlePublishChecklist}
+              disabled={!title.trim() || sections.length === 0}
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm disabled:opacity-50"
+              title="Publicar Checklist"
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex flex-1">
+          {/* Left Panel - Structure */}
+          <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full">
             {/* Basic Info */}
+            <div className="p-6 border-b border-gray-200">
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -187,45 +246,21 @@ export default function NewChecklistPage() {
               </div>
             </div>
 
-            <SortableSectionList
-              sections={sections}
-              activeSection={activeSection}
-              onSectionClick={setActiveSection}
-              onSectionDelete={deleteSection}
-              onSectionsReorder={handleSectionsReorder}
-            />
+            {/* Sections List */}
+            <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 400px)' }}>
+              <div className="p-6">
+                <SortableSectionList
+                  sections={sections}
+                  activeSection={activeSection}
+                  onSectionClick={setActiveSection}
+                  onSectionDelete={deleteSection}
+                  onSectionsReorder={handleSectionsReorder}
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Actions */}
-          <div className="p-6 border-t border-gray-200 space-y-2">
-            <Button
-              onClick={handleSaveChecklist}
-              disabled={!title.trim()}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Salvar Rascunho
-            </Button>
 
-            <Button
-              onClick={handlePublishChecklist}
-              disabled={!title.trim() || sections.length === 0}
-              variant="outline"
-              className="w-full"
-            >
-              <Share2 className="h-4 w-4 mr-2" />
-              Publicar
-            </Button>
-
-            <Button
-              onClick={() => setShowPreview(!showPreview)}
-              variant="ghost"
-              className="w-full"
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              {showPreview ? 'Ocultar' : 'Visualizar'} Preview
-            </Button>
-          </div>
         </div>
 
         {/* Right Panel - Editor/Preview */}
@@ -358,6 +393,7 @@ export default function NewChecklistPage() {
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
     </DashboardLayout>
