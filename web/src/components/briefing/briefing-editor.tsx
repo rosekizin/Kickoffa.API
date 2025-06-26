@@ -107,6 +107,7 @@ export const BriefingEditor = ({
       return () => document.removeEventListener('click', handleClickOutside)
     }
   }, [headingDropdownOpen, listDropdownOpen])
+
   const editor = useEditor({
     immediatelyRender: false, // Fix para SSR
     editable: isEditing,
@@ -192,20 +193,8 @@ export const BriefingEditor = ({
     }
   }, [editor, initialContent, sectionId])
 
-  // Atalho Ctrl+S para salvar
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === 's' && isEditing) {
-        e.preventDefault()
-        handleSave()
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isEditing])
-
-  const handleSave = () => {
+  // Função de salvar - definida após editor estar disponível
+  const handleSave = useCallback(() => {
     if (!editor) return
 
     onSave({
@@ -215,7 +204,24 @@ export const BriefingEditor = ({
 
     // Tornar o editor somente leitura após salvar
     onEditingChange?.(false)
-  }
+  }, [editor, onSave, onEditingChange])
+
+  // Atalho Ctrl+S para salvar - definido após handleSave
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault()
+        if (isEditing && editor) {
+          handleSave()
+        }
+      }
+    }
+
+    if (isEditing && editor) {
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isEditing, editor, handleSave])
 
   const handleEdit = () => {
     onEditingChange?.(true)

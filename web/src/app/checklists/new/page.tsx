@@ -13,7 +13,6 @@ import {
   Plus,
   FileText,
   CheckSquare,
-  Settings,
   Share2,
   Info,
   List
@@ -147,7 +146,7 @@ export default function NewChecklistPage() {
               </span>
               <span className="text-gray-300">•</span>
               <span className="text-sm text-gray-500">
-                {sections.length} seção{sections.length !== 1 ? 'ões' : ''}
+                {sections.length} seç{sections.length !== 1 ? 'ões' : 'ão'}
               </span>
               {sections.length > 0 && (
                 <>
@@ -367,9 +366,6 @@ export default function NewChecklistPage() {
                       {activeSecData.type === 'briefing' ? 'Seção de Briefing' : 'Seção de Checklist'}
                     </p>
                   </div>
-                  <Button variant="ghost" size="sm">
-                    <Settings className="h-4 w-4" />
-                  </Button>
                 </div>
               </div>
 
