@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { BriefingEditor } from '@/components/briefing/briefing-editor'
 import { ChecklistItemEditor } from '@/components/shared/checklist-item-editor'
@@ -27,6 +27,27 @@ export default function NewChecklistPage() {
   const [activeSection, setActiveSection] = useState<string | null>(null)
   const [showPreview, setShowPreview] = useState(false)
   const [sectionEditingStates, setSectionEditingStates] = useState<Record<string, boolean>>({})
+  const [basicInfoExpanded, setBasicInfoExpanded] = useState(true)
+  const [sectionsExpanded, setSectionsExpanded] = useState(true)
+  const [scrollHeight, setScrollHeight] = useState('calc(100vh - 500px)')
+
+  // Calcular altura do scroll dinamicamente baseado no estado das seções
+  useEffect(() => {
+    const calculateScrollHeight = () => {
+      const headerHeight = 80 // Header superior
+      const basicInfoHeight = basicInfoExpanded ? 280 : 60 // Altura quando expandido/colapsado
+      const sectionsHeaderHeight = 60 // Header da seção de seções
+      const addButtonsHeight = sectionsExpanded ? 50 : 0 // Botões de adicionar seção
+      const padding = 40 // Padding geral
+
+      const usedHeight = headerHeight + basicInfoHeight + sectionsHeaderHeight + addButtonsHeight + padding
+      const availableHeight = `calc(100vh - ${usedHeight}px)`
+
+      setScrollHeight(availableHeight)
+    }
+
+    calculateScrollHeight()
+  }, [basicInfoExpanded, sectionsExpanded])
 
   const addSection = (type: 'briefing' | 'checklist') => {
     const newSection: Section = {
@@ -186,6 +207,7 @@ export default function NewChecklistPage() {
               icon={<Info className="h-4 w-4" />}
               defaultExpanded={true}
               className="border-b-0"
+              onToggle={setBasicInfoExpanded}
             >
               <div className="space-y-4">
                 <div>
@@ -235,6 +257,7 @@ export default function NewChecklistPage() {
             defaultExpanded={true}
             className="flex-1 flex flex-col"
             contentClassName="flex-1 overflow-hidden p-0"
+            onToggle={setSectionsExpanded}
           >
             <div className="mb-4">
               <div className="flex space-x-2">
@@ -260,7 +283,7 @@ export default function NewChecklistPage() {
             </div>
 
             {/* Sections List */}
-            <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 500px)' }}>
+            <div className="flex-1 overflow-y-auto" style={{ maxHeight: scrollHeight }}>
               <SortableSectionList
                 sections={sections}
                 activeSection={activeSection}

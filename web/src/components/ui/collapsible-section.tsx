@@ -12,6 +12,7 @@ interface CollapsibleSectionProps {
   headerClassName?: string
   contentClassName?: string
   icon?: React.ReactNode
+  onToggle?: (isExpanded: boolean) => void
 }
 
 export function CollapsibleSection({
@@ -21,15 +22,22 @@ export function CollapsibleSection({
   className = '',
   headerClassName = '',
   contentClassName = '',
-  icon
+  icon,
+  onToggle
 }: CollapsibleSectionProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
+
+  const handleToggle = () => {
+    const newState = !isExpanded
+    setIsExpanded(newState)
+    onToggle?.(newState)
+  }
 
   return (
     <div className={`border-b border-gray-200 ${className}`}>
       <Button
         variant="ghost"
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={handleToggle}
         className={`w-full justify-between p-4 h-auto hover:bg-gray-50 ${headerClassName}`}
       >
         <div className="flex items-center space-x-2">
