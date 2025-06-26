@@ -5,6 +5,7 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { BriefingEditor } from '@/components/briefing/briefing-editor'
 import { ChecklistItemEditor } from '@/components/shared/checklist-item-editor'
 import { SortableSectionList, type Section } from '@/components/sections/sortable-section-list'
+import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Button } from '@/components/ui/button'
 import {
   Save,
@@ -13,7 +14,9 @@ import {
   FileText,
   CheckSquare,
   Settings,
-  Share2
+  Share2,
+  Info,
+  List
 } from 'lucide-react'
 
 export default function NewChecklistPage() {
@@ -177,59 +180,69 @@ export default function NewChecklistPage() {
         <div className="flex flex-1">
           {/* Left Panel - Structure */}
           <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full">
-            {/* Basic Info */}
-            <div className="p-6 border-b border-gray-200">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Título *
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ex: Onboarding - Redesign Website"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+            {/* Basic Info - Collapsible */}
+            <CollapsibleSection
+              title="Informações Básicas"
+              icon={<Info className="h-4 w-4" />}
+              defaultExpanded={true}
+              className="border-b-0"
+            >
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Título *
+                  </label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Ex: Onboarding - Redesign Website"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Descrição
-                </label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Breve descrição do projeto..."
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Descrição
+                  </label>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Breve descrição do projeto..."
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Prazo
-                </label>
-                <input
-                  type="date"
-                  value={deadline}
-                  onChange={(e) => setDeadline(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Prazo
+                  </label>
+                  <input
+                    type="date"
+                    value={deadline}
+                    onChange={(e) => setDeadline(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
-            </div>
-          </div>
+            </CollapsibleSection>
 
-          {/* Sections */}
-          <div className="flex-1 p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-medium text-gray-900">Seções</h3>
-              <div className="flex space-x-1">
+          {/* Sections - Collapsible */}
+          <CollapsibleSection
+            title={`Seções (${sections.length})`}
+            icon={<List className="h-4 w-4" />}
+            defaultExpanded={true}
+            className="flex-1 flex flex-col"
+            contentClassName="flex-1 overflow-hidden p-0"
+          >
+            <div className="mb-4">
+              <div className="flex space-x-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => addSection('briefing')}
-                  className="text-xs"
+                  className="flex-1 text-xs"
                 >
                   <FileText className="h-3 w-3 mr-1" />
                   Briefing
@@ -238,7 +251,7 @@ export default function NewChecklistPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => addSection('checklist')}
-                  className="text-xs"
+                  className="flex-1 text-xs"
                 >
                   <CheckSquare className="h-3 w-3 mr-1" />
                   Checklist
@@ -247,18 +260,16 @@ export default function NewChecklistPage() {
             </div>
 
             {/* Sections List */}
-            <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 400px)' }}>
-              <div className="p-6">
-                <SortableSectionList
-                  sections={sections}
-                  activeSection={activeSection}
-                  onSectionClick={setActiveSection}
-                  onSectionDelete={deleteSection}
-                  onSectionsReorder={handleSectionsReorder}
-                />
-              </div>
+            <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 500px)' }}>
+              <SortableSectionList
+                sections={sections}
+                activeSection={activeSection}
+                onSectionClick={setActiveSection}
+                onSectionDelete={deleteSection}
+                onSectionsReorder={handleSectionsReorder}
+              />
             </div>
-          </div>
+          </CollapsibleSection>
 
 
         </div>
