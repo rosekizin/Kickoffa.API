@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { BriefingEditor } from '@/components/briefing/briefing-editor'
 import { ChecklistItemEditor } from '@/components/shared/checklist-item-editor'
+import { SortableSectionList, type Section } from '@/components/sections/sortable-section-list'
 import { Button } from '@/components/ui/button'
 import {
   Save,
@@ -11,21 +12,9 @@ import {
   Plus,
   FileText,
   CheckSquare,
-  GripVertical,
-  Trash2,
   Settings,
   Share2
 } from 'lucide-react'
-
-interface Section {
-  id: string
-  title: string
-  type: 'briefing' | 'checklist'
-  order: number
-  contentJson?: string
-  contentHtml?: string
-  items?: any[]
-}
 
 export default function NewChecklistPage() {
   const [title, setTitle] = useState('')
@@ -83,6 +72,10 @@ export default function NewChecklistPage() {
       ...prev,
       [sectionId]: isEditing
     }))
+  }
+
+  const handleSectionsReorder = (reorderedSections: Section[]) => {
+    setSections(reorderedSections)
   }
 
   const handleItemSave = (sectionId: string, item: any) => {
@@ -194,58 +187,13 @@ export default function NewChecklistPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              {sections.map((section) => (
-                <div
-                  key={section.id}
-                  className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                    activeSection === section.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                  onClick={() => setActiveSection(section.id)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <GripVertical className="h-4 w-4 text-gray-400" />
-                      {section.type === 'briefing' ? (
-                        <FileText className="h-4 w-4 text-blue-600" />
-                      ) : (
-                        <CheckSquare className="h-4 w-4 text-green-600" />
-                      )}
-                      <span className="text-sm font-medium text-gray-900">
-                        {section.title}
-                      </span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        deleteSection(section.id)
-                      }}
-                      className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-
-                  {section.type === 'checklist' && section.items && (
-                    <div className="mt-2 text-xs text-gray-500">
-                      {section.items.length} item{section.items.length !== 1 ? 's' : ''}
-                    </div>
-                  )}
-                </div>
-              ))}
-              
-              {sections.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  <FileText className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">Nenhuma seção criada</p>
-                  <p className="text-xs">Clique nos botões acima para adicionar</p>
-                </div>
-              )}
-            </div>
+            <SortableSectionList
+              sections={sections}
+              activeSection={activeSection}
+              onSectionClick={setActiveSection}
+              onSectionDelete={deleteSection}
+              onSectionsReorder={handleSectionsReorder}
+            />
           </div>
 
           {/* Actions */}
