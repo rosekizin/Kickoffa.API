@@ -34,6 +34,7 @@ export default function NewChecklistPage() {
   const [sections, setSections] = useState<Section[]>([])
   const [activeSection, setActiveSection] = useState<string | null>(null)
   const [showPreview, setShowPreview] = useState(false)
+  const [sectionEditingStates, setSectionEditingStates] = useState<Record<string, boolean>>({})
 
   const addSection = (type: 'briefing' | 'checklist') => {
     const newSection: Section = {
@@ -41,11 +42,21 @@ export default function NewChecklistPage() {
       title: type === 'briefing' ? 'Nova Seção de Briefing' : 'Nova Seção de Checklist',
       type,
       order: sections.length + 1,
-      items: type === 'checklist' ? [] : undefined
+      items: type === 'checklist' ? [] : undefined,
+      contentHtml: type === 'briefing' ? '' : undefined,
+      contentJson: type === 'briefing' ? '' : undefined
     }
 
     setSections(prev => [...prev, newSection])
     setActiveSection(newSection.id)
+
+    // Inicializar estado de edição para nova seção de briefing
+    if (type === 'briefing') {
+      setSectionEditingStates(prev => ({
+        ...prev,
+        [newSection.id]: true
+      }))
+    }
   }
 
   const updateSection = (sectionId: string, updates: Partial<Section>) => {
@@ -62,7 +73,16 @@ export default function NewChecklistPage() {
   }
 
   const handleBriefingSave = (sectionId: string, content: { contentJson: string; contentHtml: string }) => {
+    console.log('🎯 Salvando briefing para seção:', sectionId, content)
     updateSection(sectionId, content)
+    console.log('✅ Seção atualizada')
+  }
+
+  const handleSectionEditingChange = (sectionId: string, isEditing: boolean) => {
+    setSectionEditingStates(prev => ({
+      ...prev,
+      [sectionId]: isEditing
+    }))
   }
 
   const handleItemSave = (sectionId: string, item: any) => {
@@ -340,10 +360,13 @@ export default function NewChecklistPage() {
               <div className="flex-1 p-6 overflow-auto">
                 {activeSecData.type === 'briefing' ? (
                   <BriefingEditor
+                    key={activeSecData.id}
                     initialContent={activeSecData.contentHtml}
                     onSave={(content) => handleBriefingSave(activeSecData.id, content)}
                     sectionId={activeSecData.id}
                     placeholder="Escreva o briefing desta seção..."
+                    isEditing={sectionEditingStates[activeSecData.id] ?? true}
+                    onEditingChange={(isEditing) => handleSectionEditingChange(activeSecData.id, isEditing)}
                   />
                 ) : (
                   <div className="space-y-6">

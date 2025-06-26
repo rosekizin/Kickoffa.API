@@ -33,6 +33,8 @@ interface BriefingEditorProps {
   onSave: (content: { contentJson: string; contentHtml: string }) => void
   sectionId?: string
   placeholder?: string
+  isEditing?: boolean
+  onEditingChange?: (isEditing: boolean) => void
 }
 
 interface DropdownProps {
@@ -86,7 +88,9 @@ export const BriefingEditor = ({
   initialContent,
   onSave,
   sectionId,
-  placeholder = 'Comece a escrever ou insira uma imagem...'
+  placeholder = 'Comece a escrever ou insira uma imagem...',
+  isEditing = true,
+  onEditingChange
 }: BriefingEditorProps) => {
   const [headingDropdownOpen, setHeadingDropdownOpen] = useState(false)
   const [listDropdownOpen, setListDropdownOpen] = useState(false)
@@ -105,6 +109,7 @@ export const BriefingEditor = ({
   }, [headingDropdownOpen, listDropdownOpen])
   const editor = useEditor({
     immediatelyRender: false, // Fix para SSR
+    editable: isEditing,
     extensions: [
       StarterKit.configure({
         // Configurar explicitamente todas as extensões do StarterKit
@@ -168,7 +173,37 @@ export const BriefingEditor = ({
     },
   })
 
+  // Atualizar editabilidade do editor quando o estado muda
+  useEffect(() => {
+    if (editor) {
+      editor.setEditable(isEditing)
+    }
+  }, [editor, isEditing])
 
+  // Atualizar conteúdo do editor quando initialContent muda
+  useEffect(() => {
+    if (editor && initialContent !== undefined) {
+      const currentContent = editor.getHTML()
+      console.log('🔄 Atualizando conteúdo do editor:', { sectionId, currentContent, initialContent })
+      if (currentContent !== initialContent) {
+        editor.commands.setContent(initialContent || '')
+        console.log('✅ Conteúdo atualizado para seção:', sectionId)
+      }
+    }
+  }, [editor, initialContent, sectionId])
+
+  // Atalho Ctrl+S para salvar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 's' && isEditing) {
+        e.preventDefault()
+        handleSave()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isEditing])
 
   const handleSave = () => {
     if (!editor) return
@@ -177,6 +212,13 @@ export const BriefingEditor = ({
       contentJson: JSON.stringify(editor.getJSON()),
       contentHtml: editor.getHTML()
     })
+
+    // Tornar o editor somente leitura após salvar
+    onEditingChange?.(false)
+  }
+
+  const handleEdit = () => {
+    onEditingChange?.(true)
   }
 
   const addImage = useCallback(() => {
@@ -267,7 +309,8 @@ export const BriefingEditor = ({
   return (
     <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
       {/* Toolbar moderna similar ao TipTap.dev */}
-      <div className="bg-gray-900 text-white p-3 flex items-center gap-1 flex-wrap">
+      {isEditing && (
+        <div className="bg-gray-900 text-white p-3 flex items-center gap-1 flex-wrap">
         {/* Undo/Redo */}
         <Tooltip content="Desfazer">
           <Button
@@ -576,26 +619,44 @@ export const BriefingEditor = ({
             <ImageIcon className="h-4 w-4" />
           </Button>
         </Tooltip>
-      </div>
+        </div>
+      )}
 
       {/* Editor Content */}
-      <div className="min-h-[400px] p-6 bg-white relative">
+      <div className={`min-h-[400px] p-6 relative ${isEditing ? 'bg-white' : 'bg-gray-50'}`}>
+        {!isEditing && (
+          <div className="absolute top-2 right-2 z-10">
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              Salvo
+            </span>
+          </div>
+        )}
         <EditorContent
           editor={editor}
-          className="min-h-[350px] focus:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[350px]"
+          className={`min-h-[350px] focus:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[350px] ${
+            !isEditing ? '[&_.ProseMirror]:cursor-default' : ''
+          }`}
         />
-
-
       </div>
 
-      {/* Save Actions */}
+      {/* Save/Edit Actions */}
       <div className="border-t bg-gray-50 p-4 flex justify-between items-center">
         <div className="text-sm text-gray-500">
-          Pressione Ctrl+S para salvar rapidamente
+          {isEditing ? (
+            'Pressione Ctrl+S para salvar rapidamente'
+          ) : (
+            'Briefing salvo - Clique em "Editar" para fazer alterações'
+          )}
         </div>
-        <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
-          Salvar Briefing
-        </Button>
+        {isEditing ? (
+          <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
+            Salvar Briefing
+          </Button>
+        ) : (
+          <Button onClick={handleEdit} variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+            Editar Briefing
+          </Button>
+        )}
       </div>
     </div>
   )
