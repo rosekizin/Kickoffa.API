@@ -77,6 +77,21 @@ function SortableChecklistItem({ item, onEdit, onDelete }: SortableChecklistItem
     }
   }
 
+  const getItemTypeName = (type: string) => {
+    switch (type) {
+      case 'checkbox':
+        return 'caixa de seleção'
+      case 'upload':
+        return 'upload'
+      case 'text':
+        return 'texto'
+      case 'signature':
+        return 'assinatura'
+      default:
+        return type
+    }
+  }
+
   return (
     <div
       ref={setNodeRef}
@@ -109,16 +124,16 @@ function SortableChecklistItem({ item, onEdit, onDelete }: SortableChecklistItem
                   )}
                 </h4>
                 {item.isRequired ? (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-normal bg-red-50 text-red-600 border border-red-200">
                     Obrigatório
                   </span>
                 ) : (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-normal bg-gray-50 text-gray-500 border border-gray-200">
                     Opcional
                   </span>
                 )}
               </div>
-              <p className="text-sm text-gray-500 mt-1">{item.type}</p>
+              <p className="text-sm text-gray-500 mt-1">{getItemTypeName(item.type)}</p>
               {item.description && (
                 <p className="text-xs text-gray-400 mt-1">{item.description}</p>
               )}
