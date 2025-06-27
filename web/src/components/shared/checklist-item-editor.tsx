@@ -19,6 +19,7 @@ interface ChecklistItemEditorProps {
   onSave: (item: CreateItemRequest) => void
   onDelete?: (itemId: string) => void
   onPreview?: () => void
+  onCancel?: () => void
   sectionId: string
   order: number
 }
@@ -30,6 +31,7 @@ export const ChecklistItemEditor = ({
   onSave,
   onDelete,
   onPreview,
+  onCancel,
   sectionId,
   order
 }: ChecklistItemEditorProps) => {
@@ -301,16 +303,18 @@ export const ChecklistItemEditor = ({
 
       {/* Actions */}
       <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-        <Button variant="outline" size="sm">
-          Cancelar
-        </Button>
-        <Button 
-          size="sm" 
+        {onCancel && (
+          <Button variant="outline" size="sm" onClick={onCancel}>
+            Cancelar
+          </Button>
+        )}
+        <Button
+          size="sm"
           onClick={handleSave}
           disabled={!title.trim()}
           className="bg-blue-600 hover:bg-blue-700"
         >
-          Salvar Item
+          {item ? 'Atualizar Item' : 'Salvar Item'}
         </Button>
       </div>
     </div>

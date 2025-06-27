@@ -5,6 +5,7 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { BriefingEditor } from '@/components/briefing/briefing-editor'
 import { ChecklistItemEditor } from '@/components/shared/checklist-item-editor'
 import { SortableSectionList, type Section } from '@/components/sections/sortable-section-list'
+import { SortableChecklistItems } from '@/components/checklist/sortable-checklist-items'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,7 +22,8 @@ import {
   CheckCircle,
   Upload,
   PenTool,
-  Trash2
+  Trash2,
+  Edit3
 } from 'lucide-react'
 
 export default function NewChecklistPage() {
@@ -34,6 +36,8 @@ export default function NewChecklistPage() {
   const [sectionEditingStates, setSectionEditingStates] = useState<Record<string, boolean>>({})
   const [basicInfoExpanded, setBasicInfoExpanded] = useState(true)
   const [sectionsExpanded, setSectionsExpanded] = useState(true)
+  const [showNewItemEditor, setShowNewItemEditor] = useState(false)
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [scrollHeight, setScrollHeight] = useState('calc(100vh - 500px)')
 
   // Calcular altura do scroll dinamicamente baseado no estado das seções
@@ -111,9 +115,61 @@ export default function NewChecklistPage() {
     setSections(prev => prev.map(section => {
       if (section.id === sectionId) {
         const items = section.items || []
+
+        if (editingItemId) {
+          // Editando item existente
+          return {
+            ...section,
+            items: items.map(existingItem =>
+              existingItem.id === editingItemId
+                ? { ...item, id: editingItemId }
+                : existingItem
+            )
+          }
+        } else {
+          // Criando novo item
+          return {
+            ...section,
+            items: [...items, { ...item, id: Math.random().toString(36).substr(2, 9) }]
+          }
+        }
+      }
+      return section
+    }))
+
+    // Esconder editor e resetar estados
+    setShowNewItemEditor(false)
+    setEditingItemId(null)
+  }
+
+  const handleEditItem = (sectionId: string, itemId: string) => {
+    setEditingItemId(itemId)
+    setShowNewItemEditor(true)
+  }
+
+  const handleDeleteItem = (sectionId: string, itemId: string) => {
+    setSections(prev => prev.map(section => {
+      if (section.id === sectionId) {
         return {
           ...section,
-          items: [...items, { ...item, id: Math.random().toString(36).substr(2, 9) }]
+          items: section.items?.filter(item => item.id !== itemId) || []
+        }
+      }
+      return section
+    }))
+  }
+
+  const handleCancelItemEdit = () => {
+    setShowNewItemEditor(false)
+    setEditingItemId(null)
+  }
+
+  const handleItemsReorder = (sectionId: string, reorderedItems: any[]) => {
+    setSections(prev => prev.map(section => {
+      if (section.id === sectionId) {
+        return {
+          ...section,
+          items: reorderedItems
         }
       }
       return section
@@ -457,29 +513,42 @@ export default function NewChecklistPage() {
                   />
                 ) : (
                   <div className="space-y-6">
-                    {/* Existing Items */}
-                    {activeSecData.items?.map((item, index) => (
-                      <div key={item.id} className="bg-white rounded-lg border border-gray-200 p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium text-gray-900">{item.title}</h4>
-                            <p className="text-sm text-gray-500">{item.type}</p>
-                          </div>
-                          <Button variant="ghost" size="sm">
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                    
-                    {/* Add New Item */}
-                    <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-6">
-                      <ChecklistItemEditor
-                        sectionId={activeSecData.id}
-                        order={(activeSecData.items?.length || 0) + 1}
-                        onSave={(item) => handleItemSave(activeSecData.id, item)}
+                    {/* Existing Items - Sortable */}
+                    {activeSecData.items && activeSecData.items.length > 0 && (
+                      <SortableChecklistItems
+                        items={activeSecData.items}
+                        onItemsReorder={(reorderedItems) => handleItemsReorder(activeSecData.id, reorderedItems)}
+                        onEditItem={(itemId) => handleEditItem(activeSecData.id, itemId)}
+                        onDeleteItem={(itemId) => handleDeleteItem(activeSecData.id, itemId)}
                       />
-                    </div>
+                    )}
+
+                    {/* New Item Editor - Conditional */}
+                    {showNewItemEditor && (
+                      <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-6">
+                        <ChecklistItemEditor
+                          item={editingItemId ? activeSecData.items?.find(item => item.id === editingItemId) : undefined}
+                          sectionId={activeSecData.id}
+                          order={(activeSecData.items?.length || 0) + 1}
+                          onSave={(item) => handleItemSave(activeSecData.id, item)}
+                          onCancel={handleCancelItemEdit}
+                        />
+                      </div>
+                    )}
+
+                    {/* Add New Item Button */}
+                    {!showNewItemEditor && (
+                      <div className="text-center">
+                        <Button
+                          onClick={() => setShowNewItemEditor(true)}
+                          variant="outline"
+                          className="border-dashed border-2 border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-700"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Novo Item
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
