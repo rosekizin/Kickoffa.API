@@ -10,12 +10,18 @@ import { Button } from '@/components/ui/button'
 import {
   Save,
   Eye,
+  EyeOff,
   Plus,
   FileText,
   CheckSquare,
   Share2,
   Info,
-  List
+  List,
+  Clock,
+  CheckCircle,
+  Upload,
+  PenTool,
+  Trash2
 } from 'lucide-react'
 
 export default function NewChecklistPage() {
@@ -165,10 +171,17 @@ export default function NewChecklistPage() {
               onClick={() => setShowPreview(!showPreview)}
               variant="ghost"
               size="sm"
-              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              className={`${showPreview
+                ? 'text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
               title={showPreview ? 'Ocultar Preview' : 'Visualizar Preview'}
             >
-              <Eye className="h-4 w-4" />
+              {showPreview ? (
+                <Eye className="h-4 w-4" />
+              ) : (
+                <EyeOff className="h-4 w-4" />
+              )}
             </Button>
 
             <div className="h-4 w-px bg-gray-300"></div>
@@ -299,55 +312,116 @@ export default function NewChecklistPage() {
         {/* Right Panel - Editor/Preview */}
         <div className="flex-1 bg-gray-50">
           {showPreview ? (
-            /* Preview Mode */
-            <div className="h-full flex flex-col">
-              <div className="bg-white border-b border-gray-200 p-6">
-                <h2 className="text-2xl font-bold text-gray-900">{title || 'Título do Checklist'}</h2>
-                {description && <p className="text-gray-600 mt-2">{description}</p>}
-                {deadline && <p className="text-sm text-gray-500 mt-2">Prazo: {deadline}</p>}
-              </div>
-              <div className="flex-1 p-6 overflow-auto">
+            /* Preview Mode - Cliente View */
+            <div className="h-full overflow-auto bg-gray-50">
+              {/* Header como na página do cliente */}
+              <header className="bg-white shadow-sm border-b">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                  <div className="text-center">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                      {title || 'Título do Checklist'}
+                    </h1>
+                    {description && (
+                      <p className="text-lg text-gray-600 mb-4">
+                        {description}
+                      </p>
+                    )}
+
+                    {/* Progress Bar */}
+                    <div className="max-w-md mx-auto">
+                      <div className="flex justify-between text-sm text-gray-600 mb-2">
+                        <span>Progresso</span>
+                        <span>0/{sections.reduce((acc, s) => acc + (s.items?.length || 0), 0)} itens</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div
+                          className="bg-blue-600 h-3 rounded-full transition-all duration-500"
+                          style={{ width: '0%' }}
+                        />
+                      </div>
+                      <p className="text-sm text-gray-500 mt-2">
+                        0% concluído
+                      </p>
+                    </div>
+
+                    {deadline && (
+                      <div className="flex items-center justify-center mt-4 text-sm text-gray-600">
+                        <Clock className="h-4 w-4 mr-2" />
+                        Prazo: {deadline}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </header>
+
+              {/* Content como na página do cliente */}
+              <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {sections.length === 0 ? (
                   <div className="text-center py-12 text-gray-500">
                     <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
                     <p>Nenhuma seção criada ainda</p>
+                    <p className="text-sm mt-2">Adicione seções para ver como ficará para o cliente</p>
                   </div>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="space-y-8">
                     {sections.map((section) => (
-                      <div key={section.id} className="bg-white rounded-lg border border-gray-200 p-6">
-                        <h3 className="text-lg font-semibold mb-4 flex items-center">
-                          {section.type === 'briefing' ? (
-                            <FileText className="h-5 w-5 text-blue-600 mr-2" />
-                          ) : (
-                            <CheckSquare className="h-5 w-5 text-green-600 mr-2" />
+                      <div key={section.id} className="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div className="px-6 py-4 border-b border-gray-200">
+                          <h2 className="text-xl font-semibold text-gray-900">
+                            {section.title}
+                          </h2>
+                        </div>
+
+                        <div className="p-6">
+                          {section.type === 'briefing' && section.contentHtml && (
+                            <div
+                              className="prose max-w-none"
+                              dangerouslySetInnerHTML={{ __html: section.contentHtml }}
+                            />
                           )}
-                          {section.title}
-                        </h3>
-                        {section.type === 'briefing' ? (
-                          <div
-                            className="prose max-w-none"
-                            dangerouslySetInnerHTML={{ __html: section.contentHtml || '<p>Conteúdo do briefing...</p>' }}
-                          />
-                        ) : (
-                          <div className="space-y-3">
-                            {section.items?.length ? (
-                              section.items.map((item, index) => (
-                                <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded">
-                                  <CheckSquare className="h-4 w-4 text-gray-400" />
-                                  <span>{item.title || `Item ${index + 1}`}</span>
-                                </div>
-                              ))
-                            ) : (
-                              <p className="text-gray-500 italic">Nenhum item adicionado</p>
-                            )}
-                          </div>
-                        )}
+
+                          {section.type === 'checklist' && (
+                            <div className="space-y-6">
+                              {section.items?.length ? (
+                                section.items.map((item, index) => (
+                                  <div key={item.id || index} className="border border-gray-200 rounded-lg p-4">
+                                    <div className="flex items-start space-x-3">
+                                      <div className="flex-shrink-0 mt-1">
+                                        <Upload className="h-5 w-5 text-blue-600" />
+                                      </div>
+
+                                      <div className="flex-1 space-y-3">
+                                        <div>
+                                          <h3 className="font-medium text-gray-900 flex items-center">
+                                            {item.title}
+                                            <span className="ml-2 text-red-500 text-sm">*</span>
+                                          </h3>
+                                          <p className="text-sm text-gray-600 mt-1">
+                                            Item do checklist para preenchimento pelo cliente
+                                          </p>
+                                        </div>
+
+                                        <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                                          <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                                          <p className="text-sm text-gray-600">
+                                            Campo interativo aparecerá aqui para o cliente
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="text-gray-500 italic">Nenhum item adicionado ainda</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
-              </div>
+              </main>
             </div>
           ) : activeSecData ? (
             /* Editor Mode */
