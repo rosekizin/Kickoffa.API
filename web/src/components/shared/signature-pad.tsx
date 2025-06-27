@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { RotateCcw, Download, Pen } from 'lucide-react'
+import { RotateCcw, Download, Pen, Check } from 'lucide-react'
 
 interface SignaturePadProps {
   onSignatureChange: (signature: string | null) => void
@@ -100,11 +100,14 @@ export const SignaturePad = ({
 
   const stopDrawing = () => {
     if (!isDrawing) return
-    
+
     setIsDrawing(false)
     setLastPoint(null)
-    
-    // Notificar mudança na assinatura
+
+    // Não salvar automaticamente - usuário deve clicar em "Finalizar Assinatura"
+  }
+
+  const finalizeSignature = () => {
     const canvas = canvasRef.current
     if (canvas && !isEmpty) {
       const dataURL = canvas.toDataURL('image/png')
@@ -171,6 +174,15 @@ export const SignaturePad = ({
         
         <div className="flex space-x-2">
           <Button
+            onClick={finalizeSignature}
+            disabled={disabled || isEmpty}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Check className="h-4 w-4 mr-2" />
+            Finalizar Assinatura
+          </Button>
+
+          <Button
             variant="outline"
             size="sm"
             onClick={clearSignature}
@@ -179,7 +191,7 @@ export const SignaturePad = ({
             <RotateCcw className="h-4 w-4 mr-2" />
             Limpar
           </Button>
-          
+
           <Button
             variant="outline"
             size="sm"
@@ -198,8 +210,9 @@ export const SignaturePad = ({
         <ul className="space-y-1">
           <li>• Use o mouse ou toque na tela para assinar</li>
           <li>• Mantenha pressionado e arraste para desenhar</li>
+          <li>• Você pode soltar e continuar assinando quantas vezes quiser</li>
           <li>• Use "Limpar" para recomeçar</li>
-          <li>• A assinatura será salva automaticamente</li>
+          <li>• Clique em "Finalizar Assinatura" quando estiver satisfeito</li>
         </ul>
       </div>
     </div>

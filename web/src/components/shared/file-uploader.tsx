@@ -3,17 +3,18 @@
 import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Button } from '@/components/ui/button'
-import { 
-  Upload, 
-  X, 
-  File, 
-  Image as ImageIcon, 
-  FileText, 
+import {
+  Upload,
+  X,
+  File,
+  Image as ImageIcon,
+  FileText,
   Video,
   Music,
   Archive,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  Info
 } from 'lucide-react'
 
 interface FileUploaderProps {
@@ -38,7 +39,7 @@ export const FileUploader = ({
   onFilesSelected,
   maxFiles = 5,
   maxSize = 10 * 1024 * 1024, // 10MB default
-  acceptedTypes = ['image/*', 'application/pdf', '.doc', '.docx'],
+  acceptedTypes = ['image/*', 'application/pdf', '.doc', '.docx', '.zip', '.rar', '.7z'],
   multiple = true,
   disabled = false,
   className = ''
@@ -65,7 +66,12 @@ export const FileUploader = ({
 
     // Validar limite de arquivos
     if (uploadedFiles.length + acceptedFiles.length > maxFiles) {
-      setErrors(prev => [...prev, `Máximo de ${maxFiles} arquivos permitidos`])
+      const remainingSlots = maxFiles - uploadedFiles.length
+      const excessFiles = acceptedFiles.length - remainingSlots
+
+      setErrors(prev => [...prev,
+        `Limite de ${maxFiles} arquivos atingido. Você tentou adicionar ${acceptedFiles.length} arquivo${acceptedFiles.length > 1 ? 's' : ''}, mas só ${remainingSlots > 0 ? `restam ${remainingSlots} espaço${remainingSlots > 1 ? 's' : ''}` : 'não há espaços disponíveis'}.`
+      ])
       return
     }
 
@@ -129,12 +135,27 @@ export const FileUploader = ({
   }
 
   const getFileIcon = (file: File) => {
-    if (file.type.startsWith('image/')) return <ImageIcon className="h-5 w-5" />
-    if (file.type.startsWith('video/')) return <Video className="h-5 w-5" />
-    if (file.type.startsWith('audio/')) return <Music className="h-5 w-5" />
-    if (file.type === 'application/pdf') return <FileText className="h-5 w-5" />
-    if (file.type.includes('zip') || file.type.includes('rar')) return <Archive className="h-5 w-5" />
-    return <File className="h-5 w-5" />
+    const fileName = file.name.toLowerCase()
+    const fileType = file.type.toLowerCase()
+
+    if (file.type.startsWith('image/')) return <ImageIcon className="h-5 w-5 text-blue-600" />
+    if (file.type.startsWith('video/')) return <Video className="h-5 w-5 text-purple-600" />
+    if (file.type.startsWith('audio/')) return <Music className="h-5 w-5 text-green-600" />
+    if (file.type === 'application/pdf') return <FileText className="h-5 w-5 text-red-600" />
+
+    // Arquivos compactados
+    if (fileType.includes('zip') ||
+        fileType.includes('rar') ||
+        fileType.includes('7z') ||
+        fileName.endsWith('.zip') ||
+        fileName.endsWith('.rar') ||
+        fileName.endsWith('.7z') ||
+        fileName.endsWith('.tar') ||
+        fileName.endsWith('.gz')) {
+      return <Archive className="h-5 w-5 text-orange-600" />
+    }
+
+    return <File className="h-5 w-5 text-gray-600" />
   }
 
   const formatFileSize = (bytes: number) => {
@@ -173,7 +194,7 @@ export const FileUploader = ({
               Máximo {maxFiles} arquivo{maxFiles > 1 ? 's' : ''}, até {formatFileSize(maxSize)} cada
             </p>
             <p className="text-xs text-gray-400 mt-1">
-              Tipos aceitos: {acceptedTypes.join(', ')}
+              Aceita: Imagens, PDFs, documentos e arquivos compactados (ZIP, RAR)
             </p>
           </div>
         )}
@@ -181,13 +202,37 @@ export const FileUploader = ({
 
       {/* Errors */}
       {errors.length > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {errors.map((error, index) => (
-            <div key={index} className="flex items-center text-red-600 text-sm">
-              <AlertCircle className="h-4 w-4 mr-2" />
-              {error}
+            <div key={index} className="flex items-start text-red-600 text-sm">
+              <AlertCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+              <span>{error}</span>
             </div>
           ))}
+
+          {/* Dica de compactação quando limite é atingido */}
+          {errors.some(error => error.includes('Limite de') && error.includes('arquivos atingido')) && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-start space-x-2">
+                <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="text-sm">
+                  <p className="font-medium text-blue-800 mb-1">💡 Dica: Compacte seus arquivos</p>
+                  <p className="text-blue-700 mb-2">
+                    Para enviar mais arquivos, você pode compactá-los em um único arquivo ZIP:
+                  </p>
+                  <ul className="text-blue-600 space-y-1 text-xs">
+                    <li>• <strong>Windows:</strong> Selecione os arquivos → Clique direito → "Enviar para" → "Pasta compactada"</li>
+                    <li>• <strong>Mac:</strong> Selecione os arquivos → Clique direito → "Compactar itens"</li>
+                    <li>• <strong>Online:</strong> Use ferramentas como 7-Zip, WinRAR ou compactadores online</li>
+                  </ul>
+                  <div className="flex items-center mt-2 text-xs text-blue-600">
+                    <Archive className="h-3 w-3 mr-1" />
+                    <span>Arquivos ZIP são aceitos e podem conter múltiplos arquivos</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
