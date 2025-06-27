@@ -8,7 +8,9 @@ import {
   CreateSectionRequest,
   CreateItemRequest,
   UpdateItemStatusRequest,
-  PublicChecklistView
+  PublicChecklistView,
+  Customer,
+  CreateCustomerRequest
 } from '@/types'
 
 // Checklists (para freelancers autenticados)
@@ -148,6 +150,58 @@ export const useUploadFile = () => {
         }
       })
       return response.data
+    }
+  })
+}
+
+// Customers - usando CustomerService para lógica de negócio
+import { CustomerService } from '@/services/customer.service'
+
+export const useCustomers = () => {
+  return useQuery({
+    queryKey: ['customers'],
+    queryFn: () => CustomerService.getCustomers()
+  })
+}
+
+export const useCustomer = (id: string) => {
+  return useQuery({
+    queryKey: ['customer', id],
+    queryFn: () => CustomerService.getCustomerById(id),
+    enabled: !!id
+  })
+}
+
+export const useCreateCustomer = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: CreateCustomerRequest) => CustomerService.createCustomer(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
+    }
+  })
+}
+
+export const useUpdateCustomer = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreateCustomerRequest> }) =>
+      CustomerService.updateCustomer(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
+    }
+  })
+}
+
+export const useDeleteCustomer = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => CustomerService.deleteCustomer(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] })
     }
   })
 }

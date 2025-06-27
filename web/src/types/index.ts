@@ -8,6 +8,29 @@ export interface User {
   updatedAt: string
 }
 
+export interface Customer {
+  id: string
+  firstName: string
+  lastName: string
+  email?: string
+  cpf?: string
+  cnpj?: string
+  phoneNumber?: string
+  address?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateCustomerRequest {
+  firstName: string
+  lastName: string
+  email?: string
+  cpf?: string
+  cnpj?: string
+  phoneNumber?: string
+  address?: string
+}
+
 export interface Checklist {
   id: string
   title: string
