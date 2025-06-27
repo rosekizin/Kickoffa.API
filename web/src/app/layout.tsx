@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kickoffa - Gestão de Futebol",
-  description: "Sistema de gestão para times e competições de futebol",
+  title: "Kickoffa - Portal de Onboarding",
+  description: "Portal de onboarding para freelancers com checklists e briefings estruturados",
 };
 
 export default function RootLayout({

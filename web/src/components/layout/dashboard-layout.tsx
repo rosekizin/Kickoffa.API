@@ -44,9 +44,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     },
     {
       name: 'Clientes',
-      href: '/clients',
+      href: '/customers',
       icon: Users,
-      current: pathname.startsWith('/clients')
+      current: pathname.startsWith('/customers')
     },
     {
       name: 'Configurações',
