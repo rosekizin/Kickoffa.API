@@ -5,7 +5,7 @@ namespace Kickoffa.API.Contracts.Customer;
 /// </summary>
 public sealed record CustomerResponse
 {
-    public required Guid Id { get; init; }
+    public required long Id { get; init; }
     public required string FirstName { get; init; }
     public required string LastName { get; init; }
     public string? Email { get; init; }

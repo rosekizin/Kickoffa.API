@@ -6,7 +6,7 @@ namespace Kickoffa.API.Domain.Repositories
     public interface IBaseRepository<T> where T : BaseEntity<T>
     {
         // Métodos síncronos
-        T? GetById(Guid id);
+        T? GetById(long id);
         IEnumerable<T> GetAll();
         IEnumerable<T> Find(Expression<Func<T, bool>> predicate);
         T? FirstOrDefault(Expression<Func<T, bool>> predicate);
@@ -14,21 +14,21 @@ namespace Kickoffa.API.Domain.Repositories
         int Count(Expression<Func<T, bool>>? predicate = null);
 
         // Métodos assíncronos
-        Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-        Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default);
-        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
-        Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
-        Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
-        Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default);
+        Task<T?> GetByIdAsync(long id, CancellationToken cancellationToken);
+        Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken);
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken);
+        Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken);
+        Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken);
+        Task<int> CountAsync(Expression<Func<T, bool>>? predicate, CancellationToken cancellationToken);
 
         // Métodos de paginação
         Task<(IEnumerable<T> Items, int TotalCount)> GetPagedAsync(
             int pageNumber,
             int pageSize,
-            Expression<Func<T, bool>>? predicate = null,
-            Expression<Func<T, object>>? orderBy = null,
-            bool ascending = true,
-            CancellationToken cancellationToken = default);
+            Expression<Func<T, bool>>? predicate,
+            Expression<Func<T, object>>? orderBy,
+            bool ascending,
+            CancellationToken cancellationToken);
 
         // Métodos de modificação
         void Add(T entity);
@@ -37,14 +37,14 @@ namespace Kickoffa.API.Domain.Repositories
         void UpdateRange(IEnumerable<T> entities);
         void Remove(T entity);
         void RemoveRange(IEnumerable<T> entities);
-        void RemoveById(Guid id);
+        void RemoveById(long id);
 
         // Métodos de modificação assíncronos
-        Task AddAsync(T entity, CancellationToken cancellationToken = default);
-        Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default);
+        Task AddAsync(T entity, CancellationToken cancellationToken);
+        Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken);
 
         // Métodos de persistência
         int SaveChanges();
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

@@ -18,7 +18,7 @@ namespace Kickoffa.API.Data.Repositories.Base
         }
 
         // Métodos síncronos
-        public virtual T? GetById(Guid id)
+        public virtual T? GetById(long id)
         {
             return _dbSet.Find(id);
         }
@@ -49,46 +49,46 @@ namespace Kickoffa.API.Data.Repositories.Base
         }
 
         // Métodos assíncronos
-        public virtual async Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public virtual async Task<T?> GetByIdAsync(long id, CancellationToken cancellationToken)
         {
             return await _dbSet.FindAsync(new object[] { id }, cancellationToken);
         }
 
-        public virtual async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken)
         {
             return await _dbSet.ToListAsync(cancellationToken);
         }
 
-        public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+        public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken)
         {
             return await _dbSet.Where(predicate).ToListAsync(cancellationToken);
         }
 
-        public virtual async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+        public virtual async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken)
         {
             return await _dbSet.FirstOrDefaultAsync(predicate, cancellationToken);
         }
 
-        public virtual async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+        public virtual async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken)
         {
             return await _dbSet.AnyAsync(predicate, cancellationToken);
         }
 
-        public virtual async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default)
+        public virtual async Task<int> CountAsync(Expression<Func<T, bool>>? predicate, CancellationToken cancellationToken)
         {
-            return predicate == null 
-                ? await _dbSet.CountAsync(cancellationToken) 
+            return predicate == null
+                ? await _dbSet.CountAsync(cancellationToken)
                 : await _dbSet.CountAsync(predicate, cancellationToken);
         }
 
         // Métodos de paginação
         public virtual async Task<(IEnumerable<T> Items, int TotalCount)> GetPagedAsync(
-            int pageNumber, 
-            int pageSize, 
-            Expression<Func<T, bool>>? predicate = null,
-            Expression<Func<T, object>>? orderBy = null,
-            bool ascending = true,
-            CancellationToken cancellationToken = default)
+            int pageNumber,
+            int pageSize,
+            Expression<Func<T, bool>>? predicate,
+            Expression<Func<T, object>>? orderBy,
+            bool ascending,
+            CancellationToken cancellationToken)
         {
             var query = _dbSet.AsQueryable();
 
@@ -148,7 +148,7 @@ namespace Kickoffa.API.Data.Repositories.Base
             _dbSet.RemoveRange(entities);
         }
 
-        public virtual void RemoveById(Guid id)
+        public virtual void RemoveById(long id)
         {
             var entity = GetById(id);
             if (entity != null)
@@ -158,12 +158,12 @@ namespace Kickoffa.API.Data.Repositories.Base
         }
 
         // Métodos de modificação assíncronos
-        public virtual async Task AddAsync(T entity, CancellationToken cancellationToken = default)
+        public virtual async Task AddAsync(T entity, CancellationToken cancellationToken)
         {
             await _dbSet.AddAsync(entity, cancellationToken);
         }
 
-        public virtual async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
+        public virtual async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken)
         {
             await _dbSet.AddRangeAsync(entities, cancellationToken);
         }
@@ -174,7 +174,7 @@ namespace Kickoffa.API.Data.Repositories.Base
             return _context.SaveChanges();
         }
 
-        public virtual async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
         {
             return await _context.SaveChangesAsync(cancellationToken);
         }

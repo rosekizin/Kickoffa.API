@@ -38,8 +38,8 @@ public sealed class CustomerController : ControllerBase
 	/// <param name="id">ID do customer</param>
 	/// <param name="cancellationToken">Token de cancelamento</param>
 	/// <returns>Customer encontrado</returns>
-	[HttpGet("{id:guid}")]
-	public async Task<ActionResult<CustomerResponse>> GetByIdAsync([FromRoute] Guid id, CancellationToken cancellationToken)
+	[HttpGet("{id:long}")]
+	public async Task<ActionResult<CustomerResponse>> GetByIdAsync([FromRoute] long id, CancellationToken cancellationToken)
 	{
 		var customer = await _customerService.GetByIdAsync(id, cancellationToken);
 		return customer is null ? NotFound() : Ok(customer);
@@ -65,8 +65,8 @@ public sealed class CustomerController : ControllerBase
 	/// <param name="request">Dados atualizados do customer</param>
 	/// <param name="cancellationToken">Token de cancelamento</param>
 	/// <returns>Customer atualizado</returns>
-	[HttpPut("{id:guid}")]
-	public async Task<ActionResult<CustomerResponse>> UpdateAsync([FromRoute] Guid id, [FromBody] CreateCustomerRequest request, CancellationToken cancellationToken)
+	[HttpPut("{id:long}")]
+	public async Task<ActionResult<CustomerResponse>> UpdateAsync([FromRoute] long id, [FromBody] CreateCustomerRequest request, CancellationToken cancellationToken)
 	{
 		var response = await _customerService.UpdateAsync(id, request, cancellationToken);
 		return response is null ? NotFound() : Ok(response);
@@ -78,8 +78,8 @@ public sealed class CustomerController : ControllerBase
 	/// <param name="id">ID do customer</param>
 	/// <param name="cancellationToken">Token de cancelamento</param>
 	/// <returns>Confirmação de remoção</returns>
-	[HttpDelete("{id:guid}")]
-	public async Task<ActionResult> DeleteAsync([FromRoute] Guid id, CancellationToken cancellationToken)
+	[HttpDelete("{id:long}")]
+	public async Task<ActionResult> DeleteAsync([FromRoute] long id, CancellationToken cancellationToken)
 	{
 		var deleted = await _customerService.DeleteAsync(id, cancellationToken);
 		return deleted ? NoContent() : NotFound();

@@ -1,6 +1,11 @@
 using Kickoffa.API.Application.Factories;
 using Kickoffa.API.Application.Services;
 using Kickoffa.API.Application.Services.AppUser;
+using Kickoffa.API.Application.Services.Email;
+using Kickoffa.API.Application.Wrappers;
+using Kickoffa.API.Data.EntityFramework.Context;
+using Kickoffa.API.Domain.Models.AppUser;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kickoffa.API.AspNet.Infrastructure.Extensions.ServiceCollection;
@@ -23,30 +28,49 @@ public static class ApplicationServiceCollectionExtensions
         // Registrar services
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IEmailService, EmailService>();
 
-        return services;
+		// Register wrappers
+		services.AddScoped<IUserManagerWrapper, UserManagerWrapper>();
+		services.AddScoped<ISignInManagerWrapper, SignInManagerWrapper>();
+
+		return services;
     }
 
     /// <summary>
-    /// Adiciona apenas os factories da Application
+    /// Configura ASP.NET Core Identity
     /// </summary>
     /// <param name="services">Collection de serviços</param>
     /// <returns>IServiceCollection para chaining</returns>
-    public static IServiceCollection AddApplicationFactories(this IServiceCollection services)
+    public static IServiceCollection AddIdentityConfiguration(this IServiceCollection services)
     {
-        services.AddScoped<ICreateCustomerFactory, CreateCustomerFactory>();
-        return services;
-    }
+        // Configurar Identity com User e Role personalizados usando long como chave
+        services.AddIdentity<User, Role>(options =>
+        {
+            // Configurações de senha
+            options.Password.RequireDigit = true;
+            options.Password.RequireLowercase = true;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequiredLength = 6;
+            options.Password.RequiredUniqueChars = 1;
 
-    /// <summary>
-    /// Adiciona apenas os services da Application
-    /// </summary>
-    /// <param name="services">Collection de serviços</param>
-    /// <returns>IServiceCollection para chaining</returns>
-    public static IServiceCollection AddApplicationBusinessServices(this IServiceCollection services)
-    {
-        services.AddScoped<ICustomerService, CustomerService>();
-        services.AddScoped<IUserService, UserService>();
+            // Configurações de usuário
+            options.User.RequireUniqueEmail = true;
+            options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+
+            // Configurações de lockout
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+            options.Lockout.MaxFailedAccessAttempts = 5;
+            options.Lockout.AllowedForNewUsers = true;
+
+            // Configurações de sign-in
+            options.SignIn.RequireConfirmedEmail = false;
+            options.SignIn.RequireConfirmedPhoneNumber = false;
+        })
+        .AddEntityFrameworkStores<KickoffaDbContext>()
+        .AddDefaultTokenProviders();
+
         return services;
     }
 }

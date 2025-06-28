@@ -38,7 +38,7 @@ public sealed class AuthController : ControllerBase
         try
         {
             // Validação real de usuário/senha usando UserService
-            var user = await _userService.GetByEmailAndPasswordAsync(request.Email, request.Password, cancellationToken);
+            var user = await _userService.AuthenticateAsync(request.Email, request.Password, cancellationToken);
 
             if (user == null)
             {

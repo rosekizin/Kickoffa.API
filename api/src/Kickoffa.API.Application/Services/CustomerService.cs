@@ -46,7 +46,7 @@ public sealed class CustomerService : ICustomerService
 	}
 
 	/// <inheritdoc />
-	public async Task<CustomerResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+	public async Task<CustomerResponse?> GetByIdAsync(long id, CancellationToken cancellationToken)
 	{
 		var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
 
@@ -103,14 +103,14 @@ public sealed class CustomerService : ICustomerService
     }
 
 	/// <inheritdoc />
-	public async Task<CustomerResponse?> UpdateAsync(Guid id, CreateCustomerRequest request, CancellationToken cancellationToken)
+	public async Task<CustomerResponse?> UpdateAsync(long id, CreateCustomerRequest request, CancellationToken cancellationToken)
 	{
 		// TODO: Implementar lógica de atualização quando a entidade Customer tiver métodos de update apropriados
 		throw new NotImplementedException("Método UpdateAsync ainda não implementado");
 	}
 
 	/// <inheritdoc />
-	public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
+	public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken)
 	{
 		var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
 		if (customer is null)

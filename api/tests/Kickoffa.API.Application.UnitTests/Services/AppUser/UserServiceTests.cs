@@ -1,82 +1,102 @@
 using Kickoffa.API.Application.Services.AppUser;
-using Kickoffa.API.Domain.Repositories;
+using Kickoffa.API.Application.Services.Email;
+using Kickoffa.API.Application.Wrappers;
 using Kickoffa.API.Domain.Models.AppUser;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace Kickoffa.API.Application.UnitTests.Services.AppUser;
 
 public class UserServiceTests
 {
-    private readonly IUserRepository _userRepository;
+    private readonly IUserManagerWrapper _userManagerWrapper;
+    private readonly ISignInManagerWrapper _signInManagerWrapper;
+    private readonly IEmailService _emailService;
+    private readonly ILogger<UserService> _logger;
     private readonly UserService _userService;
 
     public UserServiceTests()
     {
-        _userRepository = Substitute.For<IUserRepository>();
-        _userService = new UserService(_userRepository);
+        _userManagerWrapper = Substitute.For<IUserManagerWrapper>();
+        _signInManagerWrapper = Substitute.For<ISignInManagerWrapper>();
+        _emailService = Substitute.For<IEmailService>();
+        _logger = Substitute.For<ILogger<UserService>>();
+        _userService = new UserService(_userManagerWrapper, _signInManagerWrapper, _emailService, _logger);
     }
 
     [Fact]
-    public void Constructor_WithNullRepository_ShouldThrowArgumentNullException()
-    {
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new UserService(null!));
-    }
-
-    [Fact]
-    public async Task GetByEmailAndPasswordAsync_WithValidCredentials_ShouldReturnUser()
+    public async Task AuthenticateAsync_WithValidCredentials_ShouldReturnUser()
     {
         // Arrange
         var email = "joao@example.com";
         var password = "123456";
-        var expectedUser = new User("João Silva", email, password);
+        var expectedUser = new User(email);
         
-        _userRepository.GetByEmailAndPasswordAsync(email, password, Arg.Any<CancellationToken>())
-            .Returns(expectedUser);
+        _userManagerWrapper.FindByEmailAsync(email).Returns(expectedUser);
+        _signInManagerWrapper.CheckPasswordSignInAsync(expectedUser, password, false).Returns(SignInResult.Success);
 
         // Act
-        var result = await _userService.GetByEmailAndPasswordAsync(email, password);
+        var result = await _userService.AuthenticateAsync(email, password);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(expectedUser.Id, result.Id);
         Assert.Equal(expectedUser.Email, result.Email);
-        await _userRepository.Received(1).GetByEmailAndPasswordAsync(email, password, Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task GetByEmailAndPasswordAsync_WithInvalidCredentials_ShouldReturnNull()
+    public async Task AuthenticateAsync_WithInvalidCredentials_ShouldReturnNull()
     {
         // Arrange
         var email = "joao@example.com";
         var password = "wrongpassword";
+        var user = new User(email);
         
-        _userRepository.GetByEmailAndPasswordAsync(email, password, Arg.Any<CancellationToken>())
-            .Returns((Domain.Models.AppUser.User?)null);
+        _userManagerWrapper.FindByEmailAsync(email).Returns(user);
+        _signInManagerWrapper.CheckPasswordSignInAsync(user, password, false).Returns(SignInResult.Failed);
 
         // Act
-        var result = await _userService.GetByEmailAndPasswordAsync(email, password);
+        var result = await _userService.AuthenticateAsync(email, password);
 
         // Assert
         Assert.Null(result);
-        await _userRepository.Received(1).GetByEmailAndPasswordAsync(email, password, Arg.Any<CancellationToken>());
     }
 
-    [Theory]
-    [InlineData("", "123456")]
-    [InlineData(" ", "123456")]
-    [InlineData(null, "123456")]
-    [InlineData("joao@example.com", "")]
-    [InlineData("joao@example.com", " ")]
-    [InlineData("joao@example.com", null)]
-    public async Task GetByEmailAndPasswordAsync_WithInvalidParameters_ShouldReturnNull(string email, string password)
+    [Fact]
+    public async Task AuthenticateAsync_WithNonExistingUser_ShouldReturnNull()
     {
+        // Arrange
+        var email = "nonexisting@example.com";
+        var password = "123456";
+        
+        _userManagerWrapper.FindByEmailAsync(email).Returns((User?)null);
+
         // Act
-        var result = await _userService.GetByEmailAndPasswordAsync(email, password);
+        var result = await _userService.AuthenticateAsync(email, password);
 
         // Assert
         Assert.Null(result);
-        await _userRepository.DidNotReceive().GetByEmailAndPasswordAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _signInManagerWrapper.DidNotReceive().CheckPasswordSignInAsync(Arg.Any<User>(), Arg.Any<string>(), Arg.Any<bool>());
+    }
+
+    [Fact]
+    public async Task CreateUserAsync_WithValidData_ShouldReturnSuccessResult()
+    {
+        // Arrange
+        var email = "joao@example.com";
+        var password = "123456";
+        var successResult = IdentityResult.Success;
+
+        _userManagerWrapper.CreateAsync(Arg.Any<User>(), password).Returns(successResult);
+        _userManagerWrapper.AddToRoleAsync(Arg.Any<User>(), "freelancer").Returns(IdentityResult.Success);
+
+        // Act
+        var result = await _userService.CreateUserAsync(email, password);
+
+        // Assert
+        Assert.True(result.Succeeded);
+        await _userManagerWrapper.Received(1).CreateAsync(Arg.Any<User>(), password);
+        await _userManagerWrapper.Received(1).AddToRoleAsync(Arg.Any<User>(), "freelancer");
     }
 
     [Fact]
@@ -84,50 +104,123 @@ public class UserServiceTests
     {
         // Arrange
         var email = "joao@example.com";
-        var expectedUser = new User("João Silva", email, "123456");
+        var expectedUser = new User(email);
         
-        _userRepository.GetByEmailAsync(email, Arg.Any<CancellationToken>())
-            .Returns(expectedUser);
+        _userManagerWrapper.FindByEmailAsync(email).Returns(expectedUser);
 
         // Act
         var result = await _userService.GetByEmailAsync(email);
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(expectedUser.Id, result.Id);
         Assert.Equal(expectedUser.Email, result.Email);
-        await _userRepository.Received(1).GetByEmailAsync(email, Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task GetByEmailAsync_WithNonExistingEmail_ShouldReturnNull()
+    public async Task GetByIdAsync_WithValidId_ShouldReturnUser()
     {
         // Arrange
-        var email = "nonexisting@example.com";
+        var userId = 123L;
+        var expectedUser = new User("joao@example.com");
         
-        _userRepository.GetByEmailAsync(email, Arg.Any<CancellationToken>())
-            .Returns((Domain.Models.AppUser.User?)null);
+        _userManagerWrapper.FindByIdAsync(userId.ToString()).Returns(expectedUser);
 
         // Act
-        var result = await _userService.GetByEmailAsync(email);
+        var result = await _userService.GetByIdAsync(userId);
 
         // Assert
-        Assert.Null(result);
-        await _userRepository.Received(1).GetByEmailAsync(email, Arg.Any<CancellationToken>());
+        Assert.NotNull(result);
+        Assert.Equal(expectedUser.Email, result.Email);
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData(null)]
-    public async Task GetByEmailAsync_WithInvalidEmail_ShouldReturnNull(string invalidEmail)
+    [Fact]
+    public async Task InitiateEmailChangeAsync_WithValidData_ShouldReturnSuccessResult()
     {
+        // Arrange
+        var userId = 123L;
+        var newEmail = "joao.santos@example.com";
+        var user = new User("joao@example.com");
+        var token = "test-token";
+
+        _userManagerWrapper.FindByIdAsync(userId.ToString()).Returns(user);
+        _userManagerWrapper.FindByEmailAsync(newEmail).Returns((User?)null);
+        _userManagerWrapper.GenerateChangeEmailTokenAsync(user, newEmail).Returns(token);
+        _emailService.SendEmailChangeConfirmationAsync(newEmail, Arg.Any<string>(), token, Arg.Any<CancellationToken>()).Returns(true);
+
         // Act
-        var result = await _userService.GetByEmailAsync(invalidEmail);
+        var result = await _userService.InitiateEmailChangeAsync(userId, newEmail);
 
         // Assert
-        Assert.Null(result);
-        await _userRepository.DidNotReceive().GetByEmailAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+        Assert.True(result.Succeeded);
+        await _userManagerWrapper.Received(1).GenerateChangeEmailTokenAsync(user, newEmail);
+        await _emailService.Received(1).SendEmailChangeConfirmationAsync(newEmail, Arg.Any<string>(), token, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ConfirmEmailChangeAsync_WithValidData_ShouldReturnSuccessResult()
+    {
+        // Arrange
+        var userId = 123L;
+        var newEmail = "joao.santos@example.com";
+        var token = "test-token";
+        var user = new User("joao@example.com");
+
+        _userManagerWrapper.FindByIdAsync(userId.ToString()).Returns(user);
+        _userManagerWrapper.FindByEmailAsync(newEmail).Returns((User?)null);
+        _userManagerWrapper.ChangeEmailAsync(user, newEmail, token).Returns(IdentityResult.Success);
+        _userManagerWrapper.SetUserNameAsync(user, newEmail).Returns(IdentityResult.Success);
+        _userManagerWrapper.UpdateAsync(user).Returns(IdentityResult.Success);
+        _emailService.SendEmailChangeNotificationAsync(Arg.Any<string>(), newEmail, Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
+
+        // Act
+        var result = await _userService.ConfirmEmailChangeAsync(userId, newEmail, token);
+
+        // Assert
+        Assert.True(result.Succeeded);
+        await _userManagerWrapper.Received(1).ChangeEmailAsync(user, newEmail, token);
+        await _userManagerWrapper.Received(1).SetUserNameAsync(user, newEmail);
+    }
+
+    [Fact]
+    public async Task ConfirmEmailChangeAsync_WithInvalidToken_ShouldReturnFailure()
+    {
+        // Arrange
+        var userId = 123L;
+        var newEmail = "joao.santos@example.com";
+        var invalidToken = "invalid-token";
+        var user = new User("joao@example.com");
+
+        _userManagerWrapper.FindByIdAsync(userId.ToString()).Returns(user);
+        _userManagerWrapper.FindByEmailAsync(newEmail).Returns((User?)null);
+        _userManagerWrapper.ChangeEmailAsync(user, newEmail, invalidToken)
+            .Returns(IdentityResult.Failed(new IdentityError { Description = "Invalid token" }));
+
+        // Act
+        var result = await _userService.ConfirmEmailChangeAsync(userId, newEmail, invalidToken);
+
+        // Assert
+        Assert.False(result.Succeeded);
+        Assert.Contains("Invalid token", result.Errors.Select(e => e.Description));
+    }
+
+    [Fact]
+    public async Task ChangePasswordAsync_WithValidData_ShouldReturnSuccessResult()
+    {
+        // Arrange
+        var userId = 123L;
+        var currentPassword = "oldPassword";
+        var newPassword = "newPassword";
+        var user = new User("joao@example.com");
+        
+        _userManagerWrapper.FindByIdAsync(userId.ToString()).Returns(user);
+        _userManagerWrapper.ChangePasswordAsync(user, currentPassword, newPassword).Returns(IdentityResult.Success);
+
+        // Act
+        var result = await _userService.ChangePasswordAsync(userId, currentPassword, newPassword);
+
+        // Assert
+        Assert.True(result.Succeeded);
+        await _userManagerWrapper.Received(1).ChangePasswordAsync(user, currentPassword, newPassword);
     }
 
     [Fact]
@@ -135,16 +228,15 @@ public class UserServiceTests
     {
         // Arrange
         var email = "joao@example.com";
+        var user = new User(email);
         
-        _userRepository.EmailExistsAsync(email, Arg.Any<CancellationToken>())
-            .Returns(true);
+        _userManagerWrapper.FindByEmailAsync(email).Returns(user);
 
         // Act
         var result = await _userService.EmailExistsAsync(email);
 
         // Assert
         Assert.True(result);
-        await _userRepository.Received(1).EmailExistsAsync(email, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -153,80 +245,38 @@ public class UserServiceTests
         // Arrange
         var email = "nonexisting@example.com";
         
-        _userRepository.EmailExistsAsync(email, Arg.Any<CancellationToken>())
-            .Returns(false);
+        _userManagerWrapper.FindByEmailAsync(email).Returns((User?)null);
 
         // Act
         var result = await _userService.EmailExistsAsync(email);
 
         // Assert
         Assert.False(result);
-        await _userRepository.Received(1).EmailExistsAsync(email, Arg.Any<CancellationToken>());
     }
 
     [Theory]
     [InlineData("")]
     [InlineData(" ")]
     [InlineData(null)]
-    public async Task EmailExistsAsync_WithInvalidEmail_ShouldReturnFalse(string invalidEmail)
+    public async Task AuthenticateAsync_WithInvalidEmail_ShouldReturnNull(string invalidEmail)
     {
         // Act
-        var result = await _userService.EmailExistsAsync(invalidEmail);
+        var result = await _userService.AuthenticateAsync(invalidEmail, "password");
 
         // Assert
-        Assert.False(result);
-        await _userRepository.DidNotReceive().EmailExistsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+        Assert.Null(result);
     }
 
-    [Fact]
-    public async Task GetByEmailAndPasswordAsync_ShouldPassCancellationToken()
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData(null)]
+    public async Task AuthenticateAsync_WithInvalidPassword_ShouldReturnNull(string invalidPassword)
     {
-        // Arrange
-        var email = "joao@example.com";
-        var password = "123456";
-        var cancellationToken = new CancellationToken();
-        
-        _userRepository.GetByEmailAndPasswordAsync(email, password, cancellationToken)
-            .Returns((Domain.Models.AppUser.User?)null);
-
         // Act
-        await _userService.GetByEmailAndPasswordAsync(email, password, cancellationToken);
+        var result = await _userService.AuthenticateAsync("email@example.com", invalidPassword);
 
         // Assert
-        await _userRepository.Received(1).GetByEmailAndPasswordAsync(email, password, cancellationToken);
-    }
-
-    [Fact]
-    public async Task GetByEmailAsync_ShouldPassCancellationToken()
-    {
-        // Arrange
-        var email = "joao@example.com";
-        var cancellationToken = new CancellationToken();
-        
-        _userRepository.GetByEmailAsync(email, cancellationToken)
-            .Returns((Domain.Models.AppUser.User?)null);
-
-        // Act
-        await _userService.GetByEmailAsync(email, cancellationToken);
-
-        // Assert
-        await _userRepository.Received(1).GetByEmailAsync(email, cancellationToken);
-    }
-
-    [Fact]
-    public async Task EmailExistsAsync_ShouldPassCancellationToken()
-    {
-        // Arrange
-        var email = "joao@example.com";
-        var cancellationToken = new CancellationToken();
-        
-        _userRepository.EmailExistsAsync(email, cancellationToken)
-            .Returns(false);
-
-        // Act
-        await _userService.EmailExistsAsync(email, cancellationToken);
-
-        // Assert
-        await _userRepository.Received(1).EmailExistsAsync(email, cancellationToken);
+        Assert.Null(result);
     }
 }

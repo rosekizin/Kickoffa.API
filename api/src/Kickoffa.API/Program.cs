@@ -41,6 +41,9 @@ builder.Services.AddJwtAuthentication(jwtConfiguration);
 builder.Services.AddDatabase(new PostgreDbConfiguration(configurationWrapper));
 builder.Services.AddRepositories();
 
+// Configure Identity
+builder.Services.AddIdentityConfiguration();
+
 // Register services
 builder.Services.AddApplicationServices();
 

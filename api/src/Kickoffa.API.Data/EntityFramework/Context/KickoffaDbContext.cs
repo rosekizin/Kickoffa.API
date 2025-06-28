@@ -1,21 +1,22 @@
 using Kickoffa.API.Data.EntityFramework.Mapping;
 using Kickoffa.API.Domain.Models.FreelancerCustomer;
+using Kickoffa.API.Domain.Models.AppUser;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Kickoffa.API.Domain.Models.AppUser;
 
 namespace Kickoffa.API.Data.EntityFramework.Context
 {
 	public interface IKickoffaDbContext : IDisposable
 	{
 		DbSet<Customer> Customers { get; }
-		DbSet<User> Users { get; }
+		// Users é gerenciado pelo Identity, não precisamos expor aqui
 		IDbContextTransaction BeginTransaction();
 		Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 		int SaveChanges();
 	}
 
-	public class KickoffaDbContext : DbContext, IKickoffaDbContext
+	public class KickoffaDbContext : IdentityDbContext<User, Role, long>, IKickoffaDbContext
 	{
 		private readonly ICustomerEntityFrameworkMapping _customerEntityFrameworkMapping;
 		private readonly IUserEntityFrameworkMapping _userEntityFrameworkMapping;
@@ -30,7 +31,6 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 		}
 
 		public DbSet<Customer> Customers { get; private set; }
-		public DbSet<User> Users { get; private set; }
 
 		public IDbContextTransaction BeginTransaction()
 		{

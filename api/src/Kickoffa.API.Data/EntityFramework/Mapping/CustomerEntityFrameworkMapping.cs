@@ -19,9 +19,9 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			modelBuilder.Entity<Customer>().HasKey(c => c.Id);
 			modelBuilder.Entity<Customer>().Property(c => c.Id)
 				.HasColumnName("Id")
-				.HasColumnType("uuid")
+				.HasColumnType("bigint")
 				.IsRequired()
-				.ValueGeneratedNever(); // Guid é gerado pela aplicação
+				.ValueGeneratedOnAdd(); // ID é auto gerado pelo banco
 
 			modelBuilder.Entity<Customer>().Property(c => c.FirstName)
 				.HasColumnName("FirstName")

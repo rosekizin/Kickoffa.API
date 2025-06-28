@@ -8,70 +8,39 @@ public class UserTests
 	public void Constructor_WithValidData_ShouldCreateUser()
 	{
 		// Arrange
-		var name = "João Silva";
 		var email = "joao@example.com";
-		var password = "123456";
-		var role = "freelancer";
 
 		// Act
-		var user = new User(name, email, password, role);
+		var user = new User(email);
 
 		// Assert
-		Assert.Equal(name, user.Name);
 		Assert.Equal(email, user.Email);
-		Assert.Equal(password, user.Password);
-		Assert.Equal(role, user.Role);
-		Assert.NotEqual(Guid.Empty, user.Id);
+		Assert.Equal(email, user.UserName); // IdentityUser usa UserName
+		Assert.Equal(email.ToUpperInvariant(), user.NormalizedEmail);
+		Assert.Equal(email.ToUpperInvariant(), user.NormalizedUserName);
 		Assert.True(user.CreatedDateUtc <= DateTime.UtcNow);
 		Assert.True(user.LastUpdatedDateUtc <= DateTime.UtcNow);
 	}
 
 	[Fact]
-	public void Constructor_WithDefaultRole_ShouldSetFreelancerRole()
+	public void Constructor_Default_ShouldSetDates()
 	{
-		// Arrange
-		var name = "João Silva";
-		var email = "joao@example.com";
-		var password = "123456";
-
 		// Act
-		var user = new User(name, email, password);
+		var user = new User();
 
 		// Assert
-		Assert.Equal("freelancer", user.Role);
+		Assert.True(user.CreatedDateUtc <= DateTime.UtcNow);
+		Assert.True(user.LastUpdatedDateUtc <= DateTime.UtcNow);
 	}
 
 	[Theory]
 	[InlineData("")]
 	[InlineData(" ")]
 	[InlineData(null)]
-	public void Constructor_WithInvalidEmail_ShouldThrowArgumentException(string invalidEmail)
+	public void Constructor_WithInvalidEmail_ShouldThrowArgumentNullException(string invalidEmail)
 	{
-		// Arrange
-		var name = "João Silva";
-		var password = "123456";
-
 		// Act & Assert
-		var exception = Assert.Throws<ArgumentException>(() => new User(name, invalidEmail, password));
-		Assert.Equal("Email é obrigatório (Parameter 'email')", exception.Message);
-	}
-
-	[Theory]
-	[InlineData("invalid-email")]
-	[InlineData("@example.com")]
-	[InlineData("user@")]
-	[InlineData("user.example.com")]
-	[InlineData("user@.com")]
-	[InlineData("user@example.")]
-	public void Constructor_WithInvalidEmailFormat_ShouldThrowArgumentException(string invalidEmail)
-	{
-		// Arrange
-		var name = "João Silva";
-		var password = "123456";
-
-		// Act & Assert
-		var exception = Assert.Throws<ArgumentException>(() => new User(name, invalidEmail, password));
-		Assert.Equal("Email deve ter um formato válido (Parameter 'email')", exception.Message);
+		Assert.Throws<ArgumentNullException>(() => new User(invalidEmail));
 	}
 
 	[Theory]
@@ -82,124 +51,39 @@ public class UserTests
 	[InlineData("user_name@example.com")]
 	public void Constructor_WithValidEmailFormat_ShouldCreateUser(string validEmail)
 	{
-		// Arrange
-		var name = "João Silva";
-		var password = "123456";
-
 		// Act
-		var user = new User(name, validEmail, password);
+		var user = new User(validEmail);
 
 		// Assert
 		Assert.Equal(validEmail, user.Email);
-	}
-
-	[Theory]
-	[InlineData("")]
-	[InlineData(" ")]
-	[InlineData(null)]
-	public void Constructor_WithInvalidName_ShouldThrowArgumentNullException(string invalidName)
-	{
-		// Arrange
-		var email = "joao@example.com";
-		var password = "123456";
-
-		// Act & Assert
-		Assert.Throws<ArgumentNullException>(() => new User(invalidName, email, password));
-	}
-
-	[Theory]
-	[InlineData("")]
-	[InlineData(" ")]
-	[InlineData(null)]
-	public void Constructor_WithInvalidPassword_ShouldThrowArgumentNullException(string invalidPassword)
-	{
-		// Arrange
-		var name = "João Silva";
-		var email = "joao@example.com";
-
-		// Act & Assert
-		Assert.Throws<ArgumentNullException>(() => new User(name, email, invalidPassword));
-	}
-
-	[Fact]
-	public void UpdatePassword_WithValidPassword_ShouldUpdatePassword()
-	{
-		// Arrange
-		var user = new User("João Silva", "joao@example.com", "123456");
-		var newPassword = "newPassword123";
-
-		// Act
-		user.UpdatePassword(newPassword);
-
-		// Assert
-		Assert.Equal(newPassword, user.Password);
-	}
-
-	[Theory]
-	[InlineData("")]
-	[InlineData(" ")]
-	[InlineData(null)]
-	public void UpdatePassword_WithInvalidPassword_ShouldThrowArgumentException(string invalidPassword)
-	{
-		// Arrange
-		var user = new User("João Silva", "joao@example.com", "123456");
-
-		// Act & Assert
-		var exception = Assert.Throws<ArgumentException>(() => user.UpdatePassword(invalidPassword));
-		Assert.Equal("Password é obrigatório (Parameter 'newPassword')", exception.Message);
-	}
-
-	[Fact]
-	public void UpdateName_WithValidName_ShouldUpdateName()
-	{
-		// Arrange
-		var user = new User("João Silva", "joao@example.com", "123456");
-		var newName = "João Santos";
-
-		// Act
-		user.UpdateName(newName);
-
-		// Assert
-		Assert.Equal(newName, user.Name);
-	}
-
-	[Theory]
-	[InlineData("")]
-	[InlineData(" ")]
-	[InlineData(null)]
-	public void UpdateName_WithInvalidName_ShouldThrowArgumentException(string invalidName)
-	{
-		// Arrange
-		var user = new User("João Silva", "joao@example.com", "123456");
-
-		// Act & Assert
-		var exception = Assert.Throws<ArgumentException>(() => user.UpdateName(invalidName));
-		Assert.Equal("Nome é obrigatório (Parameter 'newName')", exception.Message);
 	}
 
 	[Fact]
 	public void UpdateEmail_WithValidEmail_ShouldUpdateEmail()
 	{
 		// Arrange
-		var user = new User("João Silva", "joao@example.com", "123456");
-		var newEmail = "joao.santos@example.com";
+		var user = new User("joao@example.com");
+		var newEmail = "joao.silva@example.com";
 
 		// Act
 		user.UpdateEmail(newEmail);
 
 		// Assert
 		Assert.Equal(newEmail, user.Email);
+		Assert.Equal(newEmail, user.UserName);
+		Assert.Equal(newEmail.ToUpperInvariant(), user.NormalizedEmail);
+		Assert.Equal(newEmail.ToUpperInvariant(), user.NormalizedUserName);
+		Assert.True(user.LastUpdatedDateUtc > user.CreatedDateUtc);
 	}
 
 	[Theory]
-	[InlineData("invalid-email")]
 	[InlineData("")]
 	[InlineData(" ")]
 	[InlineData(null)]
 	public void UpdateEmail_WithInvalidEmail_ShouldThrowArgumentException(string invalidEmail)
 	{
 		// Arrange
-		var user = new User("João Silva", "joao@example.com", "123456");
+		var user = new User("joao@example.com");
 
 		// Act & Assert
 		Assert.Throws<ArgumentException>(() => user.UpdateEmail(invalidEmail));

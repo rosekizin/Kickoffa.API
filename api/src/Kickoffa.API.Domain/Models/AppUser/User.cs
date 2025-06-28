@@ -1,57 +1,37 @@
-using System.Text.RegularExpressions;
-using Kickoffa.API.Domain.Models.Base;
+using Microsoft.AspNetCore.Identity;
 
 namespace Kickoffa.API.Domain.Models.AppUser
 {
-    public class User : BaseEntity<User>
+    public class User : IdentityUser<long>
     {
-        public string Name { get; private set; }
-        public string Email { get; private set; }
-        public string Password { get; private set; }
-        public string Role { get; private set; }
+        // Propriedades adicionais além das do IdentityUser
+        public DateTime CreatedDateUtc { get; set; }
+        public DateTime LastUpdatedDateUtc { get; set; }
 
-        public User(string name, string email, string password, string role = "freelancer")
+        public User()
         {
-            ValidateEmail(email);
-            
-            Name = name ?? throw new ArgumentNullException(nameof(name));
-            Email = email;
-            Password = password ?? throw new ArgumentNullException(nameof(password));
-            Role = role ?? "freelancer";
+            CreatedDateUtc = DateTime.UtcNow;
+            LastUpdatedDateUtc = DateTime.UtcNow;
         }
 
-        private static void ValidateEmail(string email)
+        public User(string email) : this()
         {
-            if (string.IsNullOrWhiteSpace(email))
-                throw new ArgumentException("Email é obrigatório", nameof(email));
-
-            // Regex para validação de email
-            var emailRegex = new Regex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", RegexOptions.IgnoreCase);
-            
-            if (!emailRegex.IsMatch(email))
-                throw new ArgumentException("Email deve ter um formato válido", nameof(email));
-        }
-
-        public void UpdatePassword(string newPassword)
-        {
-            if (string.IsNullOrWhiteSpace(newPassword))
-                throw new ArgumentException("Password é obrigatório", nameof(newPassword));
-                
-            Password = newPassword;
-        }
-
-        public void UpdateName(string newName)
-        {
-            if (string.IsNullOrWhiteSpace(newName))
-                throw new ArgumentException("Nome é obrigatório", nameof(newName));
-                
-            Name = newName;
+            Email = email ?? throw new ArgumentNullException(nameof(email));
+            UserName = email; // IdentityUser usa UserName como identificador único
+            NormalizedEmail = email.ToUpperInvariant();
+            NormalizedUserName = email.ToUpperInvariant();
         }
 
         public void UpdateEmail(string newEmail)
         {
-            ValidateEmail(newEmail);
+            if (string.IsNullOrWhiteSpace(newEmail))
+                throw new ArgumentException("Email é obrigatório", nameof(newEmail));
+
             Email = newEmail;
+            UserName = newEmail; // Manter UserName sincronizado
+            NormalizedEmail = newEmail.ToUpperInvariant();
+            NormalizedUserName = newEmail.ToUpperInvariant();
+            LastUpdatedDateUtc = DateTime.UtcNow;
         }
     }
 }
