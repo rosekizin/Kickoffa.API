@@ -47,9 +47,32 @@ public sealed class AuthController : ControllerBase
             var accessToken = _jwtTokenService.GenerateToken(userId, request.Email);
             var refreshToken = _jwtTokenService.GenerateRefreshToken();
 
+            // Configurar cookies HttpOnly seguros
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true, // Não acessível via JavaScript - proteção XSS
+                Secure = Request.IsHttps, // Apenas HTTPS em produção
+                SameSite = SameSiteMode.Strict, // Proteção CSRF
+                Expires = DateTime.UtcNow.AddHours(1), // Expiração do token
+                Path = "/" // Disponível em toda aplicação
+            };
+
+            var refreshCookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(7), // Refresh token expira em 7 dias
+                Path = "/"
+            };
+
+            // Definir cookies seguros
+            Response.Cookies.Append("access_token", accessToken, cookieOptions);
+            Response.Cookies.Append("refresh_token", refreshToken, refreshCookieOptions);
+
             var response = new LoginResponse
             {
-                AccessToken = accessToken,
+                AccessToken = accessToken, // Ainda retornamos para compatibilidade
                 RefreshToken = refreshToken,
                 ExpiresIn = 3600, // 1 hora em segundos
                 UserId = userId,
@@ -111,12 +134,25 @@ public sealed class AuthController : ControllerBase
         try
         {
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            
+
+            // Limpar cookies HttpOnly
+            var expiredCookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(-1), // Expirar cookie
+                Path = "/"
+            };
+
+            Response.Cookies.Append("access_token", "", expiredCookieOptions);
+            Response.Cookies.Append("refresh_token", "", expiredCookieOptions);
+
             // TODO: Implementar blacklist de tokens ou invalidação no banco
-            // Por enquanto, apenas log do logout
-            
+            // Por enquanto, apenas limpeza dos cookies
+
             _logger.LogInformation("Logout realizado para usuário: {UserId}", userId);
-            
+
             return Ok(new { message = "Logout realizado com sucesso" });
         }
         catch (Exception ex)

@@ -22,6 +22,18 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add CORS - Configurado para HttpOnly cookies
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000") // Frontend URL
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); // Essencial para HttpOnly cookies
+    });
+});
+
 // Add Authentication & Authorization
 builder.Services.AddJwtAuthentication(jwtConfiguration);
 
@@ -61,6 +73,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Configurar CORS
+app.UseCors("AllowFrontend");
 
 // Configurar pipeline de autenticação
 app.UseAuthentication();

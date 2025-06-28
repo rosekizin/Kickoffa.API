@@ -31,6 +31,30 @@ export interface CreateCustomerRequest {
   address?: string
 }
 
+// Authentication types
+export interface LoginRequest {
+  email: string
+  password: string
+  rememberMe?: boolean
+}
+
+export interface LoginResponse {
+  accessToken: string
+  tokenType: string
+  expiresIn: number
+  refreshToken: string
+  userId: string
+  email: string
+  issuedAt: string | Date
+  expiresAt: string | Date
+}
+
+export interface AuthUser {
+  id: string
+  email: string
+  isAuthenticated: boolean
+}
+
 export interface Checklist {
   id: string
   title: string

@@ -63,6 +63,24 @@ public static class AuthenticationServiceCollectionExtensions
             // Eventos para logging e debugging
             options.Events = new JwtBearerEvents
             {
+                OnMessageReceived = context =>
+                {
+                    // Primeiro, tentar obter token do header Authorization
+                    var token = context.Request.Headers.Authorization.FirstOrDefault()?.Split(" ").Last();
+
+                    // Se não encontrar no header, tentar obter do cookie HttpOnly
+                    if (string.IsNullOrEmpty(token))
+                    {
+                        token = context.Request.Cookies["access_token"];
+                    }
+
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        context.Token = token;
+                    }
+
+                    return Task.CompletedTask;
+                },
                 OnAuthenticationFailed = context =>
                 {
                     // Log do erro de autenticação

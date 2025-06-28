@@ -156,6 +156,7 @@ export const useUploadFile = () => {
 
 // Customers - usando CustomerService para lógica de negócio
 import { CustomerService } from '@/services/customer.service'
+import { AuthService } from '@/services/auth.service'
 
 export const useCustomers = () => {
   return useQuery({
@@ -203,5 +204,34 @@ export const useDeleteCustomer = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
     }
+  })
+}
+
+// Authentication
+export const useLogin = () => {
+  return useMutation({
+    mutationFn: (loginData: LoginRequest) => AuthService.login(loginData)
+  })
+}
+
+export const useLogout = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => AuthService.logout(),
+    onSuccess: () => {
+      // Limpar todas as queries do cache após logout
+      queryClient.clear()
+    }
+  })
+}
+
+export const useValidateToken = () => {
+  return useQuery({
+    queryKey: ['auth', 'validate'],
+    queryFn: () => AuthService.validateToken(),
+    enabled: AuthService.isAuthenticated(), // Baseado em dados do usuário
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    retry: false
   })
 }

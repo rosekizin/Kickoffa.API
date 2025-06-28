@@ -1,14 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { 
-  LayoutDashboard, 
-  FileText, 
-  Users, 
-  Settings, 
+import { AuthGuard } from '@/components/auth/auth-guard'
+import { AuthService } from '@/services/auth.service'
+import { useLogout } from '@/hooks/use-api'
+import {
+  LayoutDashboard,
+  FileText,
+  Users,
+  Settings,
   Plus,
   Menu,
   X,
@@ -17,7 +20,8 @@ import {
   Search,
   User,
   LogOut,
-  HelpCircle
+  HelpCircle,
+  ChevronDown
 } from 'lucide-react'
 
 interface DashboardLayoutProps {
@@ -27,7 +31,36 @@ interface DashboardLayoutProps {
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+  const logoutMutation = useLogout()
+  const userMenuRef = useRef<HTMLDivElement>(null)
+
+  // Fechar dropdown quando clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  const handleLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync()
+      router.push('/auth/login')
+    } catch (error) {
+      console.error('Erro durante logout:', error)
+      // Mesmo com erro, redirecionar para login
+      router.push('/auth/login')
+    }
+  }
 
   const navigation = [
     {
@@ -56,15 +89,16 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     }
   ]
 
-  const userNavigation = [
+  const userNavigation: Array<{ name: string; href?: string; onClick?: () => void }> = [
     { name: 'Seu Perfil', href: '/settings/profile' },
     { name: 'Configurações', href: '/settings' },
     { name: 'Ajuda', href: '/help' },
-    { name: 'Sair', href: '/auth/logout' }
+    { name: 'Sair', onClick: handleLogout }
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <AuthGuard>
+      <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar */}
       <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
@@ -245,15 +279,53 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               </Button>
 
               {/* User menu */}
-              <div className="relative">
-                <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+              <div className="relative" ref={userMenuRef}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center space-x-2"
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                >
                   <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
                     <User className="h-4 w-4 text-gray-600" />
                   </div>
                   <span className="hidden sm:block text-sm font-medium text-gray-700">
                     João Silva
                   </span>
+                  <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                 </Button>
+
+                {/* Dropdown menu */}
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                    <div className="py-1">
+                      {userNavigation.map((item) => (
+                        <div key={item.name}>
+                          {item.href ? (
+                            <Link
+                              href={item.href}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              onClick={() => setUserMenuOpen(false)}
+                            >
+                              {item.name}
+                            </Link>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setUserMenuOpen(false)
+                                if (item.onClick) item.onClick()
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            >
+                              {item.name === 'Sair' && <LogOut className="inline h-4 w-4 mr-2" />}
+                              {item.name}
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -265,5 +337,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </main>
       </div>
     </div>
+    </AuthGuard>
   )
 }

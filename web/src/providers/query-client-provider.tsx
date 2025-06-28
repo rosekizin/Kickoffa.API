@@ -2,7 +2,8 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { AuthService } from '@/services/auth.service'
 
 interface QueryProviderProps {
   children: React.ReactNode
@@ -41,6 +42,11 @@ export function QueryProvider({ children }: QueryProviderProps) {
         },
       })
   )
+
+  // Configurar interceptors de autenticação
+  useEffect(() => {
+    AuthService.setupInterceptors()
+  }, [])
 
   return (
     <QueryClientProvider client={queryClient}>
