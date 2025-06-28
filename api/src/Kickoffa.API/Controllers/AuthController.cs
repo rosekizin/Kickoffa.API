@@ -1,5 +1,6 @@
 using Kickoffa.API.Middlewares;
 using Kickoffa.API.Contracts.Authentication;
+using Kickoffa.API.Application.Services.AppUser;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,11 +15,13 @@ namespace Kickoffa.API.Controllers;
 public sealed class AuthController : ControllerBase
 {
     private readonly IJwtTokenService _jwtTokenService;
+    private readonly IUserService _userService;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IJwtTokenService jwtTokenService, ILogger<AuthController> logger)
+    public AuthController(IJwtTokenService jwtTokenService, IUserService userService, ILogger<AuthController> logger)
     {
         _jwtTokenService = jwtTokenService;
+        _userService = userService;
         _logger = logger;
     }
 
@@ -34,17 +37,17 @@ public sealed class AuthController : ControllerBase
     {
         try
         {
-            // TODO: Implementar validação real de usuário/senha
-            // Por enquanto, vamos usar credenciais fixas para demonstração
-            if (request.Email != "admin@kickoffa.com" || request.Password != "123456")
+            // Validação real de usuário/senha usando UserService
+            var user = await _userService.GetByEmailAndPasswordAsync(request.Email, request.Password, cancellationToken);
+
+            if (user == null)
             {
                 _logger.LogWarning("Tentativa de login inválida para email: {Email}", request.Email);
                 return Unauthorized(new { message = "Email ou senha inválidos" });
             }
 
-            // Gerar token JWT
-            var userId = Guid.NewGuid().ToString(); // TODO: Buscar ID real do usuário
-            var accessToken = _jwtTokenService.GenerateToken(userId, request.Email);
+            // Gerar token JWT usando o ID real do usuário
+            var accessToken = _jwtTokenService.GenerateToken(user.Id.ToString(), user.Email);
             var refreshToken = _jwtTokenService.GenerateRefreshToken();
 
             // Configurar cookies HttpOnly seguros
@@ -75,12 +78,12 @@ public sealed class AuthController : ControllerBase
                 AccessToken = accessToken, // Ainda retornamos para compatibilidade
                 RefreshToken = refreshToken,
                 ExpiresIn = 3600, // 1 hora em segundos
-                UserId = userId,
-                Email = request.Email,
+                UserId = user.Id.ToString(),
+                Email = user.Email,
                 ExpiresAt = DateTime.UtcNow.AddHours(1)
             };
 
-            _logger.LogInformation("Login realizado com sucesso para usuário: {Email}", request.Email);
+            _logger.LogInformation("Login realizado com sucesso para usuário: {Email}", user.Email);
             return Ok(response);
         }
         catch (Exception ex)

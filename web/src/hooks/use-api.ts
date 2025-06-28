@@ -10,7 +10,8 @@ import {
   UpdateItemStatusRequest,
   PublicChecklistView,
   Customer,
-  CreateCustomerRequest
+  CreateCustomerRequest,
+  LoginRequest
 } from '@/types'
 
 // Checklists (para freelancers autenticados)
@@ -157,6 +158,7 @@ export const useUploadFile = () => {
 // Customers - usando CustomerService para lógica de negócio
 import { CustomerService } from '@/services/customer.service'
 import { AuthService } from '@/services/auth.service'
+import { UserService, UpdateUserProfileRequest } from '@/services/user.service'
 
 export const useCustomers = () => {
   return useQuery({
@@ -211,6 +213,31 @@ export const useDeleteCustomer = () => {
 export const useLogin = () => {
   return useMutation({
     mutationFn: (loginData: LoginRequest) => AuthService.login(loginData)
+  })
+}
+
+// User Profile
+export const useUserProfile = () => {
+  return useQuery({
+    queryKey: ['user-profile'],
+    queryFn: () => UserService.getCurrentUserProfile()
+  })
+}
+
+export const useUpdateUserProfile = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: UpdateUserProfileRequest) => UserService.updateProfile(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] })
+    }
+  })
+}
+
+export const useCheckEmailAvailability = () => {
+  return useMutation({
+    mutationFn: (email: string) => UserService.checkEmailAvailability(email)
   })
 }
 

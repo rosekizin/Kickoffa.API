@@ -19,6 +19,7 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.ServiceCollection
 
             // Registrar repositórios específicos
             services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
 
             // TODO: Adicionar outros repositórios conforme forem criados
             // services.AddScoped<IChecklistRepository, ChecklistRepository>();

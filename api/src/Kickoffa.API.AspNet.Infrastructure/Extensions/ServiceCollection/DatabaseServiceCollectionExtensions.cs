@@ -150,6 +150,7 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.ServiceCollection
 
 		private static void AddEntityFrameworkMappings(IServiceCollection services)
 		{
+			services.AddSingleton<IUserEntityFrameworkMapping, UserEntityFrameworkMapping>();
 			services.AddSingleton<ICustomerEntityFrameworkMapping, CustomerEntityFrameworkMapping>();
 		}
 	}

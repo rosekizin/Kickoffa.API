@@ -1,5 +1,6 @@
 using Kickoffa.API.Application.Factories;
 using Kickoffa.API.Application.Services;
+using Kickoffa.API.Application.Services.AppUser;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kickoffa.API.AspNet.Infrastructure.Extensions.ServiceCollection;
@@ -21,6 +22,7 @@ public static class ApplicationServiceCollectionExtensions
 
         // Registrar services
         services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<IUserService, UserService>();
 
         return services;
     }
@@ -44,6 +46,7 @@ public static class ApplicationServiceCollectionExtensions
     public static IServiceCollection AddApplicationBusinessServices(this IServiceCollection services)
     {
         services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<IUserService, UserService>();
         return services;
     }
 }
