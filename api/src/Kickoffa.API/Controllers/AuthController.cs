@@ -1,86 +1,85 @@
-using Kickoffa.API.Middlewares;
 using Kickoffa.API.Contracts.Authentication;
 using Kickoffa.API.Application.Services.AppUser;
+using Kickoffa.API.Application.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Kickoffa.API.Controllers;
 
 /// <summary>
-/// Controller para operações de autenticação
+/// Controller para operações de autenticação usando ASP.NET Core Identity
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
 public sealed class AuthController : ControllerBase
 {
-    private readonly IJwtTokenService _jwtTokenService;
     private readonly IUserService _userService;
+    private readonly ISignInManagerWrapper _signInManagerWrapper;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IJwtTokenService jwtTokenService, IUserService userService, ILogger<AuthController> logger)
+    public AuthController(IUserService userService, ISignInManagerWrapper signInManagerWrapper, ILogger<AuthController> logger)
     {
-        _jwtTokenService = jwtTokenService;
         _userService = userService;
+        _signInManagerWrapper = signInManagerWrapper;
         _logger = logger;
     }
 
     /// <summary>
-    /// Realiza login do usuário
+    /// Realiza login do usuário usando ASP.NET Core Identity
     /// </summary>
     /// <param name="request">Dados de login</param>
     /// <param name="cancellationToken">Token de cancelamento</param>
-    /// <returns>Token de acesso e informações do usuário</returns>
+    /// <returns>Informações do usuário autenticado</returns>
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<ActionResult<LoginResponse>> LoginAsync([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
         try
         {
-            // Validação real de usuário/senha usando UserService
-            var user = await _userService.AuthenticateAsync(request.Email, request.Password, cancellationToken);
+			// SenhaSuperSegura123!
 
+			// Buscar usuário por email
+			var user = await _userService.GetByEmailAsync(request.Email, cancellationToken);
             if (user == null)
             {
-                _logger.LogWarning("Tentativa de login inválida para email: {Email}", request.Email);
+                _logger.LogWarning("Tentativa de login com email inexistente: {Email}", request.Email);
                 return Unauthorized(new { message = "Email ou senha inválidos" });
             }
 
-            // Gerar token JWT usando o ID real do usuário
-            var accessToken = _jwtTokenService.GenerateToken(user.Id.ToString(), user.Email);
-            var refreshToken = _jwtTokenService.GenerateRefreshToken();
+            // Fazer login usando SignInManager do Identity
+            var rememberMe = request.RememberMe;
+            var result = await _signInManagerWrapper.PasswordSignInAsync(
+                user,
+                request.Password,
+                rememberMe,
+                lockoutOnFailure: true);
 
-            // Configurar cookies HttpOnly seguros
-            var cookieOptions = new CookieOptions
+            if (!result.Succeeded)
             {
-                HttpOnly = true, // Não acessível via JavaScript - proteção XSS
-                Secure = Request.IsHttps, // Apenas HTTPS em produção
-                SameSite = SameSiteMode.Strict, // Proteção CSRF
-                Expires = DateTime.UtcNow.AddHours(1), // Expiração do token
-                Path = "/" // Disponível em toda aplicação
-            };
+                _logger.LogWarning("Tentativa de login inválida para email: {Email}. Motivo: {Reason}",
+                    request.Email,
+                    result.IsLockedOut ? "Conta bloqueada" :
+                    result.IsNotAllowed ? "Login não permitido" : "Credenciais inválidas");
 
-            var refreshCookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = Request.IsHttps,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddDays(7), // Refresh token expira em 7 dias
-                Path = "/"
-            };
+                return Unauthorized(new { message = "Email ou senha inválidos" });
+            }
 
-            // Definir cookies seguros
-            Response.Cookies.Append("access_token", accessToken, cookieOptions);
-            Response.Cookies.Append("refresh_token", refreshToken, refreshCookieOptions);
-
+            // O ASP.NET Core Identity já gerencia cookies de autenticação automaticamente
             var response = new LoginResponse
             {
-                AccessToken = accessToken, // Ainda retornamos para compatibilidade
-                RefreshToken = refreshToken,
-                ExpiresIn = 3600, // 1 hora em segundos
                 UserId = user.Id.ToString(),
-                Email = user.Email,
-                ExpiresAt = DateTime.UtcNow.AddHours(1)
+                Email = user.Email ?? string.Empty,
+                Success = true,
+                Message = "Login realizado com sucesso",
+                LoginAt = DateTime.UtcNow,
+                Session = new SessionInfo
+                {
+                    ExpiresInSeconds = rememberMe ? 604800 : 3600, // 7 dias ou 1 hora
+                    ExpiresAt = DateTime.UtcNow.Add(rememberMe ? TimeSpan.FromDays(7) : TimeSpan.FromHours(1)),
+                    IsPersistent = rememberMe
+                }
             };
 
             _logger.LogInformation("Login realizado com sucesso para usuário: {Email}", user.Email);
@@ -94,65 +93,98 @@ public sealed class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Valida se o token atual é válido
+    /// Valida se o usuário está autenticado e retorna informações da sessão
     /// </summary>
-    /// <returns>Informações do usuário se token válido</returns>
+    /// <returns>Informações do usuário e sessão se autenticado</returns>
     [HttpGet("validate")]
     [Authorize]
-    public ActionResult ValidateToken()
+    public ActionResult ValidateSession()
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
 
-            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(email))
+            if (string.IsNullOrEmpty(userId))
             {
-                return Unauthorized(new { message = "Token inválido" });
+                return Unauthorized(new { message = "Usuário não autenticado" });
             }
 
             return Ok(new
             {
                 userId,
                 email,
-                isValid = true,
-                validatedAt = DateTime.UtcNow
+                isAuthenticated = true,
+                validatedAt = DateTime.UtcNow,
+                sessionInfo = new
+                {
+                    authenticationMethod = "Cookie",
+                    issuedAt = User.FindFirst("iat")?.Value,
+                    expiresAt = User.FindFirst("exp")?.Value
+                }
             });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro durante validação do token");
+            _logger.LogError(ex, "Erro durante validação de autenticação");
             return StatusCode(500, new { message = "Erro interno do servidor" });
         }
     }
 
     /// <summary>
-    /// Realiza logout do usuário (invalidação do token)
+    /// Obtém informações do usuário atual
+    /// </summary>
+    /// <returns>Dados do usuário autenticado</returns>
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<ActionResult> GetCurrentUser(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId) || !long.TryParse(userId, out var userIdLong))
+            {
+                return Unauthorized(new { message = "Usuário não autenticado" });
+            }
+
+            var user = await _userService.GetByIdAsync(userIdLong, cancellationToken);
+            if (user == null)
+            {
+                return NotFound(new { message = "Usuário não encontrado" });
+            }
+
+            return Ok(new
+            {
+                id = user.Id,
+                email = user.Email,
+                userName = user.UserName,
+                emailConfirmed = user.EmailConfirmed,
+                createdAt = user.CreatedDateUtc,
+                lastUpdated = user.LastUpdatedDateUtc
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao obter dados do usuário atual");
+            return StatusCode(500, new { message = "Erro interno do servidor" });
+        }
+    }
+
+    /// <summary>
+    /// Realiza logout do usuário usando ASP.NET Core Identity
     /// </summary>
     /// <returns>Confirmação de logout</returns>
     [HttpPost("logout")]
     [Authorize]
-    public ActionResult Logout()
+    public async Task<ActionResult> LogoutAsync()
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            // Limpar cookies HttpOnly
-            var expiredCookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = Request.IsHttps,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddDays(-1), // Expirar cookie
-                Path = "/"
-            };
-
-            Response.Cookies.Append("access_token", "", expiredCookieOptions);
-            Response.Cookies.Append("refresh_token", "", expiredCookieOptions);
-
-            // TODO: Implementar blacklist de tokens ou invalidação no banco
-            // Por enquanto, apenas limpeza dos cookies
+            // Fazer logout usando SignInManager do Identity
+            await _signInManagerWrapper.SignOutAsync();
 
             _logger.LogInformation("Logout realizado para usuário: {UserId}", userId);
 

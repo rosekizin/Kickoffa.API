@@ -1,30 +1,11 @@
 namespace Kickoffa.API.Contracts.Authentication;
 
 /// <summary>
-/// Response do login com informações do token
+/// Response do login usando ASP.NET Core Identity
+/// Autenticação gerenciada por cookies HttpOnly
 /// </summary>
 public sealed record LoginResponse
 {
-    /// <summary>
-    /// Token de acesso JWT
-    /// </summary>
-    public required string AccessToken { get; init; }
-
-    /// <summary>
-    /// Tipo do token (sempre "Bearer")
-    /// </summary>
-    public string TokenType { get; init; } = "Bearer";
-
-    /// <summary>
-    /// Tempo de expiração do token em segundos
-    /// </summary>
-    public required int ExpiresIn { get; init; }
-
-    /// <summary>
-    /// Refresh token para renovação
-    /// </summary>
-    public required string RefreshToken { get; init; }
-
     /// <summary>
     /// ID do usuário autenticado
     /// </summary>
@@ -36,12 +17,43 @@ public sealed record LoginResponse
     public required string Email { get; init; }
 
     /// <summary>
-    /// Data e hora de emissão do token
+    /// Indica se o login foi bem-sucedido
     /// </summary>
-    public DateTime IssuedAt { get; init; } = DateTime.UtcNow;
+    public bool Success { get; init; } = true;
 
     /// <summary>
-    /// Data e hora de expiração do token
+    /// Mensagem de sucesso
     /// </summary>
-    public DateTime ExpiresAt { get; init; }
+    public string Message { get; init; } = "Login realizado com sucesso";
+
+    /// <summary>
+    /// Data e hora do login
+    /// </summary>
+    public DateTime LoginAt { get; init; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// Informações sobre a sessão (opcional)
+    /// </summary>
+    public SessionInfo? Session { get; init; }
+}
+
+/// <summary>
+/// Informações sobre a sessão do usuário
+/// </summary>
+public sealed record SessionInfo
+{
+    /// <summary>
+    /// Tempo de expiração da sessão em segundos
+    /// </summary>
+    public int ExpiresInSeconds { get; init; } = 3600; // 1 hora
+
+    /// <summary>
+    /// Data e hora de expiração da sessão
+    /// </summary>
+    public DateTime ExpiresAt { get; init; } = DateTime.UtcNow.AddHours(1);
+
+    /// <summary>
+    /// Indica se a sessão é persistente (Remember Me)
+    /// </summary>
+    public bool IsPersistent { get; init; }
 }

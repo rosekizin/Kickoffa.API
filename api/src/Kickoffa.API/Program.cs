@@ -1,16 +1,13 @@
-using Kickoffa.API.AspNet.Infrastructure.Configuration.Authentication;
 using Kickoffa.API.AspNet.Infrastructure.Configuration.Data;
 using Kickoffa.API.AspNet.Infrastructure.Extensions.ServiceCollection;
 using Kickoffa.API.AspNet.Infrastructure.Wrappers;
-using Kickoffa.API.Middlewares;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var configurationWrapper = new ConfigurationWrapper(builder.Configuration);
 
-// Configurar JWT
-var jwtConfiguration = new JwtConfiguration(configurationWrapper);
+// JWT removido - ASP.NET Core Identity gerencia autenticação
 
 builder.Services.AddControllers()
 	.AddJsonOptions(options =>
@@ -34,8 +31,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add Authentication & Authorization
-builder.Services.AddJwtAuthentication(jwtConfiguration);
+// Authentication & Authorization gerenciados pelo Identity
 
 // Register Database
 builder.Services.AddDatabase(new PostgreDbConfiguration(configurationWrapper));
@@ -47,14 +43,7 @@ builder.Services.AddIdentityConfiguration();
 // Register services
 builder.Services.AddApplicationServices();
 
-// Register JWT service
-builder.Services.AddScoped<IJwtTokenService>(provider =>
-    new JwtTokenService(
-        jwtConfiguration.SecretKey,
-        jwtConfiguration.Issuer,
-        jwtConfiguration.Audience,
-        jwtConfiguration.ExpirationMinutes
-    ));
+// JWT service removido - ASP.NET Core Identity gerencia autenticação automaticamente
 
 // Handlers
 

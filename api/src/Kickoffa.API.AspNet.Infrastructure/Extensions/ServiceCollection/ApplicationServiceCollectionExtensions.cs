@@ -5,6 +5,7 @@ using Kickoffa.API.Application.Services.Email;
 using Kickoffa.API.Application.Wrappers;
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Domain.Models.AppUser;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -70,6 +71,20 @@ public static class ApplicationServiceCollectionExtensions
         })
         .AddEntityFrameworkStores<KickoffaDbContext>()
         .AddDefaultTokenProviders();
+
+        // Configurar autenticação com cookies
+        services.ConfigureApplicationCookie(options =>
+        {
+            options.LoginPath = "/api/auth/login";
+            options.LogoutPath = "/api/auth/logout";
+            options.AccessDeniedPath = "/api/auth/access-denied";
+            options.ExpireTimeSpan = TimeSpan.FromHours(1);
+            options.SlidingExpiration = true;
+            options.Cookie.HttpOnly = true;
+            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+            options.Cookie.SameSite = SameSiteMode.Strict;
+            options.Cookie.Name = "KickoffaAuth";
+        });
 
         return services;
     }
