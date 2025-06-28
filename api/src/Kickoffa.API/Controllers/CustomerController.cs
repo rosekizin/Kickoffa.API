@@ -1,4 +1,4 @@
-using Kickoffa.API.Application.Services;
+using Kickoffa.API.Application.Interfaces;
 using Kickoffa.API.Contracts.Customer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

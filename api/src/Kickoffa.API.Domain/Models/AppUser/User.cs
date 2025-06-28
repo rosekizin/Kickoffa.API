@@ -16,7 +16,7 @@ namespace Kickoffa.API.Domain.Models.AppUser
 
         public User(string email) : this()
         {
-            Email = email ?? throw new ArgumentNullException(nameof(email));
+            Email = !string.IsNullOrWhiteSpace(email) ? email : throw new ArgumentNullException(nameof(email));
             UserName = email; // IdentityUser usa UserName como identificador único
             NormalizedEmail = email.ToUpperInvariant();
             NormalizedUserName = email.ToUpperInvariant();

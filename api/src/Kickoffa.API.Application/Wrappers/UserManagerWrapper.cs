@@ -1,3 +1,4 @@
+using Kickoffa.API.Application.Interfaces;
 using Kickoffa.API.Domain.Models.AppUser;
 using Microsoft.AspNetCore.Identity;
 

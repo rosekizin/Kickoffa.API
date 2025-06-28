@@ -1,15 +1,12 @@
-using Kickoffa.API.Application.Services.AppUser;
-using Kickoffa.API.Application.Wrappers;
+using Kickoffa.API.Application.Interfaces;
 using Kickoffa.API.Contracts.Authentication;
-using Kickoffa.API.Controllers;
 using Kickoffa.API.Domain.Models.AppUser;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
-namespace Kickoffa.API.Application.UnitTests.Controllers;
+namespace Kickoffa.API.Controllers.UnitTests.Controllers;
 
 public class AuthControllerTests
 {
@@ -45,7 +42,7 @@ public class AuthControllerTests
 
         var user = new User("test@example.com");
         _userService.GetByEmailAsync(request.Email, Arg.Any<CancellationToken>()).Returns(user);
-        _signInManagerWrapper.PasswordSignInAsync(user, request.Password, false, true).Returns(SignInResult.Success);
+        _signInManagerWrapper.PasswordSignInAsync(user, request.Password, false, true).Returns(Microsoft.AspNetCore.Identity.SignInResult.Success);
 
         // Act
         var result = await _authController.LoginAsync(request, CancellationToken.None);
@@ -93,7 +90,7 @@ public class AuthControllerTests
 
         var user = new User("test@example.com");
         _userService.GetByEmailAsync(request.Email, Arg.Any<CancellationToken>()).Returns(user);
-        _signInManagerWrapper.PasswordSignInAsync(user, request.Password, false, true).Returns(SignInResult.Failed);
+        _signInManagerWrapper.PasswordSignInAsync(user, request.Password, false, true).Returns(Microsoft.AspNetCore.Identity.SignInResult.Failed);
 
         // Act
         var result = await _authController.LoginAsync(request, CancellationToken.None);
@@ -119,7 +116,7 @@ public class AuthControllerTests
     }
 
     [Fact]
-    public void ValidateToken_WithValidUser_ShouldReturnOk()
+    public void ValidateSession_WithValidUser_ShouldReturnOk()
     {
         // Arrange
         var claims = new[]
@@ -134,7 +131,7 @@ public class AuthControllerTests
         _authController.ControllerContext.HttpContext.User = principal;
 
         // Act
-        var result = _authController.ValidateToken();
+        var result = _authController.ValidateSession();
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
@@ -142,7 +139,7 @@ public class AuthControllerTests
     }
 
     [Fact]
-    public void ValidateToken_WithoutUserId_ShouldReturnUnauthorized()
+    public void ValidateSession_WithoutUserId_ShouldReturnUnauthorized()
     {
         // Arrange
         var claims = new[]
@@ -157,10 +154,36 @@ public class AuthControllerTests
         _authController.ControllerContext.HttpContext.User = principal;
 
         // Act
-        var result = _authController.ValidateToken();
+        var result = _authController.ValidateSession();
 
         // Assert
         var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
         Assert.NotNull(unauthorizedResult.Value);
+    }
+
+    [Fact]
+    public async Task GetCurrentUser_WithValidUser_ShouldReturnUserData()
+    {
+        // Arrange
+        var userId = 123L;
+        var user = new User("test@example.com");
+        
+        var claims = new[]
+        {
+            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, userId.ToString())
+        };
+        
+        var identity = new System.Security.Claims.ClaimsIdentity(claims, "test");
+        var principal = new System.Security.Claims.ClaimsPrincipal(identity);
+        
+        _authController.ControllerContext.HttpContext.User = principal;
+        _userService.GetByIdAsync(userId, Arg.Any<CancellationToken>()).Returns(user);
+
+        // Act
+        var result = await _authController.GetCurrentUser(CancellationToken.None);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.NotNull(okResult.Value);
     }
 }

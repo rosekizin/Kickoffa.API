@@ -1,4 +1,5 @@
 using Kickoffa.API.Application.Factories;
+using Kickoffa.API.Application.Interfaces;
 using Kickoffa.API.Application.Services;
 using Kickoffa.API.Application.Services.AppUser;
 using Kickoffa.API.Application.Services.Email;
@@ -9,7 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Kickoffa.API.AspNet.Infrastructure.Extensions.ServiceCollection;
+namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection;
 
 /// <summary>
 /// Extensões para configuração dos serviços da Application

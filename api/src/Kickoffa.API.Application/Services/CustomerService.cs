@@ -1,4 +1,5 @@
 using Kickoffa.API.Application.Factories;
+using Kickoffa.API.Application.Interfaces;
 using Kickoffa.API.Contracts.Customer;
 using Kickoffa.API.Domain.Repositories;
 

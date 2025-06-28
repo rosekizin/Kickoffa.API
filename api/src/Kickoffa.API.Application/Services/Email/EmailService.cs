@@ -1,3 +1,4 @@
+using Kickoffa.API.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace Kickoffa.API.Application.Services.Email;

@@ -4,7 +4,7 @@ using Kickoffa.API.Domain.Repositories;
 using Kickoffa.API.Data.Repositories;
 using Kickoffa.API.Data.EntityFramework.Mapping;
 
-namespace Kickoffa.API.AspNet.Infrastructure.Extensions.ServiceCollection
+namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 {
     public static class RepositoryServiceCollectionExtensions
     {

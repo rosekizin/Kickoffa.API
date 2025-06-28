@@ -1,5 +1,5 @@
 using Kickoffa.API.AspNet.Infrastructure.Configuration.Data;
-using Kickoffa.API.AspNet.Infrastructure.Extensions.ServiceCollection;
+using Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection;
 using Kickoffa.API.AspNet.Infrastructure.Wrappers;
 using System.Text.Json.Serialization;
 

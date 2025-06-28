@@ -1,6 +1,5 @@
 using Kickoffa.API.Contracts.Authentication;
-using Kickoffa.API.Application.Services.AppUser;
-using Kickoffa.API.Application.Wrappers;
+using Kickoffa.API.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;

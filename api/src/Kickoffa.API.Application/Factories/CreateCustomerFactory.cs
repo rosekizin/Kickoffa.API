@@ -1,4 +1,5 @@
 using Kickoffa.API.Contracts.Customer;
+using Kickoffa.API.Application.Interfaces;
 using Kickoffa.API.Domain.Models.FreelancerCustomer;
 
 namespace Kickoffa.API.Application.Factories;

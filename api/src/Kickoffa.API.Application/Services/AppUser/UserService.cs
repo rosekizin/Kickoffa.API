@@ -1,5 +1,4 @@
-using Kickoffa.API.Application.Services.Email;
-using Kickoffa.API.Application.Wrappers;
+using Kickoffa.API.Application.Interfaces;
 using Kickoffa.API.Domain.Models.AppUser;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;

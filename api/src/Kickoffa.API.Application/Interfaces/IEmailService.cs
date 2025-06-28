@@ -1,22 +1,22 @@
-namespace Kickoffa.API.Application.Services.Email;
+namespace Kickoffa.API.Application.Interfaces;
 
 /// <summary>
-/// Interface para serviços de envio de email
+/// Interface para serviços de email
 /// </summary>
 public interface IEmailService
 {
     /// <summary>
-    /// Envia email de confirmação de alteração de email
+    /// Envia email de confirmação para alteração de email
     /// </summary>
     /// <param name="email">Email de destino</param>
-    /// <param name="userName">Nome do usuário (pode ser email atual)</param>
+    /// <param name="userName">Nome do usuário</param>
     /// <param name="confirmationToken">Token de confirmação</param>
     /// <param name="cancellationToken">Token de cancelamento</param>
     /// <returns>True se enviado com sucesso</returns>
     Task<bool> SendEmailChangeConfirmationAsync(string email, string userName, string confirmationToken, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Envia email de notificação de alteração de email concluída
+    /// Envia notificação de alteração de email para o email antigo
     /// </summary>
     /// <param name="oldEmail">Email antigo</param>
     /// <param name="newEmail">Novo email</param>

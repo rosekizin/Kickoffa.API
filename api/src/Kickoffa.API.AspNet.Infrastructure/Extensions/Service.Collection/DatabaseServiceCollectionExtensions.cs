@@ -4,7 +4,7 @@ using Kickoffa.API.Data.EntityFramework.Mapping;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Kickoffa.API.AspNet.Infrastructure.Extensions.ServiceCollection
+namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 {
 	public static class DatabaseServiceCollectionExtensions
 	{

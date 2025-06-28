@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Mapping\**" />
+    <Content Remove="Mapping\**" />
+    <EmbeddedResource Remove="Mapping\**" />
+    <None Remove="Mapping\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6">
@@ -22,10 +29,6 @@
     <ProjectReference Include="..\Kickoffa.API.Application\Kickoffa.API.Application.csproj" />
     <ProjectReference Include="..\Kickoffa.API.AspNet.Infrastructure\Kickoffa.API.AspNet.Infrastructure.csproj" />
     <ProjectReference Include="..\Kickoffa.API.Contracts\Kickoffa.API.Contracts.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Mapping\" />
   </ItemGroup>
 
 </Project>
