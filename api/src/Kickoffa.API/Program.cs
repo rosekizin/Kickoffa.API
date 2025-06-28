@@ -1,11 +1,16 @@
+using Kickoffa.API.AspNet.Infrastructure.Configuration.Authentication;
 using Kickoffa.API.AspNet.Infrastructure.Configuration.Data;
 using Kickoffa.API.AspNet.Infrastructure.Extensions.ServiceCollection;
 using Kickoffa.API.AspNet.Infrastructure.Wrappers;
+using Kickoffa.API.Middlewares;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var configurationWrapper = new ConfigurationWrapper(builder.Configuration);
+
+// Configurar JWT
+var jwtConfiguration = new JwtConfiguration(configurationWrapper);
 
 builder.Services.AddControllers()
 	.AddJsonOptions(options =>
@@ -17,12 +22,24 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add Authentication & Authorization
+builder.Services.AddJwtAuthentication(jwtConfiguration);
+
 // Register Database
 builder.Services.AddDatabase(new PostgreDbConfiguration(configurationWrapper));
 builder.Services.AddRepositories();
 
 // Register services
 builder.Services.AddApplicationServices();
+
+// Register JWT service
+builder.Services.AddScoped<IJwtTokenService>(provider =>
+    new JwtTokenService(
+        jwtConfiguration.SecretKey,
+        jwtConfiguration.Issuer,
+        jwtConfiguration.Audience,
+        jwtConfiguration.ExpirationMinutes
+    ));
 
 // Handlers
 
@@ -45,6 +62,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Configurar pipeline de autenticação
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

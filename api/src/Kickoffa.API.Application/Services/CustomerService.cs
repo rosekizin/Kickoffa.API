@@ -25,6 +25,27 @@ public sealed class CustomerService : ICustomerService
         _createCustomerFactory = createCustomerFactory ?? throw new ArgumentNullException(nameof(createCustomerFactory));
     }
 
+	/// <inheritdoc />
+	public async Task<IEnumerable<CustomerResponse>> GetAllAsync(CancellationToken cancellationToken)
+	{
+		var customers = await _customerRepository.GetAllAsync(cancellationToken);
+
+		return customers.Select(customer => new CustomerResponse
+		{
+			Id = customer.Id,
+			FirstName = customer.FirstName,
+			LastName = customer.LastName,
+			Email = customer.Email,
+			Cpf = customer.Cpf,
+			Cnpj = customer.Cnpj,
+			PhoneNumber = customer.PhoneNumber,
+			Address = customer.Address,
+			CreatedDateUtc = customer.CreatedDateUtc,
+			LastUpdatedDateUtc = customer.LastUpdatedDateUtc
+		});
+	}
+
+	/// <inheritdoc />
 	public async Task<CustomerResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
 	{
 		var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
@@ -80,4 +101,24 @@ public sealed class CustomerService : ICustomerService
             LastUpdatedDateUtc = customer.LastUpdatedDateUtc
         };
     }
+
+	/// <inheritdoc />
+	public async Task<CustomerResponse?> UpdateAsync(Guid id, CreateCustomerRequest request, CancellationToken cancellationToken)
+	{
+		// TODO: Implementar lógica de atualização quando a entidade Customer tiver métodos de update apropriados
+		throw new NotImplementedException("Método UpdateAsync ainda não implementado");
+	}
+
+	/// <inheritdoc />
+	public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
+	{
+		var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
+		if (customer is null)
+			return false;
+
+		_customerRepository.Remove(customer);
+		await _customerRepository.SaveChangesAsync(cancellationToken);
+
+		return true;
+	}
 }
