@@ -25,6 +25,7 @@ public static class ApplicationServiceCollectionExtensions
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         // Registrar factories
+        services.AddScoped<IItemFactory, ItemFactory>();
         services.AddScoped<ICreateCustomerFactory, CreateCustomerFactory>();
 
         // Registrar services

@@ -1,4 +1,5 @@
 using Kickoffa.API.Domain.Models.Enums;
+using Kickoffa.API.Domain.Models.Items.Base;
 
 namespace Kickoffa.API.Domain.Models.Items
 {

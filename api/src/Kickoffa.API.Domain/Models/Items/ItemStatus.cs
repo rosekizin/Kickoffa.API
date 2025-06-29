@@ -1,4 +1,6 @@
-﻿namespace Kickoffa.API.Domain.Models
+﻿using Kickoffa.API.Domain.Models.Items.Base;
+
+namespace Kickoffa.API.Domain.Models.Items
 {
 	public class ItemStatus
 	{

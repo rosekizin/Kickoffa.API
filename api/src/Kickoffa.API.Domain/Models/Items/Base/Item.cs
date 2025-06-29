@@ -1,6 +1,6 @@
 ﻿using Kickoffa.API.Domain.Models.Enums;
 
-namespace Kickoffa.API.Domain.Models
+namespace Kickoffa.API.Domain.Models.Items.Base
 {
 	/// <summary>
 	/// Classe base abstrata para todos os tipos de itens de checklist
