@@ -16,7 +16,7 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 		/// <returns>IServiceCollection para chaining</returns>
 		public static IServiceCollection AddDatabase(this IServiceCollection services, IPostgreDbConfiguration postgreDbConfiguration)
 		{
-			AddEntityFrameworkMappings(services);
+			//AddEntityFrameworkMappings(services);
 
 			var connectionString = postgreDbConfiguration.GetConnectionString();
 
@@ -42,6 +42,8 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 					options.EnableDetailedErrors();
 				}
 			});
+
+			services.AddScoped<IKickoffaDbContext>(provider => provider.GetRequiredService<KickoffaDbContext>());
 
 			// Configurar pool de conexões para melhor performance. Fazer isso vai fazer com o Db context seja singleton
 			//services.AddDbContextPool<KickoffaDbContext>(options =>
@@ -152,6 +154,13 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 		{
 			services.AddSingleton<IUserEntityFrameworkMapping, UserEntityFrameworkMapping>();
 			services.AddSingleton<ICustomerEntityFrameworkMapping, CustomerEntityFrameworkMapping>();
+			services.AddSingleton<IChecklistEntityFrameworkMapping, ChecklistEntityFrameworkMapping>();
+			services.AddSingleton<ISectionEntityFrameworkMapping, SectionEntityFrameworkMapping>();
+			services.AddSingleton<IItemEntityFrameworkMapping, ItemEntityFrameworkMapping>();
+			services.AddSingleton<IItemStatusEntityFrameworkMapping, ItemStatusEntityFrameworkMapping>();
+			services.AddSingleton<IBriefingMediaEntityFrameworkMapping, BriefingMediaEntityFrameworkMapping>();
+			services.AddSingleton<IFileTypeEntityFrameworkMapping, FileTypeEntityFrameworkMapping>();
+			services.AddSingleton<IUploadItemFileTypeEntityFrameworkMapping, UploadItemFileTypeEntityFrameworkMapping>();
 		}
 	}
 }

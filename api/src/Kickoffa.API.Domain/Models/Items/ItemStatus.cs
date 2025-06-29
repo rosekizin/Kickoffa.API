@@ -1,10 +1,10 @@
-﻿using Kickoffa.API.Domain.Models.Items.Base;
+﻿using Kickoffa.API.Domain.Models.Base;
+using Kickoffa.API.Domain.Models.Items.Base;
 
 namespace Kickoffa.API.Domain.Models.Items
 {
-	public class ItemStatus
+	public class ItemStatus : BaseEntity<ItemStatus>
 	{
-		public long Id { get; set; }
 		public long ItemId { get; set; }
 		public bool Completed { get; set; }
 		public DateTime? CompletedAt { get; set; }

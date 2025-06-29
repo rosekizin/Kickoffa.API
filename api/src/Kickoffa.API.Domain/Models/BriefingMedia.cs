@@ -1,8 +1,9 @@
-﻿namespace Kickoffa.API.Domain.Models
+﻿using Kickoffa.API.Domain.Models.Base;
+
+namespace Kickoffa.API.Domain.Models
 {
-	public class BriefingMedia
+	public class BriefingMedia : BaseEntity<BriefingMedia>
 	{
-		public long Id { get; set; }
 		public long SectionId { get; set; }
 		public string FileName { get; set; } = string.Empty;
 		public string StoragePath { get; set; } = string.Empty;

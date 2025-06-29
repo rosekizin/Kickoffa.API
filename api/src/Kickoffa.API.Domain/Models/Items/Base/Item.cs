@@ -1,13 +1,13 @@
-﻿using Kickoffa.API.Domain.Models.Enums;
+﻿using Kickoffa.API.Domain.Models.Base;
+using Kickoffa.API.Domain.Models.Enums;
 
 namespace Kickoffa.API.Domain.Models.Items.Base
 {
 	/// <summary>
 	/// Classe base abstrata para todos os tipos de itens de checklist
 	/// </summary>
-	public abstract class Item
+	public abstract class Item : BaseEntity<Item>
 	{
-		public long Id { get; set; }
 		public long SectionId { get; set; }
 		public int Order { get; set; }
 		public string Title { get; set; } = string.Empty;

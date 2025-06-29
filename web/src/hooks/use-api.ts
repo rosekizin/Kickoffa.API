@@ -11,7 +11,9 @@ import {
   PublicChecklistView,
   Customer,
   CreateCustomerRequest,
-  LoginRequest
+  LoginRequest,
+  FileTypesSearchResponse,
+  FileTypeCategory
 } from '@/types'
 
 // Checklists (para freelancers autenticados)
@@ -260,5 +262,38 @@ export const useValidateToken = () => {
     enabled: AuthService.isAuthenticated(), // Baseado em dados do usuário
     staleTime: 5 * 60 * 1000, // 5 minutos
     retry: false
+  })
+}
+
+// FileTypes
+export const useFileTypes = () => {
+  return useQuery({
+    queryKey: ['fileTypes'],
+    queryFn: async () => {
+      const response = await api.get<FileTypesSearchResponse>('/api/filetype')
+      return response.data
+    }
+  })
+}
+
+export const useSearchFileTypes = (searchTerm?: string) => {
+  return useQuery({
+    queryKey: ['fileTypes', 'search', searchTerm],
+    queryFn: async () => {
+      const params = searchTerm ? { search: searchTerm } : {}
+      const response = await api.get<FileTypesSearchResponse>('/api/filetype/search', { params })
+      return response.data
+    },
+    enabled: true // Sempre habilitado, mesmo sem searchTerm
+  })
+}
+
+export const useFileTypesByCategory = (category: FileTypeCategory) => {
+  return useQuery({
+    queryKey: ['fileTypes', 'category', category],
+    queryFn: async () => {
+      const response = await api.get<FileTypesSearchResponse>(`/api/filetype/category/${category}`)
+      return response.data
+    }
   })
 }

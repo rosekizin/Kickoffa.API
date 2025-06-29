@@ -13,6 +13,8 @@ import {
   GripVertical,
   Shield
 } from 'lucide-react'
+import { FileTypeSelector } from '@/components/upload/file-type-selector'
+import { FileType } from '@/types'
 import { Item, CreateItemRequest } from '@/types'
 
 interface ChecklistItemEditorProps {
@@ -45,6 +47,7 @@ export const ChecklistItemEditor = ({
   const [placeholder, setPlaceholder] = useState(item?.placeholder || '')
   const [maxLength, setMaxLength] = useState(item?.maxLength || 500)
   const [confirmationText, setConfirmationText] = useState(item?.confirmationText || '')
+  const [selectedFileTypes, setSelectedFileTypes] = useState<FileType[]>([])
   const [showAdvanced, setShowAdvanced] = useState(false)
 
   const itemTypes = [
@@ -88,6 +91,11 @@ export const ChecklistItemEditor = ({
   const handleSave = () => {
     if (!title.trim()) return
 
+    // Para upload, usar selectedFileTypes ao invés de allowedMimeTypes string
+    const uploadMimeTypes = type === 'upload' && selectedFileTypes.length > 0
+      ? selectedFileTypes.map(ft => ft.mimeType).join(',')
+      : allowedMimeTypes
+
     const itemData: CreateItemRequest = {
       sectionId,
       title: title.trim(),
@@ -95,7 +103,7 @@ export const ChecklistItemEditor = ({
       type,
       isRequired,
       order,
-      allowedMimeTypes: type === 'upload' && allowedMimeTypes ? allowedMimeTypes : undefined,
+      allowedMimeTypes: type === 'upload' && uploadMimeTypes ? uploadMimeTypes : undefined,
       maxSizeMB: type === 'upload' ? maxSizeMB : undefined,
       placeholder: (type === 'text' || type === 'upload') && placeholder ? placeholder : undefined,
       maxLength: type === 'text' ? maxLength : undefined,
@@ -112,17 +120,16 @@ export const ChecklistItemEditor = ({
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tipos de arquivo permitidos (MIME types)
+                Tipos de arquivo permitidos
               </label>
-              <input
-                type="text"
-                placeholder="Ex: image/jpeg,image/png,application/pdf"
-                value={allowedMimeTypes}
-                onChange={(e) => setAllowedMimeTypes(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              <FileTypeSelector
+                selectedFileTypes={selectedFileTypes}
+                onSelectionChange={setSelectedFileTypes}
+                placeholder="Selecione os tipos de arquivo permitidos..."
+                maxSelections={10}
               />
               <p className="text-xs text-gray-500 mt-1">
-                Separar por vírgula. Ex: image/jpeg,application/pdf
+                Selecione os tipos de arquivo que o cliente poderá enviar
               </p>
             </div>
 
@@ -133,7 +140,7 @@ export const ChecklistItemEditor = ({
               <input
                 type="number"
                 min="1"
-                max="100"
+                max="500"
                 value={maxSizeMB}
                 onChange={(e) => setMaxSizeMB(parseInt(e.target.value))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"

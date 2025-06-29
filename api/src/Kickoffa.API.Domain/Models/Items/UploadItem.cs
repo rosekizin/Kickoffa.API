@@ -12,7 +12,9 @@ namespace Kickoffa.API.Domain.Models.Items
 
 		/// <summary>
 		/// Tipos MIME permitidos para upload (ex: "image/jpeg,application/pdf")
+		/// DEPRECATED: Usar AllowedFileTypes ao invés desta propriedade
 		/// </summary>
+		[Obsolete("Use AllowedFileTypes navigation property instead")]
 		public string? AllowedMimeTypes { get; set; }
 
 		/// <summary>
@@ -24,5 +26,10 @@ namespace Kickoffa.API.Domain.Models.Items
 		/// Texto de placeholder para a área de upload
 		/// </summary>
 		public string? Placeholder { get; set; }
+
+		/// <summary>
+		/// Tipos de arquivo permitidos para este item de upload
+		/// </summary>
+		public ICollection<UploadItemFileType> AllowedFileTypes { get; set; } = new List<UploadItemFileType>();
 	}
 }

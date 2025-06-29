@@ -18,12 +18,20 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
             // Registrar mapeamentos do Entity Framework
             services.AddScoped<ICustomerEntityFrameworkMapping, CustomerEntityFrameworkMapping>();
             services.AddScoped<IUserEntityFrameworkMapping, UserEntityFrameworkMapping>();
+            services.AddScoped<IChecklistEntityFrameworkMapping, ChecklistEntityFrameworkMapping>();
+            services.AddScoped<ISectionEntityFrameworkMapping, SectionEntityFrameworkMapping>();
+            services.AddScoped<IItemEntityFrameworkMapping, ItemEntityFrameworkMapping>();
+            services.AddScoped<IItemStatusEntityFrameworkMapping, ItemStatusEntityFrameworkMapping>();
+            services.AddScoped<IBriefingMediaEntityFrameworkMapping, BriefingMediaEntityFrameworkMapping>();
+            services.AddScoped<IFileTypeEntityFrameworkMapping, FileTypeEntityFrameworkMapping>();
+            services.AddScoped<IUploadItemFileTypeEntityFrameworkMapping, UploadItemFileTypeEntityFrameworkMapping>();
 
             // Registrar repositório base genérico
             services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 
             // Registrar repositórios específicos
             services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddScoped<IFileTypeRepository, FileTypeRepository>();
             // UserRepository removido - agora usamos UserManager<User> do Identity
 
             // TODO: Adicionar outros repositórios conforme forem criados

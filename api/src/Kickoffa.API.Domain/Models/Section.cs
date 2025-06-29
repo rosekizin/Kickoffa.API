@@ -1,11 +1,11 @@
-﻿using Kickoffa.API.Domain.Models.Enums;
+﻿using Kickoffa.API.Domain.Models.Base;
+using Kickoffa.API.Domain.Models.Enums;
 using Kickoffa.API.Domain.Models.Items.Base;
 
 namespace Kickoffa.API.Domain.Models
 {
-	public class Section
+	public class Section : BaseEntity<Section>
 	{
-		public long Id { get; set; }
 		public long ChecklistId { get; set; }
 		public int Order { get; set; }
 		public string Title { get; set; } = string.Empty;

@@ -198,6 +198,36 @@ export interface PaginatedResponse<T> {
   totalPages: number
 }
 
+// Tipos para FileType
+export interface FileType {
+  id: number
+  mimeType: string
+  extension: string
+  displayName: string
+  description?: string
+  category: FileTypeCategory
+  recommendedMaxSizeMB?: number
+}
+
+export enum FileTypeCategory {
+  Image = 'Image',
+  Document = 'Document',
+  Audio = 'Audio',
+  Video = 'Video',
+  Archive = 'Archive',
+  Code = 'Code',
+  Design = 'Design',
+  Spreadsheet = 'Spreadsheet',
+  Presentation = 'Presentation',
+  Font = 'Font',
+  Other = 'Other'
+}
+
+export interface FileTypesSearchResponse {
+  fileTypes: FileType[]
+  totalCount: number
+}
+
 // Tipos para tratamento de erros
 export interface ApiError {
   message?: string

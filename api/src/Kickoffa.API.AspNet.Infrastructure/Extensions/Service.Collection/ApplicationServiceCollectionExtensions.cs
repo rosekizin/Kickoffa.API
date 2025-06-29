@@ -32,6 +32,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IFileTypeService, FileTypeService>();
 
 		// Register wrappers
 		services.AddScoped<IUserManagerWrapper, UserManagerWrapper>();
