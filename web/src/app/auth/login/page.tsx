@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { ErrorMessage } from '@/components/ui/error-message'
 import { useLogin } from '@/hooks/use-api'
 import { AuthService } from '@/services/auth.service'
-import { Eye, EyeOff, Mail, Lock, Zap, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, Zap } from 'lucide-react'
 import Link from 'next/link'
 
 export default function LoginPage() {
@@ -21,6 +22,22 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    // Validações básicas no frontend
+    if (!email.trim()) {
+      setError('Email é obrigatório')
+      return
+    }
+
+    if (!password) {
+      setError('Senha é obrigatória')
+      return
+    }
+
+    if (password.length < 6) {
+      setError('A senha deve ter pelo menos 6 caracteres')
+      return
+    }
 
     try {
       console.log('🔐 Iniciando login...')
@@ -41,26 +58,13 @@ export default function LoginPage() {
       router.push('/dashboard')
     } catch (error) {
       console.error('❌ Erro durante login:', error)
-      setError(AuthService.getErrorMessage(error))
+      const errorMessage = AuthService.getErrorMessage(error)
+      setError(errorMessage)
+
+      // Log adicional para debug
+      console.log('📋 Mensagem de erro formatada:', errorMessage)
     }
   }
-
-  const testApiConnection = async () => {
-    try {
-      console.log('🧪 Testando conexão com API...')
-      const response = await fetch('http://localhost:5084/api/auth/validate', {
-        method: 'GET',
-        credentials: 'include'
-      })
-      console.log('📡 Resposta da API:', response.status, response.statusText)
-      alert(`API Status: ${response.status} - ${response.statusText}`)
-    } catch (error) {
-      console.error('❌ Erro ao testar API:', error)
-      alert('Erro: ' + error)
-    }
-  }
-
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -87,10 +91,13 @@ export default function LoginPage() {
         <div className="bg-white rounded-xl shadow-lg p-8">
           {/* Error Message */}
           {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-3 flex items-center">
-              <AlertCircle className="h-4 w-4 text-red-600 mr-2" />
-              <span className="text-sm text-red-600">{error}</span>
-            </div>
+            <ErrorMessage
+              message={error}
+              title="Erro no login"
+              type="error"
+              className="mb-6"
+              onDismiss={() => setError('')}
+            />
           )}
 
           <form className="space-y-6" onSubmit={handleSubmit}>

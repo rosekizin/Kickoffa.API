@@ -174,9 +174,10 @@ export default function ProfilePage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="p-8">
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center space-x-3">
             <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
               <User className="h-6 w-6 text-blue-600" />
@@ -386,6 +387,7 @@ export default function ProfilePage() {
               </Button>
             </div>
           </form>
+        </div>
         </div>
       </div>
     </DashboardLayout>

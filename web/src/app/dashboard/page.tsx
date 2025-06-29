@@ -80,25 +80,31 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <div className="p-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-sm text-gray-600">Bem-vindo de volta! Aqui está um resumo dos seus projetos.</p>
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <BarChart3 className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+                  <p className="text-gray-600">Bem-vindo de volta! Aqui está um resumo dos seus projetos.</p>
+                </div>
+              </div>
+              <Button
+                className="bg-blue-600 hover:bg-blue-700"
+                onClick={() => router.push('/checklists/new')}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Checklist
+              </Button>
             </div>
-            <Button
-              className="bg-blue-600 hover:bg-blue-700"
-              onClick={() => router.push('/checklists/new')}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Checklist
-            </Button>
           </div>
-        </div>
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
             <div className="flex items-center">
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <FileText className="h-6 w-6 text-blue-600" />
@@ -110,7 +116,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+            <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
             <div className="flex items-center">
               <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
                 <Clock className="h-6 w-6 text-yellow-600" />
@@ -122,7 +128,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+            <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
             <div className="flex items-center">
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                 <CheckCircle className="h-6 w-6 text-green-600" />
@@ -134,7 +140,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+            <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
             <div className="flex items-center">
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                 <Users className="h-6 w-6 text-purple-600" />
@@ -145,10 +151,10 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-        </div>
+          </div>
 
-        {/* Recent Checklists */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+          {/* Recent Checklists */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="px-6 py-4 border-b border-gray-100">
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold text-gray-900">Checklists Recentes</h2>
@@ -210,6 +216,7 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
+          </div>
           </div>
         </div>
       </div>

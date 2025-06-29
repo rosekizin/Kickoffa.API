@@ -71,57 +71,58 @@ const settingsCategories = [
 export default function SettingsPage() {
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center space-x-3">
-            <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <Settings className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Configurações</h1>
-              <p className="text-gray-600">Gerencie suas preferências e configurações da conta</p>
+      <div className="p-8">
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center space-x-3">
+              <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <Settings className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Configurações</h1>
+                <p className="text-gray-600">Gerencie suas preferências e configurações da conta</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Categorias de Configurações */}
-        <div className="space-y-8">
-          {settingsCategories.map((category) => (
-            <div key={category.title} className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">{category.title}</h2>
-                <p className="text-sm text-gray-600 mt-1">{category.description}</p>
-              </div>
-              
-              <div className="divide-y divide-gray-200">
-                {category.items.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="block p-6 hover:bg-gray-50 transition-colors duration-200"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${item.color}`}>
-                          <item.icon className="h-5 w-5" />
+          {/* Categorias de Configurações */}
+          <div className="space-y-8">
+            {settingsCategories.map((category) => (
+              <div key={category.title} className="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div className="p-6 border-b border-gray-200">
+                  <h2 className="text-lg font-semibold text-gray-900">{category.title}</h2>
+                  <p className="text-sm text-gray-600 mt-1">{category.description}</p>
+                </div>
+
+                <div className="divide-y divide-gray-200">
+                  {category.items.map((item) => (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className="block p-6 hover:bg-gray-50 transition-colors duration-200"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${item.color}`}>
+                            <item.icon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-medium text-gray-900">{item.name}</h3>
+                            <p className="text-sm text-gray-500 mt-1">{item.description}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="text-sm font-medium text-gray-900">{item.name}</h3>
-                          <p className="text-sm text-gray-500 mt-1">{item.description}</p>
-                        </div>
+                        <ChevronRight className="h-5 w-5 text-gray-400" />
                       </div>
-                      <ChevronRight className="h-5 w-5 text-gray-400" />
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        {/* Informações Adicionais */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          {/* Informações Adicionais */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
           <div className="flex items-start space-x-3">
             <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
               <HelpCircle className="h-4 w-4 text-blue-600" />
@@ -139,6 +140,7 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+    </div>
     </DashboardLayout>
   )
 }

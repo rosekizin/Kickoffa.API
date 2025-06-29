@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { Button } from '@/components/ui/button'
-import { 
-  Plus, 
-  Search, 
-  Filter, 
+import {
+  Plus,
+  Search,
+  Filter,
   MoreHorizontal,
   Eye,
   Edit,
@@ -14,7 +14,8 @@ import {
   Archive,
   Trash2,
   Calendar,
-  User
+  User,
+  FileText
 } from 'lucide-react'
 
 export default function ChecklistsPage() {
@@ -104,21 +105,27 @@ export default function ChecklistsPage() {
   return (
     <DashboardLayout>
       <div className="p-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Checklists</h1>
-              <p className="text-sm text-gray-600">Gerencie todos os seus checklists de onboarding</p>
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <FileText className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Checklists</h1>
+                  <p className="text-gray-600">Gerencie todos os seus checklists de onboarding</p>
+                </div>
+              </div>
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Checklist
+              </Button>
             </div>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Checklist
-            </Button>
           </div>
-        </div>
-        {/* Filters and Search */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+          {/* Filters and Search */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -165,8 +172,8 @@ export default function ChecklistsPage() {
           </div>
         </div>
 
-        {/* Checklists Table */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+          {/* Checklists Table */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -252,10 +259,10 @@ export default function ChecklistsPage() {
               </tbody>
             </table>
           </div>
-        </div>
+          </div>
 
-        {/* Pagination */}
-        <div className="flex items-center justify-between mt-6">
+          {/* Pagination */}
+          <div className="flex items-center justify-between">
           <div className="text-sm text-gray-700">
             Mostrando <span className="font-medium">1</span> a <span className="font-medium">{filteredChecklists.length}</span> de{' '}
             <span className="font-medium">{checklists.length}</span> resultados
@@ -269,6 +276,7 @@ export default function ChecklistsPage() {
             </Button>
           </div>
         </div>
+      </div>
       </div>
     </DashboardLayout>
   )

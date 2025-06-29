@@ -66,41 +66,49 @@ export default function CustomersPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-screen">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Clientes</h1>
-            <p className="text-sm text-gray-500 mt-1">Gerencie seus clientes e informações de contato</p>
-          </div>
-          <Button onClick={() => setShowModal(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Cliente
-          </Button>
-        </div>
-
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col px-6 py-4">
-          {/* Filters */}
-          <div className="flex items-center space-x-4 mb-6">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Buscar clientes..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+      <div className="p-8">
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <User className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
+                  <p className="text-gray-600">Gerencie seus clientes e informações de contato</p>
+                </div>
+              </div>
+              <Button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Cliente
+              </Button>
             </div>
-            <Button variant="outline">
-              <Filter className="h-4 w-4 mr-2" />
-              Filtros
-            </Button>
+          </div>
+
+          {/* Filters */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center space-x-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Buscar clientes..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <Button variant="outline">
+                <Filter className="h-4 w-4 mr-2" />
+                Filtros
+              </Button>
+            </div>
           </div>
 
           {/* Content */}
-          <div className="flex-1 bg-white rounded-lg border border-gray-200">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
@@ -130,25 +138,33 @@ export default function CustomersPage() {
               </div>
             </div>
           ) : (
-            <div className="overflow-hidden">
-              {/* Table Header */}
-              <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
-                <div className="grid grid-cols-12 gap-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <div className="col-span-3">Cliente</div>
-                  <div className="col-span-2">Documento</div>
-                  <div className="col-span-2">Contato</div>
-                  <div className="col-span-3">Endereço</div>
-                  <div className="col-span-2">Ações</div>
-                </div>
-              </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Cliente
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Documento
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Contato
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Endereço
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
 
-              {/* Table Body */}
-              <div className="divide-y divide-gray-200">
-                {filteredCustomers.map((customer) => (
-                  <div key={customer.id} className="px-6 py-4 hover:bg-gray-50">
-                    <div className="grid grid-cols-12 gap-4 items-center">
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredCustomers.map((customer) => (
+                    <tr key={customer.id} className="hover:bg-gray-50">
                       {/* Cliente */}
-                      <div className="col-span-3">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
                             {customer.cnpj ? (
@@ -158,26 +174,26 @@ export default function CustomersPage() {
                             )}
                           </div>
                           <div className="ml-3">
-                            <p className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium text-gray-900">
                               {customer.firstName} {customer.lastName}
-                            </p>
-                            <p className="text-sm text-gray-500">
+                            </div>
+                            <div className="text-sm text-gray-500">
                               {customer.cnpj ? 'Pessoa Jurídica' : 'Pessoa Física'}
-                            </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      </td>
 
                       {/* Documento */}
-                      <div className="col-span-2">
-                        <p className="text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-900">
                           {customer.cpf && CustomerService.formatCpf(customer.cpf)}
                           {customer.cnpj && CustomerService.formatCnpj(customer.cnpj)}
-                        </p>
-                      </div>
+                        </span>
+                      </td>
 
                       {/* Contato */}
-                      <div className="col-span-2">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="space-y-1">
                           {customer.email && (
                             <div className="flex items-center text-sm text-gray-600">
@@ -192,10 +208,10 @@ export default function CustomersPage() {
                             </div>
                           )}
                         </div>
-                      </div>
+                      </td>
 
                       {/* Endereço */}
-                      <div className="col-span-3">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         {customer.address ? (
                           <div className="flex items-center text-sm text-gray-600">
                             <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
@@ -204,11 +220,11 @@ export default function CustomersPage() {
                         ) : (
                           <span className="text-sm text-gray-400">-</span>
                         )}
-                      </div>
+                      </td>
 
                       {/* Ações */}
-                      <div className="col-span-2">
-                        <div className="flex items-center space-x-2">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -230,21 +246,22 @@ export default function CustomersPage() {
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
-        </div>
+          </div>
 
           {/* Stats */}
-          <div className="mt-6 flex items-center justify-between text-sm text-gray-600 px-6 py-4 bg-gray-50 border-t border-gray-200">
-            <p>
-              Mostrando {filteredCustomers.length} de {customers.length} clientes
-            </p>
-            <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-between mt-6">
+            <div className="text-sm text-gray-700">
+              Mostrando <span className="font-medium">1</span> a <span className="font-medium">{filteredCustomers.length}</span> de{' '}
+              <span className="font-medium">{customers.length}</span> resultados
+            </div>
+            <div className="flex items-center space-x-4 text-sm text-gray-600">
               <span>Total: {customers.length} clientes</span>
               <span>•</span>
               <span>PF: {customers.filter(c => c.cpf).length}</span>

@@ -1,4 +1,5 @@
 import api from '@/lib/api'
+import { ErrorUtils } from '@/lib/error-utils'
 import { LoginRequest, LoginResponse, AuthUser } from '@/types'
 
 /**
@@ -165,23 +166,7 @@ export class AuthService {
    * Formata mensagens de erro de autenticação
    */
   static getErrorMessage(error: any): string {
-    if (error.response?.data?.message) {
-      return error.response.data.message
-    }
-    
-    if (error.response?.status === 401) {
-      return 'Email ou senha inválidos'
-    }
-    
-    if (error.response?.status === 500) {
-      return 'Erro interno do servidor. Tente novamente mais tarde.'
-    }
-    
-    if (error.message) {
-      return error.message
-    }
-    
-    return 'Erro desconhecido durante a autenticação'
+    return ErrorUtils.extractErrorMessage(error)
   }
 
   /**

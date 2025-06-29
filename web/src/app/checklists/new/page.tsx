@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { BriefingEditor } from '@/components/briefing/briefing-editor'
 import { ChecklistItemEditor } from '@/components/shared/checklist-item-editor'
@@ -38,25 +38,7 @@ export default function NewChecklistPage() {
   const [sectionsExpanded, setSectionsExpanded] = useState(true)
   const [showNewItemEditor, setShowNewItemEditor] = useState(false)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
-  const [scrollHeight, setScrollHeight] = useState('calc(100vh - 500px)')
 
-  // Calcular altura do scroll dinamicamente baseado no estado das seções
-  useEffect(() => {
-    const calculateScrollHeight = () => {
-      const headerHeight = 80 // Header superior
-      const basicInfoHeight = basicInfoExpanded ? 280 : 60 // Altura quando expandido/colapsado
-      const sectionsHeaderHeight = 60 // Header da seção de seções
-      const addButtonsHeight = sectionsExpanded ? 50 : 0 // Botões de adicionar seção
-      const padding = 40 // Padding geral
-
-      const usedHeight = headerHeight + basicInfoHeight + sectionsHeaderHeight + addButtonsHeight + padding
-      const availableHeight = `calc(100vh - ${usedHeight}px)`
-
-      setScrollHeight(availableHeight)
-    }
-
-    calculateScrollHeight()
-  }, [basicInfoExpanded, sectionsExpanded])
 
   const addSection = (type: 'briefing' | 'checklist') => {
     const newSection: Section = {
@@ -197,32 +179,39 @@ export default function NewChecklistPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-screen">
-        {/* Top Header with Action Buttons */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Novo Checklist</h1>
-            <div className="flex items-center space-x-2 mt-1">
-              <span className="text-sm text-gray-500">
-                {title || 'Sem título'}
-              </span>
-              <span className="text-gray-300">•</span>
-              <span className="text-sm text-gray-500">
-                {sections.length} seç{sections.length !== 1 ? 'ões' : 'ão'}
-              </span>
-              {sections.length > 0 && (
-                <>
-                  <span className="text-gray-300">•</span>
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Rascunho
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
+      <div className="p-8">
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <FileText className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Novo Checklist</h1>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <span className="text-sm text-gray-600">
+                      {title || 'Sem título'}
+                    </span>
+                    <span className="text-gray-300">•</span>
+                    <span className="text-sm text-gray-600">
+                      {sections.length} seç{sections.length !== 1 ? 'ões' : 'ão'}
+                    </span>
+                    {sections.length > 0 && (
+                      <>
+                        <span className="text-gray-300">•</span>
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Rascunho
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
 
-          {/* Action Buttons as Icons */}
-          <div className="flex items-center space-x-2">
+              {/* Action Buttons as Icons */}
+              <div className="flex items-center space-x-2">
             <Button
               onClick={() => setShowPreview(!showPreview)}
               variant="ghost"
@@ -262,21 +251,25 @@ export default function NewChecklistPage() {
             >
               <Share2 className="h-4 w-4" />
             </Button>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Main Content */}
-        <div className="flex flex-1">
-          {/* Left Panel - Structure */}
-          <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full">
-            {/* Basic Info - Collapsible */}
-            <CollapsibleSection
-              title="Informações Básicas"
-              icon={<Info className="h-4 w-4" />}
-              defaultExpanded={true}
-              className="border-b-0"
-              onToggle={setBasicInfoExpanded}
-            >
+          {/* Main Content */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="flex h-[calc(100vh-200px)]">
+              {/* Left Panel - Structure */}
+              <div className="w-80 bg-gray-50 border-r border-gray-200 flex flex-col h-full">
+                {/* Scrollable Content Container */}
+                <div className="flex-1 overflow-y-auto">
+                  {/* Basic Info - Collapsible */}
+                  <CollapsibleSection
+                    title="Informações Básicas"
+                    icon={<Info className="h-4 w-4" />}
+                    defaultExpanded={true}
+                    className="border-b-0"
+                    onToggle={setBasicInfoExpanded}
+                  >
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -314,53 +307,54 @@ export default function NewChecklistPage() {
                     onChange={(e) => setDeadline(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
+                    </div>
+                  </div>
+                  </CollapsibleSection>
+
+                  {/* Sections - Collapsible */}
+                  <CollapsibleSection
+                    title={`Seções (${sections.length})`}
+                    icon={<List className="h-4 w-4" />}
+                    defaultExpanded={true}
+                    className="flex-1 flex flex-col"
+                    contentClassName="flex-1 p-0"
+                    onToggle={setSectionsExpanded}
+                  >
+                    <div className="mb-4">
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addSection('briefing')}
+                          className="flex-1 text-xs"
+                        >
+                          <FileText className="h-3 w-3 mr-1" />
+                          Briefing
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addSection('checklist')}
+                          className="flex-1 text-xs"
+                        >
+                          <CheckSquare className="h-3 w-3 mr-1" />
+                          Checklist
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Sections List */}
+                    <div className="flex-1">
+                      <SortableSectionList
+                        sections={sections}
+                        activeSection={activeSection}
+                        onSectionClick={setActiveSection}
+                        onSectionDelete={deleteSection}
+                        onSectionsReorder={handleSectionsReorder}
+                      />
+                    </div>
+                  </CollapsibleSection>
                 </div>
-              </div>
-            </CollapsibleSection>
-
-          {/* Sections - Collapsible */}
-          <CollapsibleSection
-            title={`Seções (${sections.length})`}
-            icon={<List className="h-4 w-4" />}
-            defaultExpanded={true}
-            className="flex-1 flex flex-col"
-            contentClassName="flex-1 overflow-hidden p-0"
-            onToggle={setSectionsExpanded}
-          >
-            <div className="mb-4">
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => addSection('briefing')}
-                  className="flex-1 text-xs"
-                >
-                  <FileText className="h-3 w-3 mr-1" />
-                  Briefing
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => addSection('checklist')}
-                  className="flex-1 text-xs"
-                >
-                  <CheckSquare className="h-3 w-3 mr-1" />
-                  Checklist
-                </Button>
-              </div>
-            </div>
-
-            {/* Sections List */}
-            <div className="flex-1 overflow-y-auto" style={{ maxHeight: scrollHeight }}>
-              <SortableSectionList
-                sections={sections}
-                activeSection={activeSection}
-                onSectionClick={setActiveSection}
-                onSectionDelete={deleteSection}
-                onSectionsReorder={handleSectionsReorder}
-              />
-            </div>
-          </CollapsibleSection>
 
 
         </div>
@@ -566,6 +560,8 @@ export default function NewChecklistPage() {
               </div>
             </div>
           )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

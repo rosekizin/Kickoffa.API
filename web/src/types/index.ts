@@ -198,6 +198,21 @@ export interface PaginatedResponse<T> {
   totalPages: number
 }
 
+// Tipos para tratamento de erros
+export interface ApiError {
+  message?: string
+  title?: string
+  errors?: Record<string, string[]> | string[]
+  status?: number
+  type?: string
+  traceId?: string
+}
+
+export interface ValidationError {
+  field: string
+  message: string
+}
+
 // Tipos para o cliente público (sem autenticação)
 export interface PublicChecklistView {
   id: string
