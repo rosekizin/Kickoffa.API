@@ -8,6 +8,7 @@ import { SortableSectionList, type Section } from '@/components/sections/sortabl
 import { SortableChecklistItems } from '@/components/checklist/sortable-checklist-items'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Button } from '@/components/ui/button'
+import { ItemPreview } from '@/components/preview/item-preview'
 import {
   Save,
   Eye,
@@ -31,18 +32,18 @@ export default function NewChecklistPage() {
   const [description, setDescription] = useState('')
   const [deadline, setDeadline] = useState('')
   const [sections, setSections] = useState<Section[]>([])
-  const [activeSection, setActiveSection] = useState<string | null>(null)
+  const [activeSection, setActiveSection] = useState<number | null>(null)
   const [showPreview, setShowPreview] = useState(false)
-  const [sectionEditingStates, setSectionEditingStates] = useState<Record<string, boolean>>({})
+  const [sectionEditingStates, setSectionEditingStates] = useState<Record<number, boolean>>({})
   const [basicInfoExpanded, setBasicInfoExpanded] = useState(true)
   const [sectionsExpanded, setSectionsExpanded] = useState(true)
   const [showNewItemEditor, setShowNewItemEditor] = useState(false)
-  const [editingItemId, setEditingItemId] = useState<string | null>(null)
+  const [editingItemId, setEditingItemId] = useState<number | null>(null)
 
 
   const addSection = (type: 'briefing' | 'checklist') => {
     const newSection: Section = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Date.now(), // Usar timestamp como ID temporário
       title: type === 'briefing' ? 'Nova Seção de Briefing' : 'Nova Seção de Checklist',
       type,
       order: sections.length + 1,
@@ -63,20 +64,20 @@ export default function NewChecklistPage() {
     }
   }
 
-  const updateSection = (sectionId: string, updates: Partial<Section>) => {
-    setSections(prev => prev.map(section => 
+  const updateSection = (sectionId: number, updates: Partial<Section>) => {
+    setSections(prev => prev.map(section =>
       section.id === sectionId ? { ...section, ...updates } : section
     ))
   }
 
-  const deleteSection = (sectionId: string) => {
+  const deleteSection = (sectionId: number) => {
     setSections(prev => prev.filter(section => section.id !== sectionId))
     if (activeSection === sectionId) {
       setActiveSection(null)
     }
   }
 
-  const handleBriefingSave = (sectionId: string, content: { contentJson: string; contentHtml: string }) => {
+  const handleBriefingSave = (sectionId: number, content: { contentJson: string; contentHtml: string }) => {
     console.log('🎯 Salvando briefing para seção:', sectionId, content)
     updateSection(sectionId, content)
     console.log('✅ Seção atualizada')
@@ -434,32 +435,7 @@ export default function NewChecklistPage() {
                             <div className="space-y-6">
                               {section.items?.length ? (
                                 section.items.map((item, index) => (
-                                  <div key={item.id || index} className="border border-gray-200 rounded-lg p-4">
-                                    <div className="flex items-start space-x-3">
-                                      <div className="flex-shrink-0 mt-1">
-                                        <Upload className="h-5 w-5 text-blue-600" />
-                                      </div>
-
-                                      <div className="flex-1 space-y-3">
-                                        <div>
-                                          <h3 className="font-medium text-gray-900 flex items-center">
-                                            {item.title}
-                                            <span className="ml-2 text-red-500 text-sm">*</span>
-                                          </h3>
-                                          <p className="text-sm text-gray-600 mt-1">
-                                            Item do checklist para preenchimento pelo cliente
-                                          </p>
-                                        </div>
-
-                                        <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                                          <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                                          <p className="text-sm text-gray-600">
-                                            Campo interativo aparecerá aqui para o cliente
-                                          </p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
+                                  <ItemPreview key={item.id || index} item={item} />
                                 ))
                               ) : (
                                 <p className="text-gray-500 italic">Nenhum item adicionado ainda</p>
