@@ -26,9 +26,10 @@ import {
 
 interface DashboardLayoutProps {
   children: React.ReactNode
+  showSearchBar?: boolean
 }
 
-export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+export const DashboardLayout = ({ children, showSearchBar = true }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -252,16 +253,19 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </Button>
 
             {/* Search */}
-            <div className="flex-1 max-w-lg mx-4">
-              <div className="relative">
-                <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Buscar checklists, clientes..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+            {showSearchBar && (
+              <div className="flex-1 max-w-lg mx-4">
+                <div className="relative">
+                  <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Buscar checklists, clientes..."
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
               </div>
-            </div>
+            )}
+            {!showSearchBar && <div className="flex-1" />}
 
             {/* Right side */}
             <div className="flex items-center space-x-4">

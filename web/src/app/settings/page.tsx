@@ -70,7 +70,7 @@ const settingsCategories = [
 
 export default function SettingsPage() {
   return (
-    <DashboardLayout>
+    <DashboardLayout showSearchBar={false}>
       <div className="p-8">
         <div className="space-y-6">
           {/* Header */}
