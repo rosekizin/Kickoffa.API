@@ -29,12 +29,13 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 
 export interface Section {
-  id: string
+  id: number
   title: string
   type: 'briefing' | 'checklist'
   order: number
   contentJson?: string
   contentHtml?: string
+  contentLastUpdated?: string
   items?: any[]
 }
 

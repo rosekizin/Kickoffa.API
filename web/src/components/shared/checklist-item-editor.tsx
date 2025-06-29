@@ -2,29 +2,30 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { 
-  CheckSquare, 
-  Upload, 
-  Type, 
-  PenTool, 
-  Settings, 
+import {
+  CheckSquare,
+  Upload,
+  Type,
+  PenTool,
+  Settings,
   Eye,
   Trash2,
-  GripVertical
+  GripVertical,
+  Shield
 } from 'lucide-react'
 import { Item, CreateItemRequest } from '@/types'
 
 interface ChecklistItemEditorProps {
   item?: Item
   onSave: (item: CreateItemRequest) => void
-  onDelete?: (itemId: string) => void
+  onDelete?: (itemId: number) => void
   onPreview?: () => void
   onCancel?: () => void
-  sectionId: string
+  sectionId: number
   order: number
 }
 
-type ItemType = 'checkbox' | 'upload' | 'text' | 'signature'
+type ItemType = 'checkbox' | 'upload' | 'text' | 'signature' | 'confirmation'
 
 export const ChecklistItemEditor = ({
   item,
@@ -39,7 +40,11 @@ export const ChecklistItemEditor = ({
   const [description, setDescription] = useState(item?.description || '')
   const [type, setType] = useState<ItemType>(item?.type || 'checkbox')
   const [isRequired, setIsRequired] = useState(item?.isRequired || false)
-  const [config, setConfig] = useState(item?.config || {})
+  const [allowedMimeTypes, setAllowedMimeTypes] = useState(item?.allowedMimeTypes || '')
+  const [maxSizeMB, setMaxSizeMB] = useState(item?.maxSizeMB || 10)
+  const [placeholder, setPlaceholder] = useState(item?.placeholder || '')
+  const [maxLength, setMaxLength] = useState(item?.maxLength || 500)
+  const [confirmationText, setConfirmationText] = useState(item?.confirmationText || '')
   const [showAdvanced, setShowAdvanced] = useState(false)
 
   const itemTypes = [
@@ -70,6 +75,13 @@ export const ChecklistItemEditor = ({
       description: 'Captura assinatura do cliente',
       icon: PenTool,
       color: 'text-orange-600'
+    },
+    {
+      type: 'confirmation' as const,
+      label: 'Confirmação',
+      description: 'Item de confirmação com texto personalizado',
+      icon: Shield,
+      color: 'text-indigo-600'
     }
   ]
 
@@ -83,14 +95,14 @@ export const ChecklistItemEditor = ({
       type,
       isRequired,
       order,
-      config: Object.keys(config).length > 0 ? config : undefined
+      allowedMimeTypes: type === 'upload' && allowedMimeTypes ? allowedMimeTypes : undefined,
+      maxSizeMB: type === 'upload' ? maxSizeMB : undefined,
+      placeholder: (type === 'text' || type === 'upload') && placeholder ? placeholder : undefined,
+      maxLength: type === 'text' ? maxLength : undefined,
+      confirmationText: type === 'confirmation' && confirmationText ? confirmationText : undefined
     }
 
     onSave(itemData)
-  }
-
-  const updateConfig = (key: string, value: any) => {
-    setConfig(prev => ({ ...prev, [key]: value }))
   }
 
   const renderTypeSpecificConfig = () => {
@@ -100,20 +112,20 @@ export const ChecklistItemEditor = ({
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tipos de arquivo permitidos
+                Tipos de arquivo permitidos (MIME types)
               </label>
               <input
                 type="text"
-                placeholder="Ex: .pdf,.doc,.jpg,.png"
-                value={config.allowedFileTypes?.join(',') || ''}
-                onChange={(e) => updateConfig('allowedFileTypes', e.target.value.split(',').map(s => s.trim()))}
+                placeholder="Ex: image/jpeg,image/png,application/pdf"
+                value={allowedMimeTypes}
+                onChange={(e) => setAllowedMimeTypes(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Separar por vírgula. Ex: .pdf,.doc,.jpg
+                Separar por vírgula. Ex: image/jpeg,application/pdf
               </p>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Tamanho máximo por arquivo (MB)
@@ -122,22 +134,21 @@ export const ChecklistItemEditor = ({
                 type="number"
                 min="1"
                 max="100"
-                value={config.maxFileSize ? config.maxFileSize / (1024 * 1024) : 10}
-                onChange={(e) => updateConfig('maxFileSize', parseInt(e.target.value) * 1024 * 1024)}
+                value={maxSizeMB}
+                onChange={(e) => setMaxSizeMB(parseInt(e.target.value))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Número máximo de arquivos
+                Placeholder para upload
               </label>
               <input
-                type="number"
-                min="1"
-                max="10"
-                value={config.maxFiles || 1}
-                onChange={(e) => updateConfig('maxFiles', parseInt(e.target.value))}
+                type="text"
+                placeholder="Ex: Arraste arquivos aqui ou clique para selecionar"
+                value={placeholder}
+                onChange={(e) => setPlaceholder(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -154,23 +165,45 @@ export const ChecklistItemEditor = ({
               <input
                 type="text"
                 placeholder="Ex: Digite sua resposta aqui..."
-                value={config.placeholder || ''}
-                onChange={(e) => updateConfig('placeholder', e.target.value)}
+                value={placeholder}
+                onChange={(e) => setPlaceholder(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="multiline"
-                checked={config.multiline || false}
-                onChange={(e) => updateConfig('multiline', e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="multiline" className="ml-2 text-sm text-gray-700">
-                Campo de múltiplas linhas
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Limite de caracteres
               </label>
+              <input
+                type="number"
+                min="1"
+                max="5000"
+                value={maxLength}
+                onChange={(e) => setMaxLength(parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        )
+
+      case 'confirmation':
+        return (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Texto de confirmação
+              </label>
+              <textarea
+                placeholder="Ex: Eu confirmo que li e aceito os termos de uso..."
+                value={confirmationText}
+                onChange={(e) => setConfirmationText(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Este texto será exibido junto com o checkbox de confirmação
+              </p>
             </div>
           </div>
         )
@@ -282,7 +315,7 @@ export const ChecklistItemEditor = ({
       </div>
 
       {/* Advanced Configuration */}
-      {(type === 'upload' || type === 'text') && (
+      {(type === 'upload' || type === 'text' || type === 'confirmation') && (
         <div>
           <button
             type="button"

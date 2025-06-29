@@ -2,8 +2,8 @@
 {
 	public class ItemStatus
 	{
-		public Guid Id { get; set; }
-		public Guid ItemId { get; set; }
+		public long Id { get; set; }
+		public long ItemId { get; set; }
 		public bool Completed { get; set; }
 		public DateTime? CompletedAt { get; set; }
 		public string? Response { get; set; } // Resposta textual quando aplicável

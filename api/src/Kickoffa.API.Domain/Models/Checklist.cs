@@ -3,8 +3,8 @@ namespace Kickoffa.API.Domain.Models
 {
 	public class Checklist
 	{
-		public Guid Id { get; set; }
-		public Guid OwnerId { get; set; }
+		public long Id { get; set; }
+		public long OwnerId { get; set; } // ID do usuário que criou o checklist
 		public string Title { get; set; } = string.Empty;
 		public string Slug { get; set; } = string.Empty;
 		public string? Description { get; set; }

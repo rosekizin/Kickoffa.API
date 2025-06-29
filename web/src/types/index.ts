@@ -1,6 +1,6 @@
 // Tipos básicos do domínio Kickoffa
 export interface User {
-  id: string
+  id: number
   name: string
   email: string
   role: 'freelancer' | 'admin'
@@ -9,7 +9,7 @@ export interface User {
 }
 
 export interface Customer {
-  id: string
+  id: number
   firstName: string
   lastName: string
   email?: string
@@ -50,27 +50,28 @@ export interface LoginResponse {
 }
 
 export interface AuthUser {
-  id: string
+  id: number
   email: string
   isAuthenticated: boolean
 }
 
 export interface Checklist {
-  id: string
+  id: number
   title: string
   description?: string
   deadline?: string
-  token: string
+  slug: string
+  accessToken: string
   isPublished: boolean
+  ownerId: number
   sections: Section[]
   createdAt: string
   updatedAt: string
-  createdBy: string
 }
 
 export interface Section {
-  id: string
-  checklistId: string
+  id: number
+  checklistId: number
   title: string
   type: 'briefing' | 'checklist'
   order: number
@@ -78,6 +79,7 @@ export interface Section {
   // Para seções de briefing
   contentJson?: string
   contentHtml?: string
+  contentLastUpdated?: string
 
   // Para seções de checklist
   items?: Item[]
@@ -87,8 +89,8 @@ export interface Section {
 }
 
 export interface BriefingMedia {
-  id: string
-  sectionId: string
+  id: number
+  sectionId: number
   fileName: string
   originalName: string
   mimeType: string
@@ -98,21 +100,20 @@ export interface BriefingMedia {
 }
 
 export interface Item {
-  id: string
-  sectionId: string
+  id: number
+  sectionId: number
   title: string
   description?: string
-  type: 'checkbox' | 'upload' | 'text' | 'signature'
+  type: 'checkbox' | 'upload' | 'text' | 'signature' | 'confirmation'
   isRequired: boolean
   order: number
 
-  // Configurações específicas por tipo
-  config?: {
-    allowedFileTypes?: string[]
-    maxFileSize?: number
-    maxFiles?: number
-    placeholder?: string
-  }
+  // Propriedades específicas por tipo (movidas de config)
+  allowedMimeTypes?: string
+  maxSizeMB?: number
+  placeholder?: string
+  maxLength?: number
+  confirmationText?: string
 
   status?: ItemStatus
   createdAt: string
@@ -120,8 +121,8 @@ export interface Item {
 }
 
 export interface ItemStatus {
-  id: string
-  itemId: string
+  id: number
+  itemId: number
   isCompleted: boolean
   completedAt?: string
 
@@ -135,8 +136,8 @@ export interface ItemStatus {
 }
 
 export interface UploadedFile {
-  id: string
-  itemStatusId: string
+  id: number
+  itemStatusId: number
   fileName: string
   originalName: string
   mimeType: string
@@ -153,7 +154,7 @@ export interface CreateChecklistRequest {
 }
 
 export interface CreateSectionRequest {
-  checklistId: string
+  checklistId: number
   title: string
   type: 'briefing' | 'checklist'
   order: number
@@ -162,22 +163,21 @@ export interface CreateSectionRequest {
 }
 
 export interface CreateItemRequest {
-  sectionId: string
+  sectionId: number
   title: string
   description?: string
-  type: 'checkbox' | 'upload' | 'text' | 'signature'
+  type: 'checkbox' | 'upload' | 'text' | 'signature' | 'confirmation'
   isRequired: boolean
   order: number
-  config?: {
-    allowedFileTypes?: string[]
-    maxFileSize?: number
-    maxFiles?: number
-    placeholder?: string
-  }
+  allowedMimeTypes?: string
+  maxSizeMB?: number
+  placeholder?: string
+  maxLength?: number
+  confirmationText?: string
 }
 
 export interface UpdateItemStatusRequest {
-  itemId: string
+  itemId: number
   isCompleted: boolean
   textResponse?: string
   signatureData?: string
@@ -215,7 +215,7 @@ export interface ValidationError {
 
 // Tipos para o cliente público (sem autenticação)
 export interface PublicChecklistView {
-  id: string
+  id: number
   title: string
   description?: string
   deadline?: string
@@ -228,7 +228,7 @@ export interface PublicChecklistView {
 }
 
 export interface PublicSectionView {
-  id: string
+  id: number
   title: string
   type: 'briefing' | 'checklist'
   order: number
@@ -237,17 +237,16 @@ export interface PublicSectionView {
 }
 
 export interface PublicItemView {
-  id: string
+  id: number
   title: string
   description?: string
-  type: 'checkbox' | 'upload' | 'text' | 'signature'
+  type: 'checkbox' | 'upload' | 'text' | 'signature' | 'confirmation'
   isRequired: boolean
   order: number
   isCompleted: boolean
-  config?: {
-    allowedFileTypes?: string[]
-    maxFileSize?: number
-    maxFiles?: number
-    placeholder?: string
-  }
+  allowedMimeTypes?: string
+  maxSizeMB?: number
+  placeholder?: string
+  maxLength?: number
+  confirmationText?: string
 }

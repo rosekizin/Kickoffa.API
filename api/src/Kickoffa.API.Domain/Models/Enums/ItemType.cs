@@ -2,9 +2,9 @@
 {
 	public enum ItemType
 	{
-		SimpleCheckbox,
-		TextInput,
-		FileUpload,
+		Checkbox,
+		Text,
+		Upload,
 		Signature,
 		Confirmation
 	}

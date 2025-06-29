@@ -32,13 +32,17 @@ import { CSS } from '@dnd-kit/utilities'
 
 // Usar o tipo Item existente, mas criar um alias para clareza
 export type ChecklistItem = {
-  id: string
+  id: number
   title: string
-  type: 'checkbox' | 'upload' | 'text' | 'signature'
+  type: 'checkbox' | 'upload' | 'text' | 'signature' | 'confirmation'
   description?: string
   isRequired?: boolean
   order: number
-  config?: any
+  allowedMimeTypes?: string
+  maxSizeMB?: number
+  placeholder?: string
+  maxLength?: number
+  confirmationText?: string
 }
 
 interface SortableChecklistItemProps {
@@ -72,6 +76,8 @@ function SortableChecklistItem({ item, onEdit, onDelete }: SortableChecklistItem
         return <Type className="h-4 w-4 text-purple-600" />
       case 'signature':
         return <PenTool className="h-4 w-4 text-orange-600" />
+      case 'confirmation':
+        return <CheckSquare className="h-4 w-4 text-indigo-600" />
       default:
         return <CheckSquare className="h-4 w-4 text-gray-600" />
     }

@@ -2,8 +2,8 @@
 {
 	public class BriefingMedia
 	{
-		public Guid Id { get; set; }
-		public Guid SectionId { get; set; }
+		public long Id { get; set; }
+		public long SectionId { get; set; }
 		public string FileName { get; set; } = string.Empty;
 		public string StoragePath { get; set; } = string.Empty;
 		public string Url { get; set; } = string.Empty;
