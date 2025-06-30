@@ -14,6 +14,7 @@ import {
   Shield
 } from 'lucide-react'
 import { FileTypeSelector } from '@/components/upload/file-type-selector'
+import { FileTypeSizeConfigComponent, FileTypeSizeConfig } from '@/components/upload/file-type-size-config'
 import { FileType } from '@/types'
 import { Item, CreateItemRequest } from '@/types'
 
@@ -48,6 +49,7 @@ export const ChecklistItemEditor = ({
   const [maxLength, setMaxLength] = useState(item?.maxLength || 500)
   const [confirmationText, setConfirmationText] = useState(item?.confirmationText || '')
   const [selectedFileTypes, setSelectedFileTypes] = useState<FileType[]>([])
+  const [fileTypeSizeConfigs, setFileTypeSizeConfigs] = useState<FileTypeSizeConfig[]>([])
   const [showAdvanced, setShowAdvanced] = useState(false)
 
   const itemTypes = [
@@ -96,6 +98,13 @@ export const ChecklistItemEditor = ({
       ? selectedFileTypes.map(ft => ft.mimeType).join(',')
       : allowedMimeTypes
 
+    // Calcular tamanho máximo baseado nas configurações específicas ou usar o padrão
+    let calculatedMaxSize = maxSizeMB
+    if (type === 'upload' && fileTypeSizeConfigs.length > 0) {
+      // Usar o maior tamanho configurado como limite geral
+      calculatedMaxSize = Math.max(...fileTypeSizeConfigs.map(config => config.maxSizeMB))
+    }
+
     const itemData: CreateItemRequest = {
       sectionId,
       title: title.trim(),
@@ -104,10 +113,12 @@ export const ChecklistItemEditor = ({
       isRequired,
       order,
       allowedMimeTypes: type === 'upload' && uploadMimeTypes ? uploadMimeTypes : undefined,
-      maxSizeMB: type === 'upload' ? maxSizeMB : undefined,
+      maxSizeMB: type === 'upload' ? calculatedMaxSize : undefined,
       placeholder: (type === 'text' || type === 'upload') && placeholder ? placeholder : undefined,
       maxLength: type === 'text' ? maxLength : undefined,
-      confirmationText: type === 'confirmation' && confirmationText ? confirmationText : undefined
+      confirmationText: type === 'confirmation' && confirmationText ? confirmationText : undefined,
+      // Adicionar configurações específicas de tamanho (para uso futuro)
+      fileTypeSizeConfigs: type === 'upload' && fileTypeSizeConfigs.length > 0 ? fileTypeSizeConfigs : undefined
     }
 
     onSave(itemData)
@@ -133,19 +144,17 @@ export const ChecklistItemEditor = ({
               </p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tamanho máximo por arquivo (MB)
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="500"
-                value={maxSizeMB}
-                onChange={(e) => setMaxSizeMB(parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            {/* Configuração de tamanhos específicos por tipo */}
+            {selectedFileTypes.length > 0 && (
+              <div>
+                <FileTypeSizeConfigComponent
+                  selectedFileTypes={selectedFileTypes}
+                  sizeConfigs={fileTypeSizeConfigs}
+                  onSizeConfigsChange={setFileTypeSizeConfigs}
+                  globalMaxSize={maxSizeMB}
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

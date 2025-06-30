@@ -2,6 +2,7 @@ using Kickoffa.API.Application.Interfaces;
 using Kickoffa.API.Contracts.FileType;
 using Kickoffa.API.Domain.Models.Enums;
 using Kickoffa.API.Domain.Repositories;
+using System;
 
 namespace Kickoffa.API.Application.Services
 {
@@ -52,7 +53,7 @@ namespace Kickoffa.API.Application.Services
 				fileType.Extension,
 				fileType.DisplayName,
 				fileType.Description,
-				(int)fileType.Category,
+				Enum.GetName(fileType.Category),
 				fileType.RecommendedMaxSizeMB
 			);
 		}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { Check, ChevronDown, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSearchFileTypes } from '@/hooks/use-api'
@@ -22,6 +22,7 @@ export const FileTypeSelector = ({
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Debounce search term
   useEffect(() => {
@@ -32,6 +33,23 @@ export const FileTypeSelector = ({
     return () => clearTimeout(timer)
   }, [searchTerm])
 
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
+
   const { data: searchResponse, isLoading } = useSearchFileTypes(debouncedSearchTerm)
 
   const availableFileTypes = useMemo(() => {
@@ -40,7 +58,7 @@ export const FileTypeSelector = ({
 
   const groupedFileTypes = useMemo(() => {
     const groups: Record<FileTypeCategory, FileType[]> = {} as Record<FileTypeCategory, FileType[]>
-    
+
     availableFileTypes.forEach(fileType => {
       if (!groups[fileType.category]) {
         groups[fileType.category] = []
@@ -53,7 +71,7 @@ export const FileTypeSelector = ({
 
   const handleToggleFileType = (fileType: FileType) => {
     const isSelected = selectedFileTypes.some(ft => ft.id === fileType.id)
-    
+
     if (isSelected) {
       // Remove from selection
       onSelectionChange(selectedFileTypes.filter(ft => ft.id !== fileType.id))
@@ -64,6 +82,9 @@ export const FileTypeSelector = ({
       }
       onSelectionChange([...selectedFileTypes, fileType])
     }
+
+    // Fechar dropdown após qualquer seleção/deseleção
+    setIsOpen(false)
   }
 
   const handleRemoveFileType = (fileTypeId: number) => {
@@ -84,11 +105,12 @@ export const FileTypeSelector = ({
       [FileTypeCategory.Font]: 'Fontes',
       [FileTypeCategory.Other]: 'Outros'
     }
+
     return categoryNames[category] || category
   }
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       {/* Selected file types */}
       {selectedFileTypes.length > 0 && (
         <div className="mb-3 flex flex-wrap gap-2">
@@ -163,7 +185,7 @@ export const FileTypeSelector = ({
                     </div>
                     {fileTypes.map(fileType => {
                       const isSelected = selectedFileTypes.some(ft => ft.id === fileType.id)
-                      const isDisabled = maxSelections && !isSelected && selectedFileTypes.length >= maxSelections
+                      const isDisabled = !!(maxSelections && !isSelected && selectedFileTypes.length >= maxSelections)
 
                       return (
                         <button

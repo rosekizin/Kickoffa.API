@@ -162,6 +162,11 @@ export interface CreateSectionRequest {
   contentHtml?: string
 }
 
+export interface FileTypeSizeConfig {
+  fileTypeId: number
+  maxSizeMB: number
+}
+
 export interface CreateItemRequest {
   sectionId: number
   title: string
@@ -174,6 +179,7 @@ export interface CreateItemRequest {
   placeholder?: string
   maxLength?: number
   confirmationText?: string
+  fileTypeSizeConfigs?: FileTypeSizeConfig[]
 }
 
 export interface UpdateItemStatusRequest {

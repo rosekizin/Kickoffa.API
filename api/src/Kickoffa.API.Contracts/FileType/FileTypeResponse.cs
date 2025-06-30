@@ -18,7 +18,7 @@ namespace Kickoffa.API.Contracts.FileType
 		string Extension,
 		string DisplayName,
 		string? Description,
-		int Category,
+		string? Category,
 		int? RecommendedMaxSizeMB
 	);
 
