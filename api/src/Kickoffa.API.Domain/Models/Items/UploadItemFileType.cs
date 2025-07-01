@@ -1,7 +1,6 @@
 using Kickoffa.API.Domain.Models.Base;
-using Kickoffa.API.Domain.Models.Items;
 
-namespace Kickoffa.API.Domain.Models
+namespace Kickoffa.API.Domain.Models.Items
 {
 	/// <summary>
 	/// Relacionamento many-to-many entre UploadItem e FileType

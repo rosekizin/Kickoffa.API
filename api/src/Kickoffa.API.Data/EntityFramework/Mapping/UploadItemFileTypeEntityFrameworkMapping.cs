@@ -1,4 +1,4 @@
-using Kickoffa.API.Domain.Models;
+using Kickoffa.API.Domain.Models.Items;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kickoffa.API.Data.EntityFramework.Mapping

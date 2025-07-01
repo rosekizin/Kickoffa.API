@@ -1,5 +1,5 @@
-using Kickoffa.API.Domain.Models;
 using Kickoffa.API.Domain.Models.Enums;
+using Kickoffa.API.Domain.Models.Items;
 
 namespace Kickoffa.API.Domain.Repositories
 {

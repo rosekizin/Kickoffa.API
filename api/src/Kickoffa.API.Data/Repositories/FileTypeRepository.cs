@@ -1,6 +1,6 @@
 using Kickoffa.API.Data.EntityFramework.Context;
-using Kickoffa.API.Domain.Models;
 using Kickoffa.API.Domain.Models.Enums;
+using Kickoffa.API.Domain.Models.Items;
 using Kickoffa.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 

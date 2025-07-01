@@ -1,5 +1,4 @@
 using Kickoffa.API.Data.EntityFramework.Mapping;
-using Kickoffa.API.Domain.Models;
 using Kickoffa.API.Domain.Models.FreelancerCustomer;
 using Kickoffa.API.Domain.Models.AppUser;
 using Kickoffa.API.Domain.Models.Items;

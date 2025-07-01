@@ -1,7 +1,7 @@
 using Kickoffa.API.Domain.Models.Base;
 using Kickoffa.API.Domain.Models.Enums;
 
-namespace Kickoffa.API.Domain.Models
+namespace Kickoffa.API.Domain.Models.Items
 {
 	/// <summary>
 	/// Representa um tipo de arquivo suportado para upload

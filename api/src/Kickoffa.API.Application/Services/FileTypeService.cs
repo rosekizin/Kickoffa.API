@@ -1,6 +1,7 @@
 using Kickoffa.API.Application.Interfaces;
 using Kickoffa.API.Contracts.FileType;
 using Kickoffa.API.Domain.Models.Enums;
+using Kickoffa.API.Domain.Models.Items;
 using Kickoffa.API.Domain.Repositories;
 using System;
 
@@ -45,7 +46,7 @@ namespace Kickoffa.API.Application.Services
 			return new FileTypesSearchResponse(fileTypeResponses, fileTypeResponses.Count);
 		}
 
-		private static FileTypeResponse MapToResponse(Domain.Models.FileType fileType)
+		private static FileTypeResponse MapToResponse(FileType fileType)
 		{
 			return new FileTypeResponse(
 				fileType.Id,
