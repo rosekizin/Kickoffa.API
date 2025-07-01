@@ -10,14 +10,31 @@ interface AuthGuardProps {
   redirectTo?: string
 }
 
-export function AuthGuard({ 
-  children, 
-  requireAuth = true, 
-  redirectTo = '/auth/login' 
+export function AuthGuard({
+  children,
+  requireAuth = true,
+  redirectTo = '/auth/login'
 }: AuthGuardProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const router = useRouter()
+
+  // Função para disparar notificação de sessão expirada
+  const triggerSessionExpiredNotification = (source: string) => {
+    if (typeof window !== 'undefined') {
+      console.warn(`🔒 AuthGuard (${source}): Disparando evento de sessão expirada`)
+
+      const sessionExpiredEvent = new CustomEvent('session-expired', {
+        detail: {
+          status: 401,
+          message: 'Sessão expirada',
+          timestamp: new Date().toISOString(),
+          source: `AuthGuard-${source}`
+        }
+      })
+      window.dispatchEvent(sessionExpiredEvent)
+    }
+  }
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -39,7 +56,8 @@ export function AuthGuard({
               console.log('🔍 AuthGuard: Token inválido, fazendo logout')
               AuthService.logout()
               if (requireAuth) {
-                router.push(redirectTo)
+                triggerSessionExpiredNotification('token-validation')
+                // Não redirecionar imediatamente - deixar o SessionManager cuidar disso
               }
             }
           }).catch(error => {
@@ -50,8 +68,8 @@ export function AuthGuard({
           setIsAuthenticated(false)
 
           if (requireAuth) {
-            console.log('🔍 AuthGuard: Redirecionando para login')
-            router.push(redirectTo)
+            console.log('🔍 AuthGuard: Usuário não autenticado, disparando notificação')
+            triggerSessionExpiredNotification('not-authenticated')
             return
           }
         }
@@ -60,8 +78,8 @@ export function AuthGuard({
         setIsAuthenticated(false)
 
         if (requireAuth) {
-          console.log('🔍 AuthGuard: Erro, redirecionando para login')
-          router.push(redirectTo)
+          console.log('🔍 AuthGuard: Erro na autenticação, disparando notificação')
+          triggerSessionExpiredNotification('auth-error')
           return
         }
       } finally {

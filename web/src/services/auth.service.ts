@@ -152,9 +152,19 @@ export class AuthService {
           // Token expirado ou inválido - cookies serão limpos pelo servidor
           this.clearAuthData()
 
-          // Redirecionar para login se não estiver na página de login
+          // Disparar evento de sessão expirada para notificar componentes
           if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/login')) {
-            window.location.href = '/auth/login'
+            console.warn('🔒 AuthService: Sessão expirada detectada - disparando evento')
+
+            const sessionExpiredEvent = new CustomEvent('session-expired', {
+              detail: {
+                status: 401,
+                message: 'Sessão expirada',
+                timestamp: new Date().toISOString(),
+                source: 'AuthService'
+              }
+            })
+            window.dispatchEvent(sessionExpiredEvent)
           }
         }
         return Promise.reject(error)

@@ -23,6 +23,24 @@ api.interceptors.response.use(
       console.error(`📊 Status: ${error.response.status}`)
       console.error(`📋 Data:`, error.response.data)
       console.error(`📝 Headers:`, error.response.headers)
+
+      // Detectar expiração de sessão (401 Unauthorized)
+      if (error.response.status === 401) {
+        // Verificar se não é a página de login para evitar loop
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+          console.warn('🔒 Sessão expirada detectada - disparando evento')
+
+          // Disparar evento customizado para notificar componentes
+          const sessionExpiredEvent = new CustomEvent('session-expired', {
+            detail: {
+              status: 401,
+              message: 'Sessão expirada',
+              timestamp: new Date().toISOString()
+            }
+          })
+          window.dispatchEvent(sessionExpiredEvent)
+        }
+      }
     } else if (error.request) {
       console.error('❌ Network Error: Sem resposta do servidor')
       console.error('📡 Request:', error.request)

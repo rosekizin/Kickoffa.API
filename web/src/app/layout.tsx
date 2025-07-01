@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { QueryProvider } from "@/providers/query-client-provider";
+import { ToastProvider } from "@/components/providers/toast-provider";
+import { SessionManager } from "@/components/session/session-manager";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,7 +31,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <QueryProvider>
-          {children}
+          <ToastProvider>
+            <SessionManager
+              enableKeepAlive={true}
+              keepAlivePingInterval={900000}
+              enableKeepAliveLogging={false}
+            >
+              {children}
+            </SessionManager>
+          </ToastProvider>
         </QueryProvider>
       </body>
     </html>
