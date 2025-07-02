@@ -53,11 +53,12 @@ export function AuthGuard({
           AuthService.validateToken().then(isValid => {
             console.log('🔍 AuthGuard: Validação em background - Token válido =', isValid)
             if (!isValid) {
-              console.log('🔍 AuthGuard: Token inválido, fazendo logout')
+              console.log('🔍 AuthGuard: Token inválido - sessão expirada, fazendo logout')
               AuthService.logout()
               if (requireAuth) {
+                // Token inválido significa que havia uma sessão que expirou
                 triggerSessionExpiredNotification('token-validation')
-                // Não redirecionar imediatamente - deixar o SessionManager cuidar disso
+                return
               }
             }
           }).catch(error => {
@@ -68,8 +69,16 @@ export function AuthGuard({
           setIsAuthenticated(false)
 
           if (requireAuth) {
-            console.log('🔍 AuthGuard: Usuário não autenticado, disparando notificação')
-            triggerSessionExpiredNotification('not-authenticated')
+            console.log('🔍 AuthGuard: Redirecionando usuário não autenticado para login')
+
+            // Tentar router.push primeiro
+            try {
+              router.push(redirectTo)
+            } catch (error) {
+              console.error('❌ AuthGuard: Erro no router.push, usando window.location.href', error)
+              window.location.href = redirectTo
+            }
+
             return
           }
         }
@@ -78,8 +87,20 @@ export function AuthGuard({
         setIsAuthenticated(false)
 
         if (requireAuth) {
-          console.log('🔍 AuthGuard: Erro na autenticação, disparando notificação')
-          triggerSessionExpiredNotification('auth-error')
+          // Se houve erro na verificação, pode ser sessão expirada
+          // Verificar se o erro é 401 (não autorizado) para decidir se mostra notificação
+          if (error instanceof Error && error.message.includes('401')) {
+            console.log('🔍 AuthGuard: Erro 401 - sessão expirada, disparando notificação')
+            triggerSessionExpiredNotification('auth-error')
+          } else {
+            console.log('🔍 AuthGuard: Erro de rede/servidor, redirecionando para login')
+            try {
+              router.push(redirectTo)
+            } catch (routerError) {
+              console.error('❌ AuthGuard: Erro no router.push, usando window.location.href', routerError)
+              window.location.href = redirectTo
+            }
+          }
           return
         }
       } finally {
