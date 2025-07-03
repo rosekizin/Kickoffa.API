@@ -213,17 +213,7 @@ public class FileTypeServiceTests
 	private static FileType CreateFileType(long id, string mimeType, string extension, string displayName,
 		string? description, FileTypeCategory category, int? recommendedMaxSizeMB)
 	{
-		var fileType = new FileType
-		{
-			MimeType = mimeType,
-			Extension = extension,
-			DisplayName = displayName,
-			Description = description,
-			Category = category,
-			IsActive = true,
-			RecommendedMaxSizeMB = recommendedMaxSizeMB,
-			DisplayOrder = 1
-		};
+		var fileType = new FileType(mimeType, extension, displayName, category, description, recommendedMaxSizeMB, 1, true);
 
 		// Simular ID usando reflection (já que BaseEntity pode ter ID protegido)
 		var idProperty = typeof(FileType).BaseType?.GetProperty("Id");

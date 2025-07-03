@@ -8,6 +8,11 @@ namespace Kickoffa.API.Domain.Models.Items
 	/// </summary>
 	public class CheckboxItem : Item
 	{
+		public CheckboxItem(long sectionId, string title, int order, string? description, bool isRequired)
+			: base(sectionId, title, order, description, isRequired)
+		{
+		}
+
 		public override ItemType Type => ItemType.Checkbox;
 	}
 }

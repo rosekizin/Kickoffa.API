@@ -8,6 +8,11 @@ namespace Kickoffa.API.Domain.Models.Items
 	/// </summary>
 	public class SignatureItem : Item
 	{
+		public SignatureItem(long sectionId, string title, int order, string? description, bool isRequired)
+			: base(sectionId, title, order, description, isRequired)
+		{
+		}
+
 		public override ItemType Type => ItemType.Signature;
 	}
 }

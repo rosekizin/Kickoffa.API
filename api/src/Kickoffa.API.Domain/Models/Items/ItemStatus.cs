@@ -6,7 +6,7 @@ namespace Kickoffa.API.Domain.Models.Items
 	public class ItemStatus : BaseEntity<ItemStatus>
 	{
 		public long ItemId { get; set; }
-		public bool Completed { get; set; }
+		public bool IsCompleted { get; set; }
 		public DateTime? CompletedAt { get; set; }
 		public string? Response { get; set; } // Resposta textual quando aplicável
 

@@ -28,7 +28,7 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			entity.Property(ist => ist.ItemId)
 				.IsRequired();
 
-			entity.Property(ist => ist.Completed)
+			entity.Property(ist => ist.IsCompleted)
 				.IsRequired()
 				.HasDefaultValue(false);
 
@@ -58,8 +58,8 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 				.IsUnique()
 				.HasDatabaseName("IX_ItemStatuses_ItemId");
 
-			entity.HasIndex(ist => ist.Completed)
-				.HasDatabaseName("IX_ItemStatuses_Completed");
+			entity.HasIndex(ist => ist.IsCompleted)
+				.HasDatabaseName("IX_ItemStatuses_IsCompleted");
 
 			entity.HasIndex(ist => ist.Sha256Hash)
 				.HasDatabaseName("IX_ItemStatuses_Sha256Hash");

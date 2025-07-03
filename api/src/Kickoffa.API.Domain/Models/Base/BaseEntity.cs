@@ -13,6 +13,11 @@
 			LastUpdatedDateUtc = CreatedDateUtc;
 		}
 
+		protected void UpdateLastUpdatedDate() 
+		{
+			LastUpdatedDateUtc = DateTime.UtcNow;
+		}
+
 		// Método interno para definir o ID quando carregado do banco
 		internal void SetId(long id)
 		{

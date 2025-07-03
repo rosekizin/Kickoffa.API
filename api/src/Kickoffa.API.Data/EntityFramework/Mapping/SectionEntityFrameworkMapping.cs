@@ -14,15 +14,21 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 	{
 		public void Map(ModelBuilder modelBuilder)
 		{
+			// Configuração da hierarquia usando Table-Per-Hierarchy (TPH)
 			var entity = modelBuilder.Entity<Section>();
 
 			// Configuração da tabela
 			entity.ToTable("Sections");
 
+			// Configuração do discriminador para TPH
+			entity.HasDiscriminator<string>("Type")
+				.HasValue<BriefingSection>("Briefing")
+				.HasValue<ChecklistSection>("Checklist");
+
 			// Chave primária
 			entity.HasKey(s => s.Id);
 
-			// Propriedades
+			// Propriedades da classe base
 			entity.Property(s => s.Id)
 				.ValueGeneratedOnAdd()
 				.IsRequired();
@@ -34,24 +40,46 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 				.IsRequired()
 				.HasMaxLength(200);
 
-			entity.Property(s => s.Type)
-				.IsRequired()
-				.HasConversion<string>();
-
 			entity.Property(s => s.Order)
 				.IsRequired();
-
-			entity.Property(s => s.ContentJson)
-				.HasColumnType("TEXT");
-
-			entity.Property(s => s.ContentHtml)
-				.HasColumnType("TEXT");
 
 			entity.Property(s => s.CreatedDateUtc)
 				.IsRequired();
 
 			entity.Property(s => s.LastUpdatedDateUtc)
 				.IsRequired();
+
+			// Relacionamento com Checklist
+			entity.HasOne(s => s.Checklist)
+				.WithMany(c => c.Sections)
+				.HasForeignKey(s => s.ChecklistId)
+				.OnDelete(DeleteBehavior.Cascade);
+
+			// Configuração específica para BriefingSection
+			var briefingEntity = modelBuilder.Entity<BriefingSection>();
+
+			briefingEntity.Property(bs => bs.ContentJson)
+				.HasColumnType("TEXT");
+
+			briefingEntity.Property(bs => bs.ContentHtml)
+				.HasColumnType("TEXT");
+
+			briefingEntity.Property(bs => bs.ContentLastUpdated);
+
+			// Relacionamento com Media (apenas para BriefingSection)
+			briefingEntity.HasMany(bs => bs.Media)
+				.WithOne(m => m.Section)
+				.HasForeignKey(m => m.SectionId)
+				.OnDelete(DeleteBehavior.Cascade);
+
+			// Configuração específica para ChecklistSection
+			var checklistEntity = modelBuilder.Entity<ChecklistSection>();
+
+			// Relacionamento com Items (apenas para ChecklistSection)
+			checklistEntity.HasMany(cs => cs.Items)
+				.WithOne(i => i.Section)
+				.HasForeignKey(i => i.SectionId)
+				.OnDelete(DeleteBehavior.Cascade);
 
 			// Índices
 			entity.HasIndex(s => s.ChecklistId)
@@ -60,24 +88,8 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			entity.HasIndex(s => new { s.ChecklistId, s.Order })
 				.HasDatabaseName("IX_Sections_ChecklistId_Order");
 
-			entity.HasIndex(s => s.Type)
+			entity.HasIndex("Type")
 				.HasDatabaseName("IX_Sections_Type");
-
-			// Relacionamentos
-			entity.HasOne(s => s.Checklist)
-				.WithMany(c => c.Sections)
-				.HasForeignKey(s => s.ChecklistId)
-				.OnDelete(DeleteBehavior.Cascade);
-
-			entity.HasMany(s => s.Items)
-				.WithOne(i => i.Section)
-				.HasForeignKey(i => i.SectionId)
-				.OnDelete(DeleteBehavior.Cascade);
-
-			entity.HasMany(s => s.Media)
-				.WithOne(m => m.Section)
-				.HasForeignKey(m => m.SectionId)
-				.OnDelete(DeleteBehavior.Cascade);
 		}
 	}
 }
