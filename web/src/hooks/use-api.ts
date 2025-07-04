@@ -214,7 +214,13 @@ export const useDeleteCustomer = () => {
 // Authentication
 export const useLogin = () => {
   return useMutation({
-    mutationFn: (loginData: LoginRequest) => AuthService.login(loginData)
+    mutationFn: (loginData: LoginRequest) => AuthService.login(loginData),
+    onSuccess: (data) => {
+      // Disparar evento para atualizar contexto
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth-login', { detail: data }))
+      }
+    }
   })
 }
 

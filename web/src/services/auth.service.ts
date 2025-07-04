@@ -52,6 +52,11 @@ export class AuthService {
     } finally {
       // Limpar apenas dados do usuário do localStorage
       this.clearAuthData()
+
+      // Disparar evento para atualizar contexto
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth-logout'))
+      }
     }
   }
 
