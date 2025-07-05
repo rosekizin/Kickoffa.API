@@ -24,8 +24,12 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
             services.AddScoped<IItemStatusEntityFrameworkMapping, ItemStatusEntityFrameworkMapping>();
             services.AddScoped<IBriefingMediaEntityFrameworkMapping, BriefingMediaEntityFrameworkMapping>();
             services.AddScoped<IFileTypeEntityFrameworkMapping, FileTypeEntityFrameworkMapping>();
-            services.AddScoped<IUploadItemFileTypeEntityFrameworkMapping, UploadItemFileTypeEntityFrameworkMapping>();
             services.AddScoped<IUploadItemFileEntityFrameworkMapping, UploadItemFileEntityFrameworkMapping>();
+            services.AddScoped<ITextItemEntityFrameworkMapping, TextItemEntityFrameworkMapping>();
+            services.AddScoped<IUploadItemEntityFrameworkMapping, UploadItemEntityFrameworkMapping>();
+            services.AddScoped<IConfirmationItemEntityFrameworkMapping, ConfirmationItemEntityFrameworkMapping>();
+            services.AddScoped<ICheckboxItemEntityFrameworkMapping, CheckboxItemEntityFrameworkMapping>();
+            services.AddScoped<ISignatureItemEntityFrameworkMapping, SignatureItemEntityFrameworkMapping>();
 
             // Registrar repositório base genérico
             services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
@@ -42,6 +46,11 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
             services.AddScoped<IItemStatusRepository, ItemStatusRepository>();
             services.AddScoped<IBriefingMediaRepository, BriefingMediaRepository>();
             services.AddScoped<IUploadItemFileRepository, UploadItemFileRepository>();
+            services.AddScoped<ITextItemRepository, TextItemRepository>();
+            services.AddScoped<IUploadItemRepository, UploadItemRepository>();
+            services.AddScoped<IConfirmationItemRepository, ConfirmationItemRepository>();
+            services.AddScoped<ICheckboxItemRepository, CheckboxItemRepository>();
+            services.AddScoped<ISignatureItemRepository, SignatureItemRepository>();
 
             return services;
         }     

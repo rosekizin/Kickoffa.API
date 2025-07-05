@@ -6,7 +6,7 @@ namespace Kickoffa.API.Domain.Models
 	/// <summary>
 	/// Classe base para seções de checklist
 	/// </summary>
-	public abstract class Section : BaseEntity<Section>
+	public abstract class Section : BaseEntity
 	{
 
 		/// <summary>

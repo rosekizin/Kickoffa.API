@@ -2,7 +2,7 @@
 
 namespace Kickoffa.API.Domain.Models.Items
 {
-	public class UploadItemFile : BaseEntity<UploadItemFile>
+	public class UploadItemFile : BaseEntity
 	{
 		public UploadItemFile(string fileName, string storagePath, long fileSize, string contentType, string sha256Hash)
 		{

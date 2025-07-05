@@ -2,7 +2,7 @@
 
 namespace Kickoffa.API.Domain.Models.FreelancerCustomer
 {
-	public class Customer : BaseEntity<Customer>
+	public class Customer : BaseEntity
 	{
 		public string FirstName { get; private set; }
 		public string LastName { get; private set; }

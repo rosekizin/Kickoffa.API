@@ -16,8 +16,12 @@ namespace Kickoffa.API.Data.UnitTests.Repositories.DbContext
 		private readonly IItemStatusEntityFrameworkMapping _itemStatusEntityFrameworkMapping;
 		private readonly IBriefingMediaEntityFrameworkMapping _briefingMediaEntityFrameworkMapping;
 		private readonly IFileTypeEntityFrameworkMapping _fileTypeEntityFrameworkMapping;
-		private readonly IUploadItemFileTypeEntityFrameworkMapping _uploadItemFileTypeEntityFrameworkMapping;
 		private readonly IUploadItemFileEntityFrameworkMapping _uploadItemFileEntityFrameworkMapping;
+		private readonly ITextItemEntityFrameworkMapping _textItemEntityFrameworkMapping;
+		private readonly IUploadItemEntityFrameworkMapping _uploadItemEntityFrameworkMapping;
+		private readonly IConfirmationItemEntityFrameworkMapping _confirmationItemEntityFrameworkMapping;
+		private readonly ICheckboxItemEntityFrameworkMapping _checkboxItemEntityFrameworkMapping;
+		private readonly ISignatureItemEntityFrameworkMapping _signatureItemEntityFrameworkMapping;
 
 		public KickoffaDbContextFixture()
 		{
@@ -29,8 +33,12 @@ namespace Kickoffa.API.Data.UnitTests.Repositories.DbContext
 			_itemStatusEntityFrameworkMapping = Substitute.For<IItemStatusEntityFrameworkMapping>();
 			_briefingMediaEntityFrameworkMapping = Substitute.For<IBriefingMediaEntityFrameworkMapping>();
 			_fileTypeEntityFrameworkMapping = Substitute.For<IFileTypeEntityFrameworkMapping>();
-			_uploadItemFileTypeEntityFrameworkMapping = Substitute.For<IUploadItemFileTypeEntityFrameworkMapping>();
 			_uploadItemFileEntityFrameworkMapping = Substitute.For<IUploadItemFileEntityFrameworkMapping>();
+			_textItemEntityFrameworkMapping = Substitute.For<ITextItemEntityFrameworkMapping>();
+			_uploadItemEntityFrameworkMapping = Substitute.For<IUploadItemEntityFrameworkMapping>();
+			_confirmationItemEntityFrameworkMapping = Substitute.For<IConfirmationItemEntityFrameworkMapping>();
+			_checkboxItemEntityFrameworkMapping = Substitute.For<ICheckboxItemEntityFrameworkMapping>();
+			_signatureItemEntityFrameworkMapping = Substitute.For<ISignatureItemEntityFrameworkMapping>();
 
 			_dbContext = GetNewDbContext();
 		}
@@ -53,8 +61,12 @@ namespace Kickoffa.API.Data.UnitTests.Repositories.DbContext
 				_itemStatusEntityFrameworkMapping,
 				_briefingMediaEntityFrameworkMapping,
 				_fileTypeEntityFrameworkMapping,
-				_uploadItemFileTypeEntityFrameworkMapping,
-				_uploadItemFileEntityFrameworkMapping);
+				_uploadItemFileEntityFrameworkMapping,
+				_textItemEntityFrameworkMapping,
+				_uploadItemEntityFrameworkMapping,
+				_confirmationItemEntityFrameworkMapping,
+				_checkboxItemEntityFrameworkMapping,
+				_signatureItemEntityFrameworkMapping);
 
 			return newDbContext;
 		}

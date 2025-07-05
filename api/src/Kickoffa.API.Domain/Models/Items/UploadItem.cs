@@ -43,8 +43,9 @@ namespace Kickoffa.API.Domain.Models.Items
 
 		/// <summary>
 		/// Tipos de arquivo permitidos para este item de upload
+		/// Relacionamento N:N unidirecional - UploadItem conhece FileType, mas FileType não conhece UploadItem
 		/// </summary>
-		public ICollection<UploadItemFileType> AllowedFileTypes { get; private set; }
+		public ICollection<FileType> AllowedFileTypes { get; private set; }
 
 		public void AddFiles(UploadItemFile file)
 		{

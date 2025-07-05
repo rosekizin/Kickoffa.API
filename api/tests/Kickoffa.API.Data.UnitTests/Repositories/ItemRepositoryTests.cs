@@ -204,6 +204,44 @@ public class ItemRepositoryTests : IClassFixture<KickoffaDbContextFixture>
 		}
 	}
 
+	[Fact]
+	public async Task GetBySectionIdAsync_Generic_ShouldReturnSpecificType()
+	{
+		// Arrange
+		var section = await _dbContext.Sections.FirstAsync(_cancellationToken);
+
+		// Act - Buscar apenas TextItems
+		var textItems = await _repository.GetBySectionIdAsync<TextItem>(section.Id, _cancellationToken);
+		var uploadItems = await _repository.GetBySectionIdAsync<UploadItem>(section.Id, _cancellationToken);
+
+		// Assert
+		var textItemsList = textItems.ToList();
+		var uploadItemsList = uploadItems.ToList();
+
+		Assert.Single(textItemsList); // Apenas 1 TextItem
+		Assert.Single(uploadItemsList); // Apenas 1 UploadItem
+
+		Assert.All(textItemsList, i => Assert.IsType<TextItem>(i));
+		Assert.All(uploadItemsList, i => Assert.IsType<UploadItem>(i));
+	}
+
+	[Theory]
+	[InlineData(1)]
+	public async Task CountBySectionIdAsync_Generic_ShouldReturnCorrectCount(int expectedCount)
+	{
+		// Arrange
+		var section = await _dbContext.Sections.FirstAsync(_cancellationToken);
+
+		// Act & Assert
+		var textCount = await _repository.CountBySectionIdAsync<TextItem>(section.Id, _cancellationToken);
+		var uploadCount = await _repository.CountBySectionIdAsync<UploadItem>(section.Id, _cancellationToken);
+		var confirmationCount = await _repository.CountBySectionIdAsync<ConfirmationItem>(section.Id, _cancellationToken);
+
+		Assert.Equal(expectedCount, textCount);
+		Assert.Equal(expectedCount, uploadCount);
+		Assert.Equal(expectedCount, confirmationCount);
+	}
+
 	private void SeedTestData()
 	{
 		// Criar checklist e seção primeiro

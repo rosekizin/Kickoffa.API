@@ -80,6 +80,28 @@ namespace Kickoffa.API.Data.Repositories
 		}
 
 		/// <summary>
+		/// Busca itens por tipo específico e seção (método genérico)
+		/// </summary>
+		public async Task<IEnumerable<T>> GetBySectionIdAsync<T>(long sectionId, CancellationToken cancellationToken) where T : Item
+		{
+			return await _context.Items
+				.OfType<T>()
+				.Where(i => i.SectionId == sectionId)
+				.OrderBy(i => i.Order)
+				.ToListAsync(cancellationToken);
+		}
+
+		/// <summary>
+		/// Conta itens por tipo específico e seção (método genérico)
+		/// </summary>
+		public async Task<int> CountBySectionIdAsync<T>(long sectionId, CancellationToken cancellationToken) where T : Item
+		{
+			return await _context.Items
+				.OfType<T>()
+				.CountAsync(i => i.SectionId == sectionId, cancellationToken);
+		}
+
+		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
 		public override async Task<Item?> GetByIdAsync(long id, CancellationToken cancellationToken)

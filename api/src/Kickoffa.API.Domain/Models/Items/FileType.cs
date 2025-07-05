@@ -6,7 +6,7 @@ namespace Kickoffa.API.Domain.Models.Items
 	/// <summary>
 	/// Representa um tipo de arquivo suportado para upload
 	/// </summary>
-	public class FileType : BaseEntity<FileType>
+	public class FileType : BaseEntity
 	{
 		/// <summary>
 		/// MIME type do arquivo (ex: "image/jpeg", "application/pdf")

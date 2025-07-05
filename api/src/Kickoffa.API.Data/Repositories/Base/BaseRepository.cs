@@ -6,7 +6,7 @@ using Kickoffa.API.Domain.Repositories;
 
 namespace Kickoffa.API.Data.Repositories.Base
 {
-    public class BaseRepository<T> : IBaseRepository<T> where T : BaseEntity<T>
+    public class BaseRepository<T> : IBaseRepository<T> where T : BaseEntity
     {
         protected readonly KickoffaDbContext _context;
         protected readonly DbSet<T> _dbSet;

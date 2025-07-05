@@ -3,7 +3,7 @@ using Kickoffa.API.Domain.Models.Items.Base;
 
 namespace Kickoffa.API.Domain.Models.Items
 {
-	public class ItemStatus : BaseEntity<ItemStatus>
+	public class ItemStatus : BaseEntity
 	{
 		public ItemStatus(long itemId, bool isCompleted, DateTime? completedAt, string? response)
 		{

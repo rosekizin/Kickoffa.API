@@ -1,6 +1,6 @@
 ﻿namespace Kickoffa.API.Domain.Models.Base
 {
-	public class BaseEntity<T> where T : class
+	public class BaseEntity
 	{
 		public long Id { get; private set; }
 		public DateTime CreatedDateUtc { get; private set; }

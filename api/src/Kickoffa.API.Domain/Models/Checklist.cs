@@ -3,7 +3,7 @@ using Kickoffa.API.Domain.Models.Base;
 
 namespace Kickoffa.API.Domain.Models
 {
-	public class Checklist : BaseEntity<Checklist>
+	public class Checklist : BaseEntity
 	{
 		/// <summary>
 		/// Construtor para criação de novo checklist

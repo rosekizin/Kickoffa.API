@@ -16,10 +16,14 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 		DbSet<Checklist> Checklists { get; }
 		DbSet<Section> Sections { get; }
 		DbSet<Item> Items { get; }
+		DbSet<TextItem> TextItems { get; }
+		DbSet<UploadItem> UploadItems { get; }
+		DbSet<ConfirmationItem> ConfirmationItems { get; }
+		DbSet<CheckboxItem> CheckboxItems { get; }
+		DbSet<SignatureItem> SignatureItems { get; }
 		DbSet<ItemStatus> ItemStatuses { get; }
 		DbSet<BriefingMedia> BriefingMedias { get; }
 		DbSet<FileType> FileTypes { get; }
-		DbSet<UploadItemFileType> UploadItemFileTypes { get; }
 		DbSet<UploadItemFile> UploadItemFiles { get; }
 		// Users é gerenciado pelo Identity, não precisamos expor aqui
 		IDbContextTransaction BeginTransaction();
@@ -37,8 +41,12 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 		private readonly IItemStatusEntityFrameworkMapping _itemStatusEntityFrameworkMapping;
 		private readonly IBriefingMediaEntityFrameworkMapping _briefingMediaEntityFrameworkMapping;
 		private readonly IFileTypeEntityFrameworkMapping _fileTypeEntityFrameworkMapping;
-		private readonly IUploadItemFileTypeEntityFrameworkMapping _uploadItemFileTypeEntityFrameworkMapping;
 		private readonly IUploadItemFileEntityFrameworkMapping _uploadItemFileEntityFrameworkMapping;
+		private readonly ITextItemEntityFrameworkMapping _textItemEntityFrameworkMapping;
+		private readonly IUploadItemEntityFrameworkMapping _uploadItemEntityFrameworkMapping;
+		private readonly IConfirmationItemEntityFrameworkMapping _confirmationItemEntityFrameworkMapping;
+		private readonly ICheckboxItemEntityFrameworkMapping _checkboxItemEntityFrameworkMapping;
+		private readonly ISignatureItemEntityFrameworkMapping _signatureItemEntityFrameworkMapping;
 
 
 		public KickoffaDbContext(
@@ -51,8 +59,12 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 			IItemStatusEntityFrameworkMapping itemStatusEntityFrameworkMapping,
 			IBriefingMediaEntityFrameworkMapping briefingMediaEntityFrameworkMapping,
 			IFileTypeEntityFrameworkMapping fileTypeEntityFrameworkMapping,
-			IUploadItemFileTypeEntityFrameworkMapping uploadItemFileTypeEntityFrameworkMapping,
-			IUploadItemFileEntityFrameworkMapping uploadItemFileEntityFrameworkMapping) : base(options)
+			IUploadItemFileEntityFrameworkMapping uploadItemFileEntityFrameworkMapping,
+			ITextItemEntityFrameworkMapping textItemEntityFrameworkMapping,
+			IUploadItemEntityFrameworkMapping uploadItemEntityFrameworkMapping,
+			IConfirmationItemEntityFrameworkMapping confirmationItemEntityFrameworkMapping,
+			ICheckboxItemEntityFrameworkMapping checkboxItemEntityFrameworkMapping,
+			ISignatureItemEntityFrameworkMapping signatureItemEntityFrameworkMapping) : base(options)
 		{
 			_customerEntityFrameworkMapping = customerEntityFrameworkMapping;
 			_userEntityFrameworkMapping = userEntityFrameworkMapping;
@@ -62,18 +74,26 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 			_itemStatusEntityFrameworkMapping = itemStatusEntityFrameworkMapping;
 			_briefingMediaEntityFrameworkMapping = briefingMediaEntityFrameworkMapping;
 			_fileTypeEntityFrameworkMapping = fileTypeEntityFrameworkMapping;
-			_uploadItemFileTypeEntityFrameworkMapping = uploadItemFileTypeEntityFrameworkMapping;
 			_uploadItemFileEntityFrameworkMapping = uploadItemFileEntityFrameworkMapping;
+			_textItemEntityFrameworkMapping = textItemEntityFrameworkMapping;
+			_uploadItemEntityFrameworkMapping = uploadItemEntityFrameworkMapping;
+			_confirmationItemEntityFrameworkMapping = confirmationItemEntityFrameworkMapping;
+			_checkboxItemEntityFrameworkMapping = checkboxItemEntityFrameworkMapping;
+			_signatureItemEntityFrameworkMapping = signatureItemEntityFrameworkMapping;
 		}
 
 		public DbSet<Customer> Customers { get; private set; }
 		public DbSet<Checklist> Checklists { get; private set; }
 		public DbSet<Section> Sections { get; private set; }
 		public DbSet<Item> Items { get; private set; }
+		public DbSet<TextItem> TextItems { get; private set; }
+		public DbSet<UploadItem> UploadItems { get; private set; }
+		public DbSet<ConfirmationItem> ConfirmationItems { get; private set; }
+		public DbSet<CheckboxItem> CheckboxItems { get; private set; }
+		public DbSet<SignatureItem> SignatureItems { get; private set; }
 		public DbSet<ItemStatus> ItemStatuses { get; private set; }
 		public DbSet<BriefingMedia> BriefingMedias { get; private set; }
 		public DbSet<FileType> FileTypes { get; private set; }
-		public DbSet<UploadItemFileType> UploadItemFileTypes { get; private set; }
 		public DbSet<UploadItemFile> UploadItemFiles { get; private set; }
 
 		public IDbContextTransaction BeginTransaction()
@@ -93,8 +113,12 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 			_itemStatusEntityFrameworkMapping.Map(modelBuilder);
 			_briefingMediaEntityFrameworkMapping.Map(modelBuilder);
 			_fileTypeEntityFrameworkMapping.Map(modelBuilder);
-			_uploadItemFileTypeEntityFrameworkMapping.Map(modelBuilder);
 			_uploadItemFileEntityFrameworkMapping.Map(modelBuilder);
+			_textItemEntityFrameworkMapping.Map(modelBuilder);
+			_uploadItemEntityFrameworkMapping.Map(modelBuilder);
+			_confirmationItemEntityFrameworkMapping.Map(modelBuilder);
+			_checkboxItemEntityFrameworkMapping.Map(modelBuilder);
+			_signatureItemEntityFrameworkMapping.Map(modelBuilder);
 		}
 	}
 }

@@ -159,7 +159,6 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 			services.AddSingleton<IItemStatusEntityFrameworkMapping, ItemStatusEntityFrameworkMapping>();
 			services.AddSingleton<IBriefingMediaEntityFrameworkMapping, BriefingMediaEntityFrameworkMapping>();
 			services.AddSingleton<IFileTypeEntityFrameworkMapping, FileTypeEntityFrameworkMapping>();
-			services.AddSingleton<IUploadItemFileTypeEntityFrameworkMapping, UploadItemFileTypeEntityFrameworkMapping>();
 		}
 	}
 }

@@ -6,7 +6,7 @@ namespace Kickoffa.API.Domain.Models.Items.Base
 	/// <summary>
 	/// Classe base abstrata para todos os tipos de itens de checklist
 	/// </summary>
-	public abstract class Item : BaseEntity<Item>
+	public abstract class Item : BaseEntity
 	{
 		public long SectionId { get; private set; }
 		public int Order { get; private set; }

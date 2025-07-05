@@ -3,7 +3,7 @@ using Kickoffa.API.Domain.Models.Base;
 
 namespace Kickoffa.API.Domain.Repositories
 {
-    public interface IBaseRepository<T> where T : BaseEntity<T>
+    public interface IBaseRepository<T> where T : BaseEntity
     {
         // Métodos síncronos
         T? GetById(long id);

@@ -2,7 +2,7 @@
 
 namespace Kickoffa.API.Domain.Models
 {
-	public class BriefingMedia : BaseEntity<BriefingMedia>
+	public class BriefingMedia : BaseEntity
 	{
 		/// <summary>
 		/// Construtor para criação de nova mídia

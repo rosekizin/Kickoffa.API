@@ -15,19 +15,11 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 		{
 			var entity = modelBuilder.Entity<Item>();
 
-			// Configuração da tabela (Table-Per-Hierarchy)
-			entity.ToTable("Items");
+			// Configuração TPC (Table-Per-Concrete-Type)
+			entity.UseTpcMappingStrategy();
 
 			// Chave primária
 			entity.HasKey(i => i.Id);
-
-			// Discriminator para hierarquia
-			entity.HasDiscriminator<string>("ItemType")
-				.HasValue<CheckboxItem>("Checkbox")
-				.HasValue<TextItem>("Text")
-				.HasValue<UploadItem>("Upload")
-				.HasValue<SignatureItem>("Signature")
-				.HasValue<ConfirmationItem>("Confirmation");
 
 			// Propriedades base
 			entity.Property(i => i.Id)
@@ -64,9 +56,6 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			entity.HasIndex(i => new { i.SectionId, i.Order })
 				.HasDatabaseName("IX_Items_SectionId_Order");
 
-			entity.HasIndex("ItemType")
-				.HasDatabaseName("IX_Items_ItemType");
-
 			// Relacionamentos
 			entity.HasOne(i => i.Section)
 				.WithMany(s => s.Items)
@@ -78,33 +67,8 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 				.HasForeignKey<ItemStatus>(s => s.ItemId)
 				.OnDelete(DeleteBehavior.Cascade);
 
-			// Configuração específica para TextItem
-			var textEntity = modelBuilder.Entity<TextItem>();
-
-			textEntity.Property(t => t.Placeholder)
-				.HasMaxLength(200);
-
-			textEntity.Property(t => t.MaxLength);
-
-			// Configuração específica para UploadItem
-			var uploadEntity = modelBuilder.Entity<UploadItem>();
-
-			uploadEntity.Property(u => u.MaxSizeMB);
-
-			uploadEntity.Property(u => u.Placeholder)
-				.HasMaxLength(200);
-
-			// Relacionamento com UploadItemFile (1:N)
-			uploadEntity.HasMany(u => u.ItemFiles)
-				.WithOne(f => f.UploadItem)
-				.HasForeignKey("UploadItemId")
-				.OnDelete(DeleteBehavior.Cascade);
-
-			// Configuração específica para ConfirmationItem
-			var confirmationEntity = modelBuilder.Entity<ConfirmationItem>();
-
-			confirmationEntity.Property(c => c.ConfirmationText)
-				.HasMaxLength(1000);
+			// Nota: Configurações específicas de cada tipo são feitas em seus próprios mapeamentos
+			// TextItemEntityFrameworkMapping, UploadItemEntityFrameworkMapping, etc.
 		}
 	}
 }
