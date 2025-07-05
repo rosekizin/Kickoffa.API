@@ -79,32 +79,23 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 				.OnDelete(DeleteBehavior.Cascade);
 
 			// Configurações específicas para TextItem
-			entity.OwnsOne<TextItem>("TextItem", textItem =>
-			{
-				textItem.Property("Placeholder")
-					.HasMaxLength(200);
-
-				textItem.Property("MaxLength");
-			});
+			var textEntity = modelBuilder.Entity<TextItem>();
+			textEntity.Property(t => t.Placeholder)
+				.HasMaxLength(200);
+			textEntity.Property(t => t.MaxLength);
 
 			// Configurações específicas para UploadItem
-			entity.OwnsOne<UploadItem>("UploadItem", uploadItem =>
-			{
-				uploadItem.Property("AllowedMimeTypes")
-					.HasMaxLength(500);
-
-				uploadItem.Property("MaxSizeMB");
-
-				uploadItem.Property("Placeholder")
-					.HasMaxLength(200);
-			});
+			var uploadEntity = modelBuilder.Entity<UploadItem>();
+			//uploadEntity.Property(u => u.AllowedMimeTypes)
+			//	.HasMaxLength(500);
+			uploadEntity.Property(u => u.MaxSizeMB);
+			uploadEntity.Property(u => u.Placeholder)
+				.HasMaxLength(200);
 
 			// Configurações específicas para ConfirmationItem
-			entity.OwnsOne<ConfirmationItem>("ConfirmationItem", confirmationItem =>
-			{
-				confirmationItem.Property("ConfirmationText")
-					.HasMaxLength(1000);
-			});
+			var confirmationEntity = modelBuilder.Entity<ConfirmationItem>();
+			confirmationEntity.Property(c => c.ConfirmationText)
+				.HasMaxLength(1000);
 		}
 	}
 }

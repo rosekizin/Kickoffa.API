@@ -80,8 +80,7 @@ public static class ApplicationServiceCollectionExtensions
             options.LoginPath = "/api/auth/login";
             options.LogoutPath = "/api/auth/logout";
             options.AccessDeniedPath = "/api/auth/access-denied";
-            options.ExpireTimeSpan = TimeSpan.FromSeconds(10);
-            //options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+            options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
             options.SlidingExpiration = true;
             options.Cookie.HttpOnly = true;
             options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
