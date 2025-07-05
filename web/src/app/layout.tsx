@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { QueryProvider } from "@/providers/query-client-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { SessionManager } from "@/components/session/session-manager";
+import { AuthProvider } from "@/contexts/auth-context";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,13 +33,15 @@ export default function RootLayout({
       >
         <QueryProvider>
           <ToastProvider>
-            <SessionManager
-              enableKeepAlive={true}
-              keepAlivePingInterval={900000}
-              enableKeepAliveLogging={false}
-            >
-              {children}
-            </SessionManager>
+            <AuthProvider>
+              <SessionManager
+                enableKeepAlive={true}
+                keepAlivePingInterval={900000}
+                enableKeepAliveLogging={false}
+              >
+                {children}
+              </SessionManager>
+            </AuthProvider>
           </ToastProvider>
         </QueryProvider>
       </body>

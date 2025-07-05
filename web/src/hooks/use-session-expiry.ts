@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/providers/toast-provider'
+import { AuthService } from '@/services/auth.service'
 
 interface UseSessionExpiryOptions {
   onSessionExpired?: () => void
@@ -46,12 +47,14 @@ export const useSessionExpiry = (options: UseSessionExpiryOptions = {}) => {
 
   const handleModalRedirect = () => {
     setIsModalOpen(false)
+    // Fazer logout antes de redirecionar
+    AuthService.logout()
     router.push(redirectTo)
   }
 
   // Interceptar respostas 401 da API
   useEffect(() => {
-    const handleUnauthorized = (event: CustomEvent) => {
+    const handleUnauthorized = () => {
       handleSessionExpired()
     }
 

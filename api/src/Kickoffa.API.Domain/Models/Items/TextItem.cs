@@ -8,10 +8,10 @@ namespace Kickoffa.API.Domain.Models.Items
 	/// </summary>
 	public class TextItem : Item
 	{
-		public TextItem(long sectionId, string title, int order, string? description, bool isRequired, string? placeholder, int? maxLenth)
+		public TextItem(long sectionId, string title, int order, string? description, bool isRequired, string? placeholder, int? maxLength)
 			: base(sectionId, title, order, description, isRequired)
 		{
-			MaxLength = maxLenth;
+			MaxLength = maxLength;
 			Placeholder = placeholder;
 		}
 

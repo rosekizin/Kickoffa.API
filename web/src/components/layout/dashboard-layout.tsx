@@ -98,7 +98,7 @@ export const DashboardLayout = ({ children, showSearchBar = true }: DashboardLay
   ]
 
   return (
-    <AuthGuard>
+    <AuthGuard showLoadingOnNavigation={false}>
       <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar */}
       <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>

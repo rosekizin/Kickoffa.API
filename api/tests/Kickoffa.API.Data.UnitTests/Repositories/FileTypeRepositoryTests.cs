@@ -12,9 +12,15 @@ public class FileTypeRepositoryTests : IDisposable
 {
 	private readonly KickoffaDbContext _context;
 	private readonly FileTypeRepository _repository;
-	private readonly IUserEntityFrameworkMapping _userEntityFrameworkMapping;
 	private readonly ICustomerEntityFrameworkMapping _customerEntityFrameworkMapping;
+	private readonly IUserEntityFrameworkMapping _userEntityFrameworkMapping;
+	private readonly IChecklistEntityFrameworkMapping _checklistEntityFrameworkMapping;
+	private readonly ISectionEntityFrameworkMapping _sectionEntityFrameworkMapping;
+	private readonly IItemEntityFrameworkMapping _itemEntityFrameworkMapping;
+	private readonly IItemStatusEntityFrameworkMapping _itemStatusEntityFrameworkMapping;
+	private readonly IBriefingMediaEntityFrameworkMapping _briefingMediaEntityFrameworkMapping;
 	private readonly IFileTypeEntityFrameworkMapping _fileTypeEntityFrameworkMapping;
+	private readonly IUploadItemFileTypeEntityFrameworkMapping _uploadItemFileTypeEntityFrameworkMapping;
 
 	public FileTypeRepositoryTests()
 	{
@@ -22,10 +28,29 @@ public class FileTypeRepositoryTests : IDisposable
 			.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
 			.Options;
 
-		_userEntityFrameworkMapping = Substitute.For<IUserEntityFrameworkMapping>();
 		_customerEntityFrameworkMapping = Substitute.For<ICustomerEntityFrameworkMapping>();
+		_userEntityFrameworkMapping = Substitute.For<IUserEntityFrameworkMapping>();
 		_fileTypeEntityFrameworkMapping = Substitute.For<IFileTypeEntityFrameworkMapping>();
-		_context = new KickoffaDbContext(options, _customerEntityFrameworkMapping, _userEntityFrameworkMapping, _fileTypeEntityFrameworkMapping);
+		_checklistEntityFrameworkMapping = Substitute.For<IChecklistEntityFrameworkMapping>();
+		_sectionEntityFrameworkMapping = Substitute.For<ISectionEntityFrameworkMapping>();
+		_itemEntityFrameworkMapping = Substitute.For<IItemEntityFrameworkMapping>();
+		_itemStatusEntityFrameworkMapping = Substitute.For<IItemStatusEntityFrameworkMapping>();
+		_briefingMediaEntityFrameworkMapping = Substitute.For<IBriefingMediaEntityFrameworkMapping>();
+		_fileTypeEntityFrameworkMapping = Substitute.For<IFileTypeEntityFrameworkMapping>();
+		_uploadItemFileTypeEntityFrameworkMapping = Substitute.For<IUploadItemFileTypeEntityFrameworkMapping>();
+
+		_context = new KickoffaDbContext(
+			options,
+			_customerEntityFrameworkMapping,
+			_userEntityFrameworkMapping,
+			_checklistEntityFrameworkMapping,
+			_sectionEntityFrameworkMapping,
+			_itemEntityFrameworkMapping,
+			_itemStatusEntityFrameworkMapping,
+			_briefingMediaEntityFrameworkMapping,
+			_fileTypeEntityFrameworkMapping,
+			_uploadItemFileTypeEntityFrameworkMapping);
+
 		_repository = new FileTypeRepository(_context);
 
 		SeedTestData();

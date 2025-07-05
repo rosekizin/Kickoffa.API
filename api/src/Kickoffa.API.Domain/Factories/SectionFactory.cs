@@ -46,7 +46,7 @@ namespace Kickoffa.API.Domain.Factories
 		/// <returns>True se válido, false caso contrário</returns>
 		public static bool IsValidSectionType(SectionType type)
 		{
-			return Enum.IsDefined(typeof(SectionType), type);
+			return Enum.IsDefined(type);
 		}
 
 		/// <summary>

@@ -6,7 +6,7 @@ namespace Kickoffa.API.Domain.Factories
 	/// <summary>
 	/// Factory para criação de checklists
 	/// </summary>
-	public static class ChecklistFactory
+	public static partial class ChecklistFactory
 	{
 		/// <summary>
 		/// Cria um novo checklist
@@ -171,10 +171,10 @@ namespace Kickoffa.API.Domain.Factories
 			slug = RemoveAccents(slug);
 
 			// Substituir espaços e caracteres especiais por hífens
-			slug = Regex.Replace(slug, @"[^a-z0-9\-]", "-");
+			slug = SpecialCharsAndSpaces().Replace(slug, "-");
 
 			// Remover hífens duplicados
-			slug = Regex.Replace(slug, @"-+", "-");
+			slug = ConsecutiveHyphens().Replace(slug, "-");
 
 			// Remover hífens do início e fim
 			slug = slug.Trim('-');
@@ -283,5 +283,11 @@ namespace Kickoffa.API.Domain.Factories
 
 			return null;
 		}
+
+		[GeneratedRegex(@"[^a-z0-9\-]")]
+		private static partial Regex SpecialCharsAndSpaces();
+
+		[GeneratedRegex(@"-+")]
+		private static partial Regex ConsecutiveHyphens();
 	}
 }

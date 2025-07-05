@@ -32,7 +32,7 @@ namespace Kickoffa.API.Domain.Models
 
 		public long OwnerId { get; private set; } // ID do usuário que criou o checklist
 		public string Title { get; private set; }
-		public string Slug { get; private set; }
+		public string Slug { get; private set; } // url amigável para o checklist
 		public string? Description { get; private set; }
 		public DateTime? DueDate { get; private set; }
 		public string? AccessToken { get; private set; } // Token único para compartilhar

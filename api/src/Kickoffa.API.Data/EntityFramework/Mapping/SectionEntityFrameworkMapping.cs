@@ -1,7 +1,5 @@
 using Kickoffa.API.Domain.Models;
-using Kickoffa.API.Domain.Models.Enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Kickoffa.API.Data.EntityFramework.Mapping
 {
@@ -21,7 +19,7 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			entity.ToTable("Sections");
 
 			// Configuração do discriminador para TPH
-			entity.HasDiscriminator<string>("Type")
+			entity.HasDiscriminator<string>("SectionType")
 				.HasValue<BriefingSection>("Briefing")
 				.HasValue<ChecklistSection>("Checklist");
 
@@ -88,8 +86,8 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			entity.HasIndex(s => new { s.ChecklistId, s.Order })
 				.HasDatabaseName("IX_Sections_ChecklistId_Order");
 
-			entity.HasIndex("Type")
-				.HasDatabaseName("IX_Sections_Type");
+			entity.HasIndex("SectionType")
+				.HasDatabaseName("IX_Sections_SectionType");
 		}
 	}
 }

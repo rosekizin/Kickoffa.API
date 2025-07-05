@@ -2,21 +2,25 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/auth-context'
 import { AuthService } from '@/services/auth.service'
+import { AuthLoading } from './auth-loading'
 
 interface AuthGuardProps {
   children: React.ReactNode
   requireAuth?: boolean
   redirectTo?: string
+  showLoadingOnNavigation?: boolean
 }
 
 export function AuthGuard({
   children,
   requireAuth = true,
-  redirectTo = '/auth/login'
+  redirectTo = '/auth/login',
+  showLoadingOnNavigation = false
 }: AuthGuardProps) {
-  const [isLoading, setIsLoading] = useState(true)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const { isAuthenticated, isInitializing } = useAuth()
+  const [isNavigationLoading, setIsNavigationLoading] = useState(false)
   const router = useRouter()
 
   // Função para disparar notificação de sessão expirada
@@ -39,87 +43,74 @@ export function AuthGuard({
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log('🔍 AuthGuard: Verificando autenticação...')
-        const authenticated = AuthService.isAuthenticated()
-        console.log('🔍 AuthGuard: isAuthenticated =', authenticated)
+        // Se ainda está inicializando, aguardar
+        if (isInitializing) {
+          return
+        }
 
-        if (authenticated) {
-          console.log('🔍 AuthGuard: Usuário tem dados locais, assumindo autenticado')
-          // Se tem dados do usuário, assumir autenticado inicialmente
-          setIsAuthenticated(true)
+        // Se não requer autenticação, não fazer nada
+        if (!requireAuth) {
+          return
+        }
 
-          // Validar token com o servidor em background (não bloquear acesso)
-          console.log('🔍 AuthGuard: Validando token com servidor em background...')
-          AuthService.validateToken().then(isValid => {
-            console.log('🔍 AuthGuard: Validação em background - Token válido =', isValid)
+        // Verificar se há dados de usuário localmente
+        if (AuthService.isAuthenticated()) {
+          // Validar token no servidor
+          try {
+            const isValid = await AuthService.validateToken()
+
             if (!isValid) {
-              console.log('🔍 AuthGuard: Token inválido - sessão expirada, fazendo logout')
-              AuthService.logout()
-              if (requireAuth) {
-                // Token inválido significa que havia uma sessão que expirou
-                triggerSessionExpiredNotification('token-validation')
-                return
-              }
+              console.log('🔍 AuthGuard: Token inválido - sessão expirada')
+              // NÃO fazer logout imediatamente - deixar o modal controlar
+              triggerSessionExpiredNotification('token-validation')
+              return
             }
-          }).catch(error => {
-            console.error('❌ AuthGuard: Erro na validação em background:', error)
-          })
-        } else {
-          console.log('🔍 AuthGuard: Usuário não autenticado')
-          setIsAuthenticated(false)
-
-          if (requireAuth) {
-            console.log('🔍 AuthGuard: Redirecionando usuário não autenticado para login')
-
-            // Tentar router.push primeiro
-            try {
-              router.push(redirectTo)
-            } catch (error) {
-              console.error('❌ AuthGuard: Erro no router.push, usando window.location.href', error)
-              window.location.href = redirectTo
-            }
-
+          } catch (validationError) {
+            console.error('❌ AuthGuard: Erro na validação do token:', validationError)
+            // NÃO fazer logout imediatamente - deixar o modal controlar
+            triggerSessionExpiredNotification('validation-error')
             return
+          }
+        } else {
+          // Se não está autenticado e requer autenticação, redirecionar
+          if (showLoadingOnNavigation) {
+            setIsNavigationLoading(true)
+          }
+
+          try {
+            router.push(redirectTo)
+          } catch (error) {
+            console.error('Erro no redirecionamento, usando window.location.href', error)
+            window.location.href = redirectTo
           }
         }
       } catch (error) {
-        console.error('❌ AuthGuard: Erro ao verificar autenticação:', error)
-        setIsAuthenticated(false)
+        console.error('❌ AuthGuard: Erro geral ao verificar autenticação:', error)
 
         if (requireAuth) {
-          // Se houve erro na verificação, pode ser sessão expirada
-          // Verificar se o erro é 401 (não autorizado) para decidir se mostra notificação
-          if (error instanceof Error && error.message.includes('401')) {
-            console.log('🔍 AuthGuard: Erro 401 - sessão expirada, disparando notificação')
-            triggerSessionExpiredNotification('auth-error')
-          } else {
-            console.log('🔍 AuthGuard: Erro de rede/servidor, redirecionando para login')
-            try {
-              router.push(redirectTo)
-            } catch (routerError) {
-              console.error('❌ AuthGuard: Erro no router.push, usando window.location.href', routerError)
-              window.location.href = redirectTo
-            }
+          try {
+            router.push(redirectTo)
+          } catch (routerError) {
+            console.error('❌ AuthGuard: Erro no router.push, usando window.location.href', routerError)
+            window.location.href = redirectTo
           }
-          return
         }
-      } finally {
-        console.log('🔍 AuthGuard: Finalizando verificação, loading = false')
-        setIsLoading(false)
       }
     }
 
     checkAuth()
-  }, [requireAuth, redirectTo, router])
+  }, [isAuthenticated, isInitializing, requireAuth, redirectTo, router, showLoadingOnNavigation])
 
-  // Mostrar loading enquanto verifica autenticação
-  if (isLoading) {
+  // Mostrar loading apenas durante inicialização
+  if (isInitializing) {
+    return <AuthLoading message="Verificando autenticação..." />
+  }
+
+  // Loading simples para navegação (se solicitado)
+  if (isNavigationLoading && showLoadingOnNavigation) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando autenticação...</p>
-        </div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     )
   }
