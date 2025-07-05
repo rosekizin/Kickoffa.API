@@ -16,8 +16,6 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 		/// <returns>IServiceCollection para chaining</returns>
 		public static IServiceCollection AddDatabase(this IServiceCollection services, IPostgreDbConfiguration postgreDbConfiguration)
 		{
-			//AddEntityFrameworkMappings(services);
-
 			var connectionString = postgreDbConfiguration.GetConnectionString();
 
 			services.AddDbContext<KickoffaDbContext>(options =>
@@ -32,7 +30,8 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 
 					npgsqlOptions.CommandTimeout(postgreDbConfiguration.CommandTimeout);
 					npgsqlOptions.MigrationsAssembly("Kickoffa.API.Data");
-				});
+				})
+                .UseLazyLoadingProxies(useLazyLoadingProxies: true);
 
 				// Configurações para ambiente de desenvolvimento
 				var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");

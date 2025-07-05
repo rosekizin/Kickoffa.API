@@ -25,6 +25,7 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
             services.AddScoped<IBriefingMediaEntityFrameworkMapping, BriefingMediaEntityFrameworkMapping>();
             services.AddScoped<IFileTypeEntityFrameworkMapping, FileTypeEntityFrameworkMapping>();
             services.AddScoped<IUploadItemFileTypeEntityFrameworkMapping, UploadItemFileTypeEntityFrameworkMapping>();
+            services.AddScoped<IUploadItemFileEntityFrameworkMapping, UploadItemFileEntityFrameworkMapping>();
 
             // Registrar repositório base genérico
             services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
@@ -34,10 +35,13 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
             services.AddScoped<IFileTypeRepository, FileTypeRepository>();
             // UserRepository removido - agora usamos UserManager<User> do Identity
 
-            // TODO: Adicionar outros repositórios conforme forem criados
-            // services.AddScoped<IChecklistRepository, ChecklistRepository>();
-            // services.AddScoped<ISectionRepository, SectionRepository>();
-            // services.AddScoped<IItemRepository, ItemRepository>();
+            // Repositórios do sistema de Checklist
+            services.AddScoped<IChecklistRepository, ChecklistRepository>();
+            services.AddScoped<ISectionRepository, SectionRepository>();
+            services.AddScoped<IItemRepository, ItemRepository>();
+            services.AddScoped<IItemStatusRepository, ItemStatusRepository>();
+            services.AddScoped<IBriefingMediaRepository, BriefingMediaRepository>();
+            services.AddScoped<IUploadItemFileRepository, UploadItemFileRepository>();
 
             return services;
         }     

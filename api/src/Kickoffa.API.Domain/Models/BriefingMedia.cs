@@ -32,6 +32,7 @@ namespace Kickoffa.API.Domain.Models
 			Url = string.Empty;
 			ContentType = string.Empty;
 		}
+
 		public long SectionId { get; private set; }
 		public string FileName { get; private set; }
 		public string StoragePath { get; private set; }

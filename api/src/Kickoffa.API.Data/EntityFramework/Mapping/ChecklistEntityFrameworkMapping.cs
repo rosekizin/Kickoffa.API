@@ -1,6 +1,5 @@
 using Kickoffa.API.Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Kickoffa.API.Data.EntityFramework.Mapping
 {

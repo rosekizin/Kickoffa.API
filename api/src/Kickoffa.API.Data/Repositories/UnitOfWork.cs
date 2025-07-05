@@ -9,10 +9,36 @@ namespace Kickoffa.API.Data.Repositories
 		private IDbContextTransaction? _dbContextTransaction;
 		private readonly IKickoffaDbContext _kickoffaDbContext;
 
-		public UnitOfWork(IKickoffaDbContext kickoffaDbContext)
+		public UnitOfWork(
+			IKickoffaDbContext kickoffaDbContext,
+			ICustomerRepository customerRepository,
+			IFileTypeRepository fileTypeRepository,
+			IChecklistRepository checklistRepository,
+			ISectionRepository sectionRepository,
+			IItemRepository itemRepository,
+			IItemStatusRepository itemStatusRepository,
+			IBriefingMediaRepository briefingMediaRepository)
 		{
 			_kickoffaDbContext = kickoffaDbContext;
+
+			// Repositórios injetados diretamente
+			Customers = customerRepository;
+			FileTypes = fileTypeRepository;
+			Checklists = checklistRepository;
+			Sections = sectionRepository;
+			Items = itemRepository;
+			ItemStatuses = itemStatusRepository;
+			BriefingMedias = briefingMediaRepository;
 		}
+
+		// Propriedades dos repositórios
+		public ICustomerRepository Customers { get; }
+		public IFileTypeRepository FileTypes { get; }
+		public IChecklistRepository Checklists { get; }
+		public ISectionRepository Sections { get; }
+		public IItemRepository Items { get; }
+		public IItemStatusRepository ItemStatuses { get; }
+		public IBriefingMediaRepository BriefingMedias { get; }
 
 		public void BeginTransaction()
 		{

@@ -78,22 +78,31 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 				.HasForeignKey<ItemStatus>(s => s.ItemId)
 				.OnDelete(DeleteBehavior.Cascade);
 
-			// Configurações específicas para TextItem
+			// Configuração específica para TextItem
 			var textEntity = modelBuilder.Entity<TextItem>();
+
 			textEntity.Property(t => t.Placeholder)
 				.HasMaxLength(200);
+
 			textEntity.Property(t => t.MaxLength);
 
-			// Configurações específicas para UploadItem
+			// Configuração específica para UploadItem
 			var uploadEntity = modelBuilder.Entity<UploadItem>();
-			//uploadEntity.Property(u => u.AllowedMimeTypes)
-			//	.HasMaxLength(500);
+
 			uploadEntity.Property(u => u.MaxSizeMB);
+
 			uploadEntity.Property(u => u.Placeholder)
 				.HasMaxLength(200);
 
-			// Configurações específicas para ConfirmationItem
+			// Relacionamento com UploadItemFile (1:N)
+			uploadEntity.HasMany(u => u.ItemFiles)
+				.WithOne(f => f.UploadItem)
+				.HasForeignKey("UploadItemId")
+				.OnDelete(DeleteBehavior.Cascade);
+
+			// Configuração específica para ConfirmationItem
 			var confirmationEntity = modelBuilder.Entity<ConfirmationItem>();
+
 			confirmationEntity.Property(c => c.ConfirmationText)
 				.HasMaxLength(1000);
 		}

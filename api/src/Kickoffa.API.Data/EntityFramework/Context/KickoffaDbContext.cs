@@ -20,6 +20,7 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 		DbSet<BriefingMedia> BriefingMedias { get; }
 		DbSet<FileType> FileTypes { get; }
 		DbSet<UploadItemFileType> UploadItemFileTypes { get; }
+		DbSet<UploadItemFile> UploadItemFiles { get; }
 		// Users é gerenciado pelo Identity, não precisamos expor aqui
 		IDbContextTransaction BeginTransaction();
 		Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
@@ -37,6 +38,7 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 		private readonly IBriefingMediaEntityFrameworkMapping _briefingMediaEntityFrameworkMapping;
 		private readonly IFileTypeEntityFrameworkMapping _fileTypeEntityFrameworkMapping;
 		private readonly IUploadItemFileTypeEntityFrameworkMapping _uploadItemFileTypeEntityFrameworkMapping;
+		private readonly IUploadItemFileEntityFrameworkMapping _uploadItemFileEntityFrameworkMapping;
 
 
 		public KickoffaDbContext(
@@ -49,7 +51,8 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 			IItemStatusEntityFrameworkMapping itemStatusEntityFrameworkMapping,
 			IBriefingMediaEntityFrameworkMapping briefingMediaEntityFrameworkMapping,
 			IFileTypeEntityFrameworkMapping fileTypeEntityFrameworkMapping,
-			IUploadItemFileTypeEntityFrameworkMapping uploadItemFileTypeEntityFrameworkMapping) : base(options)
+			IUploadItemFileTypeEntityFrameworkMapping uploadItemFileTypeEntityFrameworkMapping,
+			IUploadItemFileEntityFrameworkMapping uploadItemFileEntityFrameworkMapping) : base(options)
 		{
 			_customerEntityFrameworkMapping = customerEntityFrameworkMapping;
 			_userEntityFrameworkMapping = userEntityFrameworkMapping;
@@ -60,6 +63,7 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 			_briefingMediaEntityFrameworkMapping = briefingMediaEntityFrameworkMapping;
 			_fileTypeEntityFrameworkMapping = fileTypeEntityFrameworkMapping;
 			_uploadItemFileTypeEntityFrameworkMapping = uploadItemFileTypeEntityFrameworkMapping;
+			_uploadItemFileEntityFrameworkMapping = uploadItemFileEntityFrameworkMapping;
 		}
 
 		public DbSet<Customer> Customers { get; private set; }
@@ -70,6 +74,7 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 		public DbSet<BriefingMedia> BriefingMedias { get; private set; }
 		public DbSet<FileType> FileTypes { get; private set; }
 		public DbSet<UploadItemFileType> UploadItemFileTypes { get; private set; }
+		public DbSet<UploadItemFile> UploadItemFiles { get; private set; }
 
 		public IDbContextTransaction BeginTransaction()
 		{
@@ -89,6 +94,7 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 			_briefingMediaEntityFrameworkMapping.Map(modelBuilder);
 			_fileTypeEntityFrameworkMapping.Map(modelBuilder);
 			_uploadItemFileTypeEntityFrameworkMapping.Map(modelBuilder);
+			_uploadItemFileEntityFrameworkMapping.Map(modelBuilder);
 		}
 	}
 }

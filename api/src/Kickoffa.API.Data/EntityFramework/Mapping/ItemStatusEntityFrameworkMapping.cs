@@ -33,19 +33,7 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 				.HasDefaultValue(false);
 
 			entity.Property(ist => ist.Response)
-				.HasColumnType("TEXT");
-
-			entity.Property(ist => ist.FileName)
-				.HasMaxLength(255);
-
-			entity.Property(ist => ist.StoragePath)
-				.HasMaxLength(500);
-
-			entity.Property(ist => ist.ContentType)
-				.HasMaxLength(100);
-
-			entity.Property(ist => ist.Sha256Hash)
-				.HasMaxLength(64);
+				.HasColumnType("TEXT");			
 
 			entity.Property(ist => ist.CreatedDateUtc)
 				.IsRequired();
@@ -60,9 +48,6 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 
 			entity.HasIndex(ist => ist.IsCompleted)
 				.HasDatabaseName("IX_ItemStatuses_IsCompleted");
-
-			entity.HasIndex(ist => ist.Sha256Hash)
-				.HasDatabaseName("IX_ItemStatuses_Sha256Hash");
 
 			// Relacionamentos
 			entity.HasOne(ist => ist.Item)

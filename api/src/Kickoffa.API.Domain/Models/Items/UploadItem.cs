@@ -19,20 +19,12 @@ namespace Kickoffa.API.Domain.Models.Items
 			: base(sectionId, title, order, description, isRequired)
 		{
 			MaxSizeMB = maxSizeMB;
+			ItemFiles = [];
 			AllowedFileTypes = [];
 			Placeholder = placeholder;
 		}
 
 		public override ItemType Type => ItemType.Upload;
-
-		/*
-		/// <summary>
-		/// Tipos MIME permitidos para upload (ex: "image/jpeg,application/pdf")
-		/// DEPRECATED: Usar AllowedFileTypes ao invés desta propriedade
-		/// </summary>
-		[Obsolete("Use AllowedFileTypes navigation property instead")]
-		public string? AllowedMimeTypes { get; private set; }
-		*/
 
 		/// <summary>
 		/// Tamanho máximo por arquivo em MB
@@ -45,8 +37,18 @@ namespace Kickoffa.API.Domain.Models.Items
 		public string? Placeholder { get; private set; }
 
 		/// <summary>
+		/// Arquivos enviados pelo cliente para este item
+		/// </summary>
+		public ICollection<UploadItemFile> ItemFiles { get; private set; }
+
+		/// <summary>
 		/// Tipos de arquivo permitidos para este item de upload
 		/// </summary>
 		public ICollection<UploadItemFileType> AllowedFileTypes { get; private set; }
+
+		public void AddFiles(UploadItemFile file)
+		{
+			ItemFiles.Add(file);
+		}
 	}
 }
