@@ -1,79 +1,79 @@
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.Repositories.Base;
-using Kickoffa.API.Domain.Models.Items;
+using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kickoffa.API.Data.Repositories
 {
 	/// <summary>
-	/// Implementação do repositório de ItemStatus
+	/// Implementação do repositório de ComponentStatus
 	/// </summary>
-	public class ItemStatusRepository : BaseRepository<ItemStatus>, IItemStatusRepository
+	public class ComponentStatusRepository : BaseRepository<ComponentStatus>, IComponentStatusRepository
 	{
-		public ItemStatusRepository(KickoffaDbContext context) : base(context)
+		public ComponentStatusRepository(KickoffaDbContext context) : base(context)
 		{
 		}
 
 		/// <summary>
-		/// Busca status por item
+		/// Busca status por componente
 		/// </summary>
-		public async Task<ItemStatus?> GetByItemIdAsync(long itemId, CancellationToken cancellationToken)
+		public async Task<ComponentStatus?> GetByComponentIdAsync(long componentId, CancellationToken cancellationToken)
 		{
-			return await _context.ItemStatuses
-				.FirstOrDefaultAsync(s => s.ItemId == itemId, cancellationToken);
+			return await _context.ComponentStatuses
+				.FirstOrDefaultAsync(s => s.ComponentId == componentId, cancellationToken);
 		}
 
 		/// <summary>
-		/// Busca status por múltiplos itens
+		/// Busca status por múltiplos componentes
 		/// </summary>
-		public async Task<IEnumerable<ItemStatus>> GetByItemIdsAsync(IEnumerable<long> itemIds, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ComponentStatus>> GetByComponentIdsAsync(IEnumerable<long> componentIds, CancellationToken cancellationToken)
 		{
-			return await _context.ItemStatuses
-				.Where(s => itemIds.Contains(s.ItemId))
+			return await _context.ComponentStatuses
+				.Where(s => componentIds.Contains(s.ComponentId))
 				.ToListAsync(cancellationToken);
 		}
 
 		/// <summary>
 		/// Busca status completados por seção
 		/// </summary>
-		public async Task<IEnumerable<ItemStatus>> GetCompletedBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ComponentStatus>> GetCompletedBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
-			return await _context.ItemStatuses
-				.Include(s => s.Item)
-				.Where(s => s.Item.SectionId == sectionId && s.IsCompleted)
+			return await _context.ComponentStatuses
+				.Include(s => s.Component)
+				.Where(s => s.Component.SectionId == sectionId && s.IsCompleted)
 				.ToListAsync(cancellationToken);
 		}
 
 		/// <summary>
 		/// Busca status completados por checklist
 		/// </summary>
-		public async Task<IEnumerable<ItemStatus>> GetCompletedByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ComponentStatus>> GetCompletedByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
 		{
-			return await _context.ItemStatuses
-				.Include(s => s.Item)
+			return await _context.ComponentStatuses
+				.Include(s => s.Component)
 					.ThenInclude(i => i.Section)
-				.Where(s => s.Item.Section.ChecklistId == checklistId && s.IsCompleted)
+				.Where(s => s.Component.Section.ChecklistId == checklistId && s.IsCompleted)
 				.ToListAsync(cancellationToken);
 		}
 
 		/// <summary>
-		/// Conta itens completados por checklist
+		/// Conta componentes completados por checklist
 		/// </summary>
 		public async Task<int> CountCompletedByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
 		{
-			return await _context.ItemStatuses
-				.Include(s => s.Item)
+			return await _context.ComponentStatuses
+				.Include(s => s.Component)
 					.ThenInclude(i => i.Section)
-				.CountAsync(s => s.Item.Section.ChecklistId == checklistId && s.IsCompleted, cancellationToken);
+				.CountAsync(s => s.Component.Section.ChecklistId == checklistId && s.IsCompleted, cancellationToken);
 		}
 
 		/// <summary>
-		/// Conta total de itens por checklist
+		/// Conta total de componentes por checklist
 		/// </summary>
 		public async Task<int> CountTotalByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
 		{
-			return await _context.Items
+			return await _context.Components
 				.Include(i => i.Section)
 				.CountAsync(i => i.Section.ChecklistId == checklistId, cancellationToken);
 		}
@@ -81,20 +81,20 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<ItemStatus?> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public override async Task<ComponentStatus?> GetByIdAsync(long id, CancellationToken cancellationToken)
 		{
-			return await _context.ItemStatuses
-				.Include(s => s.Item)
+			return await _context.ComponentStatuses
+				.Include(s => s.Component)
 				.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 		}
 
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<IEnumerable<ItemStatus>> GetAllAsync(CancellationToken cancellationToken)
+		public override async Task<IEnumerable<ComponentStatus>> GetAllAsync(CancellationToken cancellationToken)
 		{
-			return await _context.ItemStatuses
-				.Include(s => s.Item)
+			return await _context.ComponentStatuses
+				.Include(s => s.Component)
 				.OrderByDescending(s => s.CreatedDateUtc)
 				.ToListAsync(cancellationToken);
 		}

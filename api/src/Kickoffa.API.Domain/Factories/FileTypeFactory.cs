@@ -1,5 +1,5 @@
 using Kickoffa.API.Domain.Models.Enums;
-using Kickoffa.API.Domain.Models.Items;
+using Kickoffa.API.Domain.Models.Components;
 
 namespace Kickoffa.API.Domain.Factories
 {

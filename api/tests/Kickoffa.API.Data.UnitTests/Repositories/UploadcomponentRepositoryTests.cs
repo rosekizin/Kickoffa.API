@@ -1,0 +1,261 @@
+using Kickoffa.API.Data.Repositories;
+using Kickoffa.API.Data.UnitTests.Repositories.DbContext;
+using Kickoffa.API.Domain.Models;
+using Kickoffa.API.Domain.Models.Components;
+using Microsoft.EntityFrameworkCore;
+
+namespace Kickoffa.API.Data.UnitTests.Repositories;
+
+public class UploadComponentRepositoryTests : IClassFixture<KickoffaDbContextFixture>, IDisposable
+{
+	private readonly KickoffaDbContextFixture _dbContextFixture;
+	private readonly EntityFramework.Context.KickoffaDbContext _dbContext;
+	private readonly UploadComponentRepository _repository;
+	private readonly CancellationToken _cancellationToken;
+
+	public UploadComponentRepositoryTests(KickoffaDbContextFixture dbContextFixture)
+	{
+		_dbContextFixture = dbContextFixture;
+		_dbContext = _dbContextFixture.GetNewDbContext();
+		_repository = new UploadComponentRepository(_dbContext);
+		_cancellationToken = CancellationToken.None;
+
+		SeedTestData();
+	}
+
+	[Fact]
+	public async Task GetBySectionIdAsync_ShouldReturnUploadComponents_WhenExists()
+	{
+		// Arrange
+		var section = await _dbContext.Sections.FirstAsync(_cancellationToken);
+
+		// Act
+		var result = await _repository.GetBySectionIdAsync(section.Id, _cancellationToken);
+
+		// Assert
+		var components = result.ToList();
+		Assert.Equal(3, components.Count);
+		Assert.All(components, i => Assert.Equal(section.Id, i.SectionId));
+		
+		// Verificar ordenação por Order
+		Assert.Equal(1, components[0].Order);
+		Assert.Equal(2, components[1].Order);
+		Assert.Equal(3, components[2].Order);
+	}
+
+	[Fact]
+	public async Task GetBySectionIdAsync_ShouldReturnEmpty_WhenNoUploadComponents()
+	{
+		// Act
+		var result = await _repository.GetBySectionIdAsync(999, _cancellationToken);
+
+		// Assert
+		Assert.Empty(result);
+	}
+
+	[Theory]
+	[InlineData(5, 1)] // Logo da Empresa
+	[InlineData(10, 1)] // Documentos
+	[InlineData(50, 1)] // Vídeo Promocional
+	[InlineData(25, 0)] // Nenhum component com esse tamanho
+	public async Task GetByMaxSizeAsync_ShouldReturnCorrectResults(int? maxSizeMB, int expectedCount)
+	{
+		// Act
+		var result = await _repository.GetByMaxSizeAsync(maxSizeMB, _cancellationToken);
+
+		// Assert
+		var components = result.ToList();
+		Assert.Equal(expectedCount, components.Count);
+		Assert.All(components, i => Assert.Equal(maxSizeMB, i.MaxSizeMB));
+	}
+
+	[Fact]
+	public async Task GetByPlaceholderAsync_ShouldReturnCorrectComponents()
+	{
+		// Act
+		var result = await _repository.GetByPlaceholderAsync("Selecione o arquivo do logo", _cancellationToken);
+
+		// Assert
+		var components = result.ToList();
+		Assert.Single(components);
+		Assert.Equal("Selecione o arquivo do logo", components[0].Placeholder);
+		Assert.Equal("Logo da Empresa", components[0].Title);
+	}
+
+	[Fact]
+	public async Task GetByPlaceholderAsync_ShouldReturnEmpty_WhenNoMatches()
+	{
+		// Act
+		var result = await _repository.GetByPlaceholderAsync("Placeholder inexistente", _cancellationToken);
+
+		// Assert
+		Assert.Empty(result);
+	}
+
+	[Fact]
+	public async Task GetRequiredBySectionIdAsync_ShouldReturnOnlyRequiredComponents()
+	{
+		// Arrange
+		var section = await _dbContext.Sections.FirstAsync(_cancellationToken);
+
+		// Act
+		var result = await _repository.GetRequiredBySectionIdAsync(section.Id, _cancellationToken);
+
+		// Assert
+		var components = result.ToList();
+		Assert.Equal(2, components.Count); // Apenas os obrigatórios
+		Assert.All(components, i => Assert.True(i.IsRequired));
+		
+		// Verificar ordenação
+		Assert.Equal("Logo da Empresa", components[0].Title);
+		Assert.Equal("Documentos", components[1].Title);
+	}
+
+	[Fact]
+	public async Task GetByChecklistIdAsync_ShouldReturnComponentsFromChecklist()
+	{
+		// Arrange
+		var checklist = await _dbContext.Checklists.FirstAsync(_cancellationToken);
+
+		// Act
+		var result = await _repository.GetByChecklistIdAsync(checklist.Id, _cancellationToken);
+
+		// Assert
+		var components = result.ToList();
+		Assert.Equal(3, components.Count);
+		Assert.All(components, i => Assert.NotNull(i.Section));
+		Assert.All(components, i => Assert.Equal(checklist.Id, i.Section.ChecklistId));
+	}
+
+	[Fact]
+	public async Task CountBySectionIdAsync_ShouldReturnCorrectCount()
+	{
+		// Arrange
+		var section = await _dbContext.Sections.FirstAsync(_cancellationToken);
+
+		// Act
+		var result = await _repository.CountBySectionIdAsync(section.Id, _cancellationToken);
+
+		// Assert
+		Assert.Equal(3, result);
+	}
+
+	[Fact]
+	public async Task CountBySectionIdAsync_ShouldReturnZero_WhenNoComponents()
+	{
+		// Act
+		var result = await _repository.CountBySectionIdAsync(999, _cancellationToken);
+
+		// Assert
+		Assert.Equal(0, result);
+	}
+
+	[Fact]
+	public async Task GetBySectionIdsAsync_ShouldReturnComponentsFromMultipleSections()
+	{
+		// Arrange
+		var sections = await _dbContext.Sections.Take(2).ToListAsync(_cancellationToken);
+		var sectionIds = sections.Select(s => s.Id).ToList();
+
+		// Act
+		var result = await _repository.GetBySectionIdsAsync(sectionIds, _cancellationToken);
+
+		// Assert
+		var components = result.ToList();
+		Assert.NotEmpty(components);
+		Assert.All(components, i => Assert.Contains(i.SectionId, sectionIds));
+	}
+
+	[Theory]
+	[InlineData(1, 10, 2)] // Logo (5MB) e Documentos (10MB)
+	[InlineData(6, 50, 2)] // Apenas Vídeo (50MB)
+	[InlineData(1, 4, 0)] // Nenhum nessa faixa
+	public async Task GetBySizeRangeAsync_ShouldReturnCorrectResults(int? minSizeMB, int? maxSizeMB, int expectedCount)
+	{
+		// Act
+		var result = await _repository.GetBySizeRangeAsync(minSizeMB, maxSizeMB, _cancellationToken);
+
+		// Assert
+		var components = result.ToList();
+		Assert.Equal(expectedCount, components.Count);
+		
+		if (minSizeMB.HasValue)
+			Assert.All(components, i => Assert.True(i.MaxSizeMB >= minSizeMB.Value));
+		
+		if (maxSizeMB.HasValue)
+			Assert.All(components, i => Assert.True(i.MaxSizeMB <= maxSizeMB.Value));
+	}
+
+	[Fact]
+	public async Task GetByIdAsync_ShouldIncludeSectionAndRelationships()
+	{
+		// Arrange
+		var existingComponent = await _dbContext.UploadComponents.FirstAsync(_cancellationToken);
+
+		// Act
+		var result = await _repository.GetByIdAsync(existingComponent.Id, _cancellationToken);
+
+		// Assert
+		Assert.NotNull(result);
+		Assert.NotNull(result.Section);
+		Assert.Equal(existingComponent.SectionId, result.Section.Id);
+		Assert.NotNull(result.AllowedFileTypes);
+		Assert.NotNull(result.ComponentFiles);
+	}
+
+	[Fact]
+	public async Task GetAllAsync_ShouldIncludeRelationshipsAndBeOrdered()
+	{
+		// Act
+		var result = await _repository.GetAllAsync(_cancellationToken);
+
+		// Assert
+		var components = result.ToList();
+		Assert.NotEmpty(components);
+		Assert.All(components, i => Assert.NotNull(i.Section));
+		Assert.All(components, i => Assert.NotNull(i.AllowedFileTypes));
+		Assert.All(components, i => Assert.NotNull(i.ComponentFiles));
+		
+		// Verificar ordenação por SectionId e depois por Order
+		for (int i = 0; i < components.Count - 1; i++)
+		{
+			if (components[i].SectionId == components[i + 1].SectionId)
+			{
+				Assert.True(components[i].Order <= components[i + 1].Order);
+			}
+			else
+			{
+				Assert.True(components[i].SectionId <= components[i + 1].SectionId);
+			}
+		}
+	}
+
+	private void SeedTestData()
+	{
+		// Criar checklist e seção primeiro
+		var checklist = new Checklist(1, "Test Checklist", "test-checklist", "Descrição", null);
+		_dbContext.Checklists.Add(checklist);
+		_dbContext.SaveChanges();
+
+		var section = new ChecklistSection(checklist.Id, "Test Section", 1);
+		_dbContext.Sections.Add(section);
+		_dbContext.SaveChanges();
+
+		// Criar itens de upload com diferentes configurações
+		var uploadComponents = new List<UploadComponent>
+		{
+			new(section.Id, "Logo da Empresa", 1, "Upload do logo da empresa", true, "Selecione o arquivo do logo", 5),
+			new(section.Id, "Documentos", 2, "Upload de documentos", true, "Selecione os documentos", 10),
+			new(section.Id, "Vídeo Promocional", 3, "Upload do vídeo promocional", false, "Selecione o vídeo", 50)
+		};
+
+		_dbContext.UploadComponents.AddRange(uploadComponents);
+		_dbContext.SaveChanges();
+	}
+
+	public void Dispose()
+	{
+		_dbContext.Dispose();
+		GC.SuppressFinalize(this);
+	}
+}

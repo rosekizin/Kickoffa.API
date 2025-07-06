@@ -6,22 +6,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kickoffa.API.Data.UnitTests.Repositories;
 
-public class SectionRepositoryTests : IClassFixture<KickoffaDbContextFixture>
+public class SectionRepositoryTests : IClassFixture<KickoffaDbContextFixture>, IDisposable
 {
+	private readonly KickoffaDbContext _dbContext;
 	private readonly SectionRepository _repository;
 	private readonly CancellationToken _cancellationToken;
-	private readonly KickoffaDbContextFixture _contextFixture;
 
-	public SectionRepositoryTests(KickoffaDbContextFixture contextFixture)
+	public SectionRepositoryTests(KickoffaDbContextFixture dbContextFixture)
 	{
 		var options = new DbContextOptionsBuilder<KickoffaDbContext>()
 			.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
 			.Options;
 
 		_cancellationToken = new();
-		_contextFixture = contextFixture;
-
-		_repository = new SectionRepository(_contextFixture.KickoffaDbContext);
+		_dbContext = dbContextFixture.GetNewDbContext();
+		_repository = new SectionRepository(_dbContext);
 
 		SeedTestData();
 	}
@@ -93,7 +92,7 @@ public class SectionRepositoryTests : IClassFixture<KickoffaDbContextFixture>
 	public async Task ReorderSectionsAsync_ShouldUpdateSectionOrders()
 	{
 		// Arrange
-		var sections = await _contextFixture.KickoffaDbContext.Sections.Where(s => s.ChecklistId == 1).ToListAsync(_cancellationToken);
+		var sections = await _dbContext.Sections.Where(s => s.ChecklistId == 1).OrderBy(s => s.Order).ToListAsync(_cancellationToken);
 		var sectionOrders = new Dictionary<long, int>
 		{
 			{ sections[0].Id, 3 }, // Primeira seção vai para posição 3
@@ -105,7 +104,7 @@ public class SectionRepositoryTests : IClassFixture<KickoffaDbContextFixture>
 		await _repository.ReorderSectionsAsync(1, sectionOrders, _cancellationToken);
 
 		// Assert
-		var reorderedSections = await _contextFixture.KickoffaDbContext.Sections
+		var reorderedSections = await _dbContext.Sections
 			.Where(s => s.ChecklistId == 1)
 			.OrderBy(s => s.Order)
 			.ToListAsync(_cancellationToken);
@@ -129,7 +128,7 @@ public class SectionRepositoryTests : IClassFixture<KickoffaDbContextFixture>
 		await _repository.ReorderSectionsAsync(1, sectionOrders, _cancellationToken);
 
 		// Verificar que as seções existentes não foram alteradas
-		var sections = await _contextFixture.KickoffaDbContext.Sections
+		var sections = await _dbContext.Sections
 			.Where(s => s.ChecklistId == 1)
 			.OrderBy(s => s.Order)
 			.ToListAsync(_cancellationToken);
@@ -143,7 +142,7 @@ public class SectionRepositoryTests : IClassFixture<KickoffaDbContextFixture>
 	public async Task GetByIdAsync_ShouldIncludeChecklist()
 	{
 		// Arrange
-		var existingSection = await _contextFixture.KickoffaDbContext.Sections.FirstAsync(_cancellationToken);
+		var existingSection = await _dbContext.Sections.FirstAsync(_cancellationToken);
 
 		// Act
 		var result = await _repository.GetByIdAsync(existingSection.Id, _cancellationToken);
@@ -188,8 +187,8 @@ public class SectionRepositoryTests : IClassFixture<KickoffaDbContextFixture>
 			new(2, "Checklist 2", "checklist-2", "Descrição 2", null)
 		};
 
-		_contextFixture.KickoffaDbContext.Checklists.AddRange(checklists);
-		_contextFixture.KickoffaDbContext.SaveChanges();
+		_dbContext.Checklists.AddRange(checklists);
+		_dbContext.SaveChanges();
 
 		// Criar seções
 		var sections = new List<Section>
@@ -204,7 +203,13 @@ public class SectionRepositoryTests : IClassFixture<KickoffaDbContextFixture>
 			new BriefingSection(2, "Documentação", 2, "Conteúdo doc", "<p>HTML doc</p>")
 		};
 
-		_contextFixture.KickoffaDbContext.Sections.AddRange(sections);
-		_contextFixture.KickoffaDbContext.SaveChanges();
+		_dbContext.Sections.AddRange(sections);
+		_dbContext.SaveChanges();
+	}
+
+	public void Dispose()
+	{
+		_dbContext.Dispose();
+		GC.SuppressFinalize(this);
 	}
 }

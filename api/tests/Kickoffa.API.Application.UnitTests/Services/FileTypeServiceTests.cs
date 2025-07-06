@@ -1,6 +1,6 @@
 using Kickoffa.API.Application.Services;
+using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Models.Enums;
-using Kickoffa.API.Domain.Models.Items;
 using Kickoffa.API.Domain.Repositories;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;

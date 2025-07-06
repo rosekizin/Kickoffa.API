@@ -73,8 +73,8 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			// Configuração específica para ChecklistSection
 			var checklistEntity = modelBuilder.Entity<ChecklistSection>();
 
-			// Relacionamento com Items (apenas para ChecklistSection)
-			checklistEntity.HasMany(cs => cs.Items)
+			// Relacionamento com Components (apenas para ChecklistSection)
+			checklistEntity.HasMany(cs => cs.Components)
 				.WithOne(i => i.Section)
 				.HasForeignKey(i => i.SectionId)
 				.OnDelete(DeleteBehavior.Cascade);

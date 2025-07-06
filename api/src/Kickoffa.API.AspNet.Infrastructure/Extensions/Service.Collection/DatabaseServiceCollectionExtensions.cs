@@ -155,8 +155,8 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 			services.AddSingleton<ICustomerEntityFrameworkMapping, CustomerEntityFrameworkMapping>();
 			services.AddSingleton<IChecklistEntityFrameworkMapping, ChecklistEntityFrameworkMapping>();
 			services.AddSingleton<ISectionEntityFrameworkMapping, SectionEntityFrameworkMapping>();
-			services.AddSingleton<IItemEntityFrameworkMapping, ItemEntityFrameworkMapping>();
-			services.AddSingleton<IItemStatusEntityFrameworkMapping, ItemStatusEntityFrameworkMapping>();
+			services.AddSingleton<IComponentEntityFrameworkMapping, ComponentEntityFrameworkMapping>();
+			services.AddSingleton<IComponentStatusEntityFrameworkMapping, ComponentStatusEntityFrameworkMapping>();
 			services.AddSingleton<IBriefingMediaEntityFrameworkMapping, BriefingMediaEntityFrameworkMapping>();
 			services.AddSingleton<IFileTypeEntityFrameworkMapping, FileTypeEntityFrameworkMapping>();
 		}

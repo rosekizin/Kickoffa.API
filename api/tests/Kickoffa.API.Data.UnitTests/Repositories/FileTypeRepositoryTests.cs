@@ -1,13 +1,13 @@
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.Repositories;
 using Kickoffa.API.Data.UnitTests.Repositories.DbContext;
+using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Models.Enums;
-using Kickoffa.API.Domain.Models.Items;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kickoffa.API.Data.UnitTests.Repositories;
 
-public class FileTypeRepositoryTests : IClassFixture<KickoffaDbContextFixture>
+public class FileTypeRepositoryTests : IClassFixture<KickoffaDbContextFixture>, IDisposable
 {
 	private readonly KickoffaDbContext _dbContext;
 	private readonly FileTypeRepository _repository;
@@ -244,5 +244,11 @@ public class FileTypeRepositoryTests : IClassFixture<KickoffaDbContextFixture>
 
 		_dbContext.FileTypes.AddRange(fileTypes);
 		_dbContext.SaveChanges();
+	}
+
+	public void Dispose()
+	{
+		_dbContext.Dispose();
+		GC.SuppressFinalize(this);
 	}
 }

@@ -39,7 +39,7 @@ namespace Kickoffa.API.Domain.Models
 		public bool IsPublished { get; private set; }
 
 		// Relacionamentos
-		public ICollection<Section> Sections { get; private set; }
+		public virtual ICollection<Section> Sections { get; private set; }
 
 		/// <summary>
 		/// Atualiza o título do checklist

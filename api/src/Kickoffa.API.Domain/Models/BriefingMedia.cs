@@ -45,7 +45,7 @@ namespace Kickoffa.API.Domain.Models
 		public DateTime UploadedAt { get; private set; }
 
 		// Relacionamento
-		public BriefingSection Section { get; private set; } = null!;
+		public virtual BriefingSection Section { get; private set; } = null!;
 
 		/// <summary>
 		/// Atualiza o texto alternativo

@@ -7,8 +7,8 @@
 		IFileTypeRepository FileTypes { get; }
 		IChecklistRepository Checklists { get; }
 		ISectionRepository Sections { get; }
-		IItemRepository Items { get; }
-		IItemStatusRepository ItemStatuses { get; }
+		IComponentRepository Components { get; }
+		IComponentStatusRepository ComponentStatuses { get; }
 		IBriefingMediaRepository BriefingMedias { get; }
 
 		// Transações

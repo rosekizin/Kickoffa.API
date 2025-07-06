@@ -12,16 +12,16 @@ namespace Kickoffa.API.Data.UnitTests.Repositories.DbContext
 		private readonly IUserEntityFrameworkMapping _userEntityFrameworkMapping;
 		private readonly IChecklistEntityFrameworkMapping _checklistEntityFrameworkMapping;
 		private readonly ISectionEntityFrameworkMapping _sectionEntityFrameworkMapping;
-		private readonly IItemEntityFrameworkMapping _itemEntityFrameworkMapping;
-		private readonly IItemStatusEntityFrameworkMapping _itemStatusEntityFrameworkMapping;
+		private readonly IComponentEntityFrameworkMapping _componentEntityFrameworkMapping;
+		private readonly IComponentStatusEntityFrameworkMapping _componentStatusEntityFrameworkMapping;
 		private readonly IBriefingMediaEntityFrameworkMapping _briefingMediaEntityFrameworkMapping;
 		private readonly IFileTypeEntityFrameworkMapping _fileTypeEntityFrameworkMapping;
-		private readonly IUploadItemFileEntityFrameworkMapping _uploadItemFileEntityFrameworkMapping;
-		private readonly ITextItemEntityFrameworkMapping _textItemEntityFrameworkMapping;
-		private readonly IUploadItemEntityFrameworkMapping _uploadItemEntityFrameworkMapping;
-		private readonly IConfirmationItemEntityFrameworkMapping _confirmationItemEntityFrameworkMapping;
-		private readonly ICheckboxItemEntityFrameworkMapping _checkboxItemEntityFrameworkMapping;
-		private readonly ISignatureItemEntityFrameworkMapping _signatureItemEntityFrameworkMapping;
+		private readonly IUploadComponentFileEntityFrameworkMapping _uploadComponentFileEntityFrameworkMapping;
+		private readonly ITextComponentEntityFrameworkMapping _textComponentEntityFrameworkMapping;
+		private readonly IUploadComponentEntityFrameworkMapping _uploadComponentEntityFrameworkMapping;
+		private readonly IConfirmationComponentEntityFrameworkMapping _confirmationComponentEntityFrameworkMapping;
+		private readonly ICheckboxComponentEntityFrameworkMapping _checkboxComponentEntityFrameworkMapping;
+		private readonly ISignatureComponentEntityFrameworkMapping _signatureComponentEntityFrameworkMapping;
 
 		public KickoffaDbContextFixture()
 		{
@@ -29,16 +29,16 @@ namespace Kickoffa.API.Data.UnitTests.Repositories.DbContext
 			_userEntityFrameworkMapping = Substitute.For<IUserEntityFrameworkMapping>();
 			_checklistEntityFrameworkMapping = Substitute.For<IChecklistEntityFrameworkMapping>();
 			_sectionEntityFrameworkMapping = Substitute.For<ISectionEntityFrameworkMapping>();
-			_itemEntityFrameworkMapping = Substitute.For<IItemEntityFrameworkMapping>();
-			_itemStatusEntityFrameworkMapping = Substitute.For<IItemStatusEntityFrameworkMapping>();
+			_componentEntityFrameworkMapping = Substitute.For<IComponentEntityFrameworkMapping>();
+			_componentStatusEntityFrameworkMapping = Substitute.For<IComponentStatusEntityFrameworkMapping>();
 			_briefingMediaEntityFrameworkMapping = Substitute.For<IBriefingMediaEntityFrameworkMapping>();
 			_fileTypeEntityFrameworkMapping = Substitute.For<IFileTypeEntityFrameworkMapping>();
-			_uploadItemFileEntityFrameworkMapping = Substitute.For<IUploadItemFileEntityFrameworkMapping>();
-			_textItemEntityFrameworkMapping = Substitute.For<ITextItemEntityFrameworkMapping>();
-			_uploadItemEntityFrameworkMapping = Substitute.For<IUploadItemEntityFrameworkMapping>();
-			_confirmationItemEntityFrameworkMapping = Substitute.For<IConfirmationItemEntityFrameworkMapping>();
-			_checkboxItemEntityFrameworkMapping = Substitute.For<ICheckboxItemEntityFrameworkMapping>();
-			_signatureItemEntityFrameworkMapping = Substitute.For<ISignatureItemEntityFrameworkMapping>();
+			_uploadComponentFileEntityFrameworkMapping = Substitute.For<IUploadComponentFileEntityFrameworkMapping>();
+			_textComponentEntityFrameworkMapping = Substitute.For<ITextComponentEntityFrameworkMapping>();
+			_uploadComponentEntityFrameworkMapping = Substitute.For<IUploadComponentEntityFrameworkMapping>();
+			_confirmationComponentEntityFrameworkMapping = Substitute.For<IConfirmationComponentEntityFrameworkMapping>();
+			_checkboxComponentEntityFrameworkMapping = Substitute.For<ICheckboxComponentEntityFrameworkMapping>();
+			_signatureComponentEntityFrameworkMapping = Substitute.For<ISignatureComponentEntityFrameworkMapping>();
 
 			_dbContext = GetNewDbContext();
 		}
@@ -57,16 +57,16 @@ namespace Kickoffa.API.Data.UnitTests.Repositories.DbContext
 				_userEntityFrameworkMapping,
 				_checklistEntityFrameworkMapping,
 				_sectionEntityFrameworkMapping,
-				_itemEntityFrameworkMapping,
-				_itemStatusEntityFrameworkMapping,
+				_componentEntityFrameworkMapping,
+				_componentStatusEntityFrameworkMapping,
 				_briefingMediaEntityFrameworkMapping,
 				_fileTypeEntityFrameworkMapping,
-				_uploadItemFileEntityFrameworkMapping,
-				_textItemEntityFrameworkMapping,
-				_uploadItemEntityFrameworkMapping,
-				_confirmationItemEntityFrameworkMapping,
-				_checkboxItemEntityFrameworkMapping,
-				_signatureItemEntityFrameworkMapping);
+				_uploadComponentFileEntityFrameworkMapping,
+				_textComponentEntityFrameworkMapping,
+				_uploadComponentEntityFrameworkMapping,
+				_confirmationComponentEntityFrameworkMapping,
+				_checkboxComponentEntityFrameworkMapping,
+				_signatureComponentEntityFrameworkMapping);
 
 			return newDbContext;
 		}

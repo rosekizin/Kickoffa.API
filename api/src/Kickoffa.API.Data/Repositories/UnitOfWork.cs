@@ -15,8 +15,8 @@ namespace Kickoffa.API.Data.Repositories
 			IFileTypeRepository fileTypeRepository,
 			IChecklistRepository checklistRepository,
 			ISectionRepository sectionRepository,
-			IItemRepository itemRepository,
-			IItemStatusRepository itemStatusRepository,
+			IComponentRepository componentRepository,
+			IComponentStatusRepository componentStatusRepository,
 			IBriefingMediaRepository briefingMediaRepository)
 		{
 			_kickoffaDbContext = kickoffaDbContext;
@@ -26,8 +26,8 @@ namespace Kickoffa.API.Data.Repositories
 			FileTypes = fileTypeRepository;
 			Checklists = checklistRepository;
 			Sections = sectionRepository;
-			Items = itemRepository;
-			ItemStatuses = itemStatusRepository;
+			Components = componentRepository;
+			ComponentStatuses = componentStatusRepository;
 			BriefingMedias = briefingMediaRepository;
 		}
 
@@ -36,8 +36,8 @@ namespace Kickoffa.API.Data.Repositories
 		public IFileTypeRepository FileTypes { get; }
 		public IChecklistRepository Checklists { get; }
 		public ISectionRepository Sections { get; }
-		public IItemRepository Items { get; }
-		public IItemStatusRepository ItemStatuses { get; }
+		public IComponentRepository Components { get; }
+		public IComponentStatusRepository ComponentStatuses { get; }
 		public IBriefingMediaRepository BriefingMedias { get; }
 
 		public void BeginTransaction()

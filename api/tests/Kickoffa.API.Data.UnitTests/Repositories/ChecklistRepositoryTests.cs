@@ -114,9 +114,9 @@ public class ChecklistRepositoryTests : IClassFixture<KickoffaDbContextFixture>
 
 	[Theory]
 	[InlineData("existing-slug", null, true)]
-	[InlineData("existing-slug", 1L, false)] // Excluindo o próprio
+	[InlineData("existing-slug", 4L, false)] // Excluindo o próprio
 	[InlineData("non-existent-slug", null, false)]
-	//[InlineData("non-existent-slug", 1L, false)]
+	[InlineData("non-existent-slug", 1L, false)]
 	public async Task ExistsBySlugAsync_ShouldReturnCorrectResult(string slug, long? excludeId, bool expectedExists)
 	{
 		// Act

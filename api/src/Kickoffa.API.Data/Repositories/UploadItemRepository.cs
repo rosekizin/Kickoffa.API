@@ -1,37 +1,37 @@
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.Repositories.Base;
-using Kickoffa.API.Domain.Models.Items;
+using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kickoffa.API.Data.Repositories
 {
 	/// <summary>
-	/// Implementação do repositório de UploadItem
+	/// Implementação do repositório de UploadComponent
 	/// </summary>
-	public class UploadItemRepository : BaseRepository<UploadItem>, IUploadItemRepository
+	public class UploadComponentRepository : BaseRepository<UploadComponent>, IUploadComponentRepository
 	{
-		public UploadItemRepository(KickoffaDbContext context) : base(context)
+		public UploadComponentRepository(KickoffaDbContext context) : base(context)
 		{
 		}
 
 		/// <summary>
-		/// Busca itens de upload por seção
+		/// Busca componentes de upload por seção
 		/// </summary>
-		public async Task<IEnumerable<UploadItem>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<UploadComponent>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
-			return await _context.UploadItems
+			return await _context.UploadComponents
 				.Where(u => u.SectionId == sectionId)
 				.OrderBy(u => u.Order)
 				.ToListAsync(cancellationToken);
 		}
 
 		/// <summary>
-		/// Busca itens de upload por tamanho máximo
+		/// Busca componentes de upload por tamanho máximo
 		/// </summary>
-		public async Task<IEnumerable<UploadItem>> GetByMaxSizeAsync(int? maxSizeMB, CancellationToken cancellationToken)
+		public async Task<IEnumerable<UploadComponent>> GetByMaxSizeAsync(int? maxSizeMB, CancellationToken cancellationToken)
 		{
-			return await _context.UploadItems
+			return await _context.UploadComponents
 				.Where(u => u.MaxSizeMB == maxSizeMB)
 				.OrderBy(u => u.SectionId)
 				.ThenBy(u => u.Order)
@@ -39,11 +39,11 @@ namespace Kickoffa.API.Data.Repositories
 		}
 
 		/// <summary>
-		/// Busca itens de upload por placeholder
+		/// Busca componentes de upload por placeholder
 		/// </summary>
-		public async Task<IEnumerable<UploadItem>> GetByPlaceholderAsync(string placeholder, CancellationToken cancellationToken)
+		public async Task<IEnumerable<UploadComponent>> GetByPlaceholderAsync(string placeholder, CancellationToken cancellationToken)
 		{
-			return await _context.UploadItems
+			return await _context.UploadComponents
 				.Where(u => u.Placeholder == placeholder)
 				.OrderBy(u => u.SectionId)
 				.ThenBy(u => u.Order)
@@ -51,22 +51,22 @@ namespace Kickoffa.API.Data.Repositories
 		}
 
 		/// <summary>
-		/// Busca itens de upload obrigatórios por seção
+		/// Busca componentes de upload obrigatórios por seção
 		/// </summary>
-		public async Task<IEnumerable<UploadItem>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<UploadComponent>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
-			return await _context.UploadItems
+			return await _context.UploadComponents
 				.Where(u => u.SectionId == sectionId && u.IsRequired)
 				.OrderBy(u => u.Order)
 				.ToListAsync(cancellationToken);
 		}
 
 		/// <summary>
-		/// Busca itens de upload por checklist
+		/// Busca componentes de upload por checklist
 		/// </summary>
-		public async Task<IEnumerable<UploadItem>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<UploadComponent>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
 		{
-			return await _context.UploadItems
+			return await _context.UploadComponents
 				.Include(u => u.Section)
 				.Where(u => u.Section.ChecklistId == checklistId)
 				.OrderBy(u => u.Section.Order)
@@ -75,11 +75,11 @@ namespace Kickoffa.API.Data.Repositories
 		}
 
 		/// <summary>
-		/// Busca itens de upload por tipo de arquivo permitido
+		/// Busca componentes de upload por tipo de arquivo permitido
 		/// </summary>
-		public async Task<IEnumerable<UploadItem>> GetByAllowedFileTypeAsync(long fileTypeId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<UploadComponent>> GetByAllowedFileTypeAsync(long fileTypeId, CancellationToken cancellationToken)
 		{
-			return await _context.UploadItems
+			return await _context.UploadComponents
 				.Include(u => u.AllowedFileTypes)
 				.Where(u => u.AllowedFileTypes.Any(ft => ft.Id == fileTypeId))
 				.OrderBy(u => u.SectionId)
@@ -88,32 +88,32 @@ namespace Kickoffa.API.Data.Repositories
 		}
 
 		/// <summary>
-		/// Busca itens de upload com arquivos enviados
+		/// Busca componentes de upload com arquivos enviados
 		/// </summary>
-		public async Task<IEnumerable<UploadItem>> GetWithUploadedFilesAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<UploadComponent>> GetWithUploadedFilesAsync(long sectionId, CancellationToken cancellationToken)
 		{
-			return await _context.UploadItems
-				.Include(u => u.ItemFiles)
-				.Where(u => u.SectionId == sectionId && u.ItemFiles.Any())
+			return await _context.UploadComponents
+				.Include(u => u.ComponentFiles)
+				.Where(u => u.SectionId == sectionId && u.ComponentFiles.Any())
 				.OrderBy(u => u.Order)
 				.ToListAsync(cancellationToken);
 		}
 
 		/// <summary>
-		/// Conta itens de upload por seção
+		/// Conta componentes de upload por seção
 		/// </summary>
 		public async Task<int> CountBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
-			return await _context.UploadItems
+			return await _context.UploadComponents
 				.CountAsync(u => u.SectionId == sectionId, cancellationToken);
 		}
 
 		/// <summary>
-		/// Busca itens de upload por múltiplas seções
+		/// Busca componentes de upload por múltiplas seções
 		/// </summary>
-		public async Task<IEnumerable<UploadItem>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken)
+		public async Task<IEnumerable<UploadComponent>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken)
 		{
-			return await _context.UploadItems
+			return await _context.UploadComponents
 				.Where(u => sectionIds.Contains(u.SectionId))
 				.OrderBy(u => u.SectionId)
 				.ThenBy(u => u.Order)
@@ -121,11 +121,11 @@ namespace Kickoffa.API.Data.Repositories
 		}
 
 		/// <summary>
-		/// Busca itens de upload por faixa de tamanho
+		/// Busca componentes de upload por faixa de tamanho
 		/// </summary>
-		public async Task<IEnumerable<UploadItem>> GetBySizeRangeAsync(int? minSizeMB, int? maxSizeMB, CancellationToken cancellationToken)
+		public async Task<IEnumerable<UploadComponent>> GetBySizeRangeAsync(int? minSizeMB, int? maxSizeMB, CancellationToken cancellationToken)
 		{
-			var query = _context.UploadItems.AsQueryable();
+			var query = _context.UploadComponents.AsQueryable();
 
 			if (minSizeMB.HasValue)
 				query = query.Where(u => u.MaxSizeMB >= minSizeMB.Value);
@@ -142,26 +142,26 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<UploadItem?> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public override async Task<UploadComponent?> GetByIdAsync(long id, CancellationToken cancellationToken)
 		{
-			return await _context.UploadItems
+			return await _context.UploadComponents
 				.Include(u => u.Section)
 				.Include(u => u.Status)
 				.Include(u => u.AllowedFileTypes)
-				.Include(u => u.ItemFiles)
+				.Include(u => u.ComponentFiles)
 				.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 		}
 
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<IEnumerable<UploadItem>> GetAllAsync(CancellationToken cancellationToken)
+		public override async Task<IEnumerable<UploadComponent>> GetAllAsync(CancellationToken cancellationToken)
 		{
-			return await _context.UploadItems
+			return await _context.UploadComponents
 				.Include(u => u.Section)
 				.Include(u => u.Status)
 				.Include(u => u.AllowedFileTypes)
-				.Include(u => u.ItemFiles)
+				.Include(u => u.ComponentFiles)
 				.OrderBy(u => u.SectionId)
 				.ThenBy(u => u.Order)
 				.ToListAsync(cancellationToken);

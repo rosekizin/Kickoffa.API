@@ -1,47 +1,47 @@
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.Repositories.Base;
-using Kickoffa.API.Domain.Models.Items.Base;
+using Kickoffa.API.Domain.Models.Components.Base;
 using Kickoffa.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kickoffa.API.Data.Repositories
 {
 	/// <summary>
-	/// Implementação do repositório de Item
+	/// Implementação do repositório de Component
 	/// </summary>
-	public class ItemRepository : BaseRepository<Item>, IItemRepository
+	public class ComponentRepository : BaseRepository<Component>, IComponentRepository
 	{
-		public ItemRepository(KickoffaDbContext context) : base(context)
+		public ComponentRepository(KickoffaDbContext context) : base(context)
 		{
 		}
 
 		/// <summary>
-		/// Busca itens por seção
+		/// Busca components por seção
 		/// </summary>
-		public async Task<IEnumerable<Item>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<Component>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
-			return await _context.Items
+			return await _context.Components
 				.Where(i => i.SectionId == sectionId)
 				.ToListAsync(cancellationToken);
 		}
 
 		/// <summary>
-		/// Busca itens por seção ordenados por Order
+		/// Busca components por seção ordenados por Order
 		/// </summary>
-		public async Task<IEnumerable<Item>> GetBySectionIdOrderedAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<Component>> GetBySectionIdOrderedAsync(long sectionId, CancellationToken cancellationToken)
 		{
-			return await _context.Items
+			return await _context.Components
 				.Where(i => i.SectionId == sectionId)
 				.OrderBy(i => i.Order)
 				.ToListAsync(cancellationToken);
 		}
 
 		/// <summary>
-		/// Obtém a próxima ordem disponível para um novo item
+		/// Obtém a próxima ordem disponível para um novo componente
 		/// </summary>
 		public async Task<int> GetNextOrderAsync(long sectionId, CancellationToken cancellationToken)
 		{
-			var maxOrder = await _context.Items
+			var maxOrder = await _context.Components
 				.Where(i => i.SectionId == sectionId)
 				.MaxAsync(i => (int?)i.Order, cancellationToken);
 
@@ -49,19 +49,19 @@ namespace Kickoffa.API.Data.Repositories
 		}
 
 		/// <summary>
-		/// Reordena itens de uma seção
+		/// Reordena components de uma seção
 		/// </summary>
-		public async Task ReorderItemsAsync(long sectionId, Dictionary<long, int> itemOrders, CancellationToken cancellationToken)
+		public async Task ReorderComponentsAsync(long sectionId, Dictionary<long, int> componentOrders, CancellationToken cancellationToken)
 		{
-			var items = await _context.Items
-				.Where(i => i.SectionId == sectionId && itemOrders.Keys.Contains(i.Id))
+			var components = await _context.Components
+				.Where(i => i.SectionId == sectionId && componentOrders.Keys.Contains(i.Id))
 				.ToListAsync(cancellationToken);
 
-			foreach (var item in items)
+			foreach (var component in components)
 			{
-				if (itemOrders.TryGetValue(item.Id, out var newOrder))
+				if (componentOrders.TryGetValue(component.Id, out var newOrder))
 				{
-					item.UpdateOrder(newOrder);
+					component.UpdateOrder(newOrder);
 				}
 			}
 
@@ -69,22 +69,22 @@ namespace Kickoffa.API.Data.Repositories
 		}
 
 		/// <summary>
-		/// Busca itens obrigatórios por seção
+		/// Busca components obrigatórios por seção
 		/// </summary>
-		public async Task<IEnumerable<Item>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<Component>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
-			return await _context.Items
+			return await _context.Components
 				.Where(i => i.SectionId == sectionId && i.IsRequired)
 				.OrderBy(i => i.Order)
 				.ToListAsync(cancellationToken);
 		}
 
 		/// <summary>
-		/// Busca itens por tipo específico e seção (método genérico)
+		/// Busca components por tipo específico e seção (método genérico)
 		/// </summary>
-		public async Task<IEnumerable<T>> GetBySectionIdAsync<T>(long sectionId, CancellationToken cancellationToken) where T : Item
+		public async Task<IEnumerable<T>> GetBySectionIdAsync<T>(long sectionId, CancellationToken cancellationToken) where T : Component
 		{
-			return await _context.Items
+			return await _context.Components
 				.OfType<T>()
 				.Where(i => i.SectionId == sectionId)
 				.OrderBy(i => i.Order)
@@ -92,11 +92,11 @@ namespace Kickoffa.API.Data.Repositories
 		}
 
 		/// <summary>
-		/// Conta itens por tipo específico e seção (método genérico)
+		/// Conta components por tipo específico e seção (método genérico)
 		/// </summary>
-		public async Task<int> CountBySectionIdAsync<T>(long sectionId, CancellationToken cancellationToken) where T : Item
+		public async Task<int> CountBySectionIdAsync<T>(long sectionId, CancellationToken cancellationToken) where T : Component
 		{
-			return await _context.Items
+			return await _context.Components
 				.OfType<T>()
 				.CountAsync(i => i.SectionId == sectionId, cancellationToken);
 		}
@@ -104,9 +104,9 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<Item?> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public override async Task<Component?> GetByIdAsync(long id, CancellationToken cancellationToken)
 		{
-			return await _context.Items
+			return await _context.Components
 				.Include(i => i.Section)
 				.Include(i => i.Status)
 				.FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
@@ -115,9 +115,9 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<IEnumerable<Item>> GetAllAsync(CancellationToken cancellationToken)
+		public override async Task<IEnumerable<Component>> GetAllAsync(CancellationToken cancellationToken)
 		{
-			return await _context.Items
+			return await _context.Components
 				.Include(i => i.Section)
 				.Include(i => i.Status)
 				.OrderBy(i => i.SectionId)

@@ -73,7 +73,7 @@ namespace Kickoffa.API.Domain.Extensions
 			return section switch
 			{
 				BriefingSection briefing => briefing.HasContent() || briefing.HasMedia(),
-				ChecklistSection checklist => checklist.HasItems(),
+				ChecklistSection checklist => checklist.HasComponents(),
 				_ => false
 			};
 		}
@@ -127,9 +127,9 @@ namespace Kickoffa.API.Domain.Extensions
 					break;
 
 				case ChecklistSection checklist:
-					stats["ItemCount"] = checklist.Items.Count;
+					stats["ComponentCount"] = checklist.Components.Count;
 					stats["Progress"] = $"{checklist.CalculateProgress():F1}%";
-					stats["RequiredItemsCompleted"] = checklist.AreRequiredItemsCompleted();
+					stats["RequiredComponentsCompleted"] = checklist.AreRequiredComponentsCompleted();
 					break;
 			}
 
@@ -153,11 +153,11 @@ namespace Kickoffa.API.Domain.Extensions
 
 		private static string GetChecklistDescription(ChecklistSection checklist)
 		{
-			if (!checklist.HasItems())
+			if (!checklist.HasComponents())
 				return "Lista de verificação vazia";
 
 			var progress = checklist.CalculateProgress();
-			return $"Lista com {checklist.Items.Count} item(s) - {progress:F1}% concluído";
+			return $"Lista com {checklist.Components.Count} componente(s) - {progress:F1}% concluído";
 		}
 	}
 }

@@ -18,9 +18,14 @@ namespace Kickoffa.API.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "9.0.6")
+                .HasAnnotation("Proxies:ChangeTracking", false)
+                .HasAnnotation("Proxies:CheckEquality", false)
+                .HasAnnotation("Proxies:LazyLoading", true)
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.HasSequence("ComponentSequence");
 
             modelBuilder.Entity("Kickoffa.API.Domain.Models.AppUser.Role", b =>
                 {
@@ -265,81 +270,14 @@ namespace Kickoffa.API.Data.Migrations
                     b.ToTable("Checklists", (string)null);
                 });
 
-            modelBuilder.Entity("Kickoffa.API.Domain.Models.FreelancerCustomer.Customer", b =>
+            modelBuilder.Entity("Kickoffa.API.Domain.Models.Components.Base.Component", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnName("Id");
+                        .HasDefaultValueSql("nextval('\"ComponentSequence\"')");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Address")
-                        .HasColumnType("text")
-                        .HasColumnName("address");
-
-                    b.Property<string>("Cnpj")
-                        .HasMaxLength(14)
-                        .HasColumnType("character varying(14)")
-                        .HasColumnName("Cnpj");
-
-                    b.Property<string>("Cpf")
-                        .HasMaxLength(11)
-                        .HasColumnType("character varying(11)")
-                        .HasColumnName("Cpf");
-
-                    b.Property<DateTime>("CreatedDateUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("CreatedDateUtc")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("Email");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("FirstName");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("LastName");
-
-                    b.Property<DateTime>("LastUpdatedDateUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("LastUpdatedDateUtc")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("PhoneNumber");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Cnpj")
-                        .IsUnique();
-
-                    b.HasIndex("Cpf")
-                        .IsUnique();
-
-                    b.ToTable("Customers", (string)null);
-                });
-
-            modelBuilder.Entity("Kickoffa.API.Domain.Models.Items.Base.Item", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseSequence(b.Property<long>("Id"));
 
                     b.Property<DateTime>("CreatedDateUtc")
                         .HasColumnType("timestamp with time zone");
@@ -352,11 +290,6 @@ namespace Kickoffa.API.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
-
-                    b.Property<string>("ItemType")
-                        .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("character varying(13)");
 
                     b.Property<DateTime>("LastUpdatedDateUtc")
                         .HasColumnType("timestamp with time zone");
@@ -374,23 +307,58 @@ namespace Kickoffa.API.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ItemType")
-                        .HasDatabaseName("IX_Items_ItemType");
-
                     b.HasIndex("SectionId")
-                        .HasDatabaseName("IX_Items_SectionId");
+                        .HasDatabaseName("IX_Components_SectionId");
 
                     b.HasIndex("SectionId", "Order")
-                        .HasDatabaseName("IX_Items_SectionId_Order");
+                        .HasDatabaseName("IX_SignatureComponents_SectionId_Order");
 
-                    b.ToTable("Items", (string)null);
+                    b.ToTable((string)null);
 
-                    b.HasDiscriminator<string>("ItemType").HasValue("Item");
-
-                    b.UseTphMappingStrategy();
+                    b.UseTpcMappingStrategy();
                 });
 
-            modelBuilder.Entity("Kickoffa.API.Domain.Models.Items.FileType", b =>
+            modelBuilder.Entity("Kickoffa.API.Domain.Models.Components.ComponentStatus", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("ComponentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedDateUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsCompleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime>("LastUpdatedDateUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Response")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ComponentId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_ComponentStatuses_ComponentId");
+
+                    b.HasIndex("IsCompleted")
+                        .HasDatabaseName("IX_ComponentStatuses_IsCompleted");
+
+                    b.ToTable("ComponentStatuses", (string)null);
+                });
+
+            modelBuilder.Entity("Kickoffa.API.Domain.Models.Components.FileType", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -464,7 +432,7 @@ namespace Kickoffa.API.Data.Migrations
                     b.ToTable("FileTypes", (string)null);
                 });
 
-            modelBuilder.Entity("Kickoffa.API.Domain.Models.Items.ItemStatus", b =>
+            modelBuilder.Entity("Kickoffa.API.Domain.Models.Components.UploadComponentFile", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -472,10 +440,8 @@ namespace Kickoffa.API.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("ContentType")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -483,75 +449,112 @@ namespace Kickoffa.API.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FileName")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<long?>("FileSize")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("IsCompleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<long>("ItemId")
+                    b.Property<long>("FileSize")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("LastUpdatedDateUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Response")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Sha256Hash")
+                        .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
                     b.Property<string>("StoragePath")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<long>("UploadComponentId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("IsCompleted")
-                        .HasDatabaseName("IX_ItemStatuses_IsCompleted");
-
-                    b.HasIndex("ItemId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_ItemStatuses_ItemId");
+                    b.HasIndex("FileName")
+                        .HasDatabaseName("IX_UploadComponentFiles_FileName");
 
                     b.HasIndex("Sha256Hash")
-                        .HasDatabaseName("IX_ItemStatuses_Sha256Hash");
+                        .HasDatabaseName("IX_UploadComponentFiles_Sha256Hash");
 
-                    b.ToTable("ItemStatuses", (string)null);
+                    b.HasIndex("UploadComponentId")
+                        .HasDatabaseName("IX_UploadComponentFiles_UploadComponentId");
+
+                    b.HasIndex("Id", "CreatedDateUtc")
+                        .HasDatabaseName("IX_UploadComponentFiles_UploadComponentId_CreatedDateUtc");
+
+                    b.ToTable("UploadComponentFiles", (string)null);
                 });
 
-            modelBuilder.Entity("Kickoffa.API.Domain.Models.Items.UploadItemFileType", b =>
+            modelBuilder.Entity("Kickoffa.API.Domain.Models.FreelancerCustomer.Customer", b =>
                 {
-                    b.Property<long>("UploadItemId")
-                        .HasColumnType("bigint");
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("Id");
 
-                    b.Property<long>("FileTypeId")
-                        .HasColumnType("bigint");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasColumnType("text")
+                        .HasColumnName("address");
+
+                    b.Property<string>("Cnpj")
+                        .HasMaxLength(14)
+                        .HasColumnType("character varying(14)")
+                        .HasColumnName("Cnpj");
+
+                    b.Property<string>("Cpf")
+                        .HasMaxLength(11)
+                        .HasColumnType("character varying(11)")
+                        .HasColumnName("Cpf");
 
                     b.Property<DateTime>("CreatedDateUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("CreatedDateUtc")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<long>("Id")
-                        .HasColumnType("bigint");
+                    b.Property<string>("Email")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("Email");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("FirstName");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("LastName");
 
                     b.Property<DateTime>("LastUpdatedDateUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("LastUpdatedDateUtc")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.HasKey("UploadItemId", "FileTypeId");
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("PhoneNumber");
 
-                    b.HasIndex("FileTypeId")
-                        .HasDatabaseName("IX_UploadItemFileTypes_FileTypeId");
+                    b.HasKey("Id");
 
-                    b.HasIndex("UploadItemId")
-                        .HasDatabaseName("IX_UploadItemFileTypes_UploadItemId");
+                    b.HasIndex("Cnpj")
+                        .IsUnique();
 
-                    b.ToTable("UploadItemFileTypes", (string)null);
+                    b.HasIndex("Cpf")
+                        .IsUnique();
+
+                    b.ToTable("Customers", (string)null);
                 });
 
             modelBuilder.Entity("Kickoffa.API.Domain.Models.Section", b =>
@@ -705,34 +708,73 @@ namespace Kickoffa.API.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Kickoffa.API.Domain.Models.Items.CheckboxItem", b =>
+            modelBuilder.Entity("UploadComponentAllowedFileTypes", b =>
                 {
-                    b.HasBaseType("Kickoffa.API.Domain.Models.Items.Base.Item");
+                    b.Property<long>("AllowedFileTypesId")
+                        .HasColumnType("bigint");
 
-                    b.HasDiscriminator().HasValue("Checkbox");
+                    b.Property<long>("UploadComponentId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("AllowedFileTypesId", "UploadComponentId");
+
+                    b.HasIndex("UploadComponentId");
+
+                    b.ToTable("UploadComponentAllowedFileTypes");
                 });
 
-            modelBuilder.Entity("Kickoffa.API.Domain.Models.Items.ConfirmationItem", b =>
+            modelBuilder.Entity("Kickoffa.API.Domain.Models.Components.CheckboxComponent", b =>
                 {
-                    b.HasBaseType("Kickoffa.API.Domain.Models.Items.Base.Item");
+                    b.HasBaseType("Kickoffa.API.Domain.Models.Components.Base.Component");
+
+                    b.HasIndex("IsRequired")
+                        .HasDatabaseName("IX_CheckboxComponents_IsRequired")
+                        .HasFilter("\"IsRequired\" = true");
+
+                    b.HasIndex("SectionId", "IsRequired")
+                        .HasDatabaseName("IX_CheckboxComponents_SectionId_IsRequired");
+
+                    b.ToTable("CheckboxComponents", (string)null);
+                });
+
+            modelBuilder.Entity("Kickoffa.API.Domain.Models.Components.ConfirmationComponent", b =>
+                {
+                    b.HasBaseType("Kickoffa.API.Domain.Models.Components.Base.Component");
 
                     b.Property<string>("ConfirmationText")
+                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
-                    b.HasDiscriminator().HasValue("Confirmation");
+                    b.HasIndex("ConfirmationText")
+                        .HasDatabaseName("IX_ConfirmationComponents_ConfirmationText");
+
+                    b.HasIndex("SectionId", "ConfirmationText")
+                        .HasDatabaseName("IX_ConfirmationComponents_SectionId_ConfirmationText");
+
+                    b.ToTable("ConfirmationComponents", (string)null);
                 });
 
-            modelBuilder.Entity("Kickoffa.API.Domain.Models.Items.SignatureItem", b =>
+            modelBuilder.Entity("Kickoffa.API.Domain.Models.Components.SignatureComponent", b =>
                 {
-                    b.HasBaseType("Kickoffa.API.Domain.Models.Items.Base.Item");
+                    b.HasBaseType("Kickoffa.API.Domain.Models.Components.Base.Component");
 
-                    b.HasDiscriminator().HasValue("Signature");
+                    b.HasIndex("IsRequired")
+                        .HasDatabaseName("IX_SignatureComponents_IsRequired")
+                        .HasFilter("\"IsRequired\" = 1");
+
+                    b.HasIndex("SectionId", "IsRequired")
+                        .HasDatabaseName("IX_SignatureComponents_SectionId_IsRequired");
+
+                    b.HasIndex("SectionId", "IsRequired", "Order")
+                        .HasDatabaseName("IX_SignatureComponents_SectionId_IsRequired_Order");
+
+                    b.ToTable("SignatureComponents", (string)null);
                 });
 
-            modelBuilder.Entity("Kickoffa.API.Domain.Models.Items.TextItem", b =>
+            modelBuilder.Entity("Kickoffa.API.Domain.Models.Components.TextComponent", b =>
                 {
-                    b.HasBaseType("Kickoffa.API.Domain.Models.Items.Base.Item");
+                    b.HasBaseType("Kickoffa.API.Domain.Models.Components.Base.Component");
 
                     b.Property<int?>("MaxLength")
                         .HasColumnType("integer");
@@ -741,12 +783,21 @@ namespace Kickoffa.API.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.HasDiscriminator().HasValue("Text");
+                    b.HasIndex("MaxLength")
+                        .HasDatabaseName("IX_TextComponents_MaxLength");
+
+                    b.HasIndex("Placeholder")
+                        .HasDatabaseName("IX_TextComponents_Placeholder");
+
+                    b.HasIndex("SectionId", "Placeholder")
+                        .HasDatabaseName("IX_TextComponents_SectionId_Placeholder");
+
+                    b.ToTable("TextComponents", (string)null);
                 });
 
-            modelBuilder.Entity("Kickoffa.API.Domain.Models.Items.UploadItem", b =>
+            modelBuilder.Entity("Kickoffa.API.Domain.Models.Components.UploadComponent", b =>
                 {
-                    b.HasBaseType("Kickoffa.API.Domain.Models.Items.Base.Item");
+                    b.HasBaseType("Kickoffa.API.Domain.Models.Components.Base.Component");
 
                     b.Property<int?>("MaxSizeMB")
                         .HasColumnType("integer");
@@ -755,13 +806,16 @@ namespace Kickoffa.API.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.ToTable("Items", t =>
-                        {
-                            t.Property("Placeholder")
-                                .HasColumnName("UploadItem_Placeholder");
-                        });
+                    b.HasIndex("MaxSizeMB")
+                        .HasDatabaseName("IX_UploadComponents_MaxSizeMB");
 
-                    b.HasDiscriminator().HasValue("Upload");
+                    b.HasIndex("Placeholder")
+                        .HasDatabaseName("IX_UploadComponents_Placeholder");
+
+                    b.HasIndex("SectionId", "MaxSizeMB")
+                        .HasDatabaseName("IX_UploadComponents_SectionId_MaxSizeMB");
+
+                    b.ToTable("UploadComponents", (string)null);
                 });
 
             modelBuilder.Entity("Kickoffa.API.Domain.Models.BriefingSection", b =>
@@ -798,10 +852,10 @@ namespace Kickoffa.API.Data.Migrations
                     b.Navigation("Section");
                 });
 
-            modelBuilder.Entity("Kickoffa.API.Domain.Models.Items.Base.Item", b =>
+            modelBuilder.Entity("Kickoffa.API.Domain.Models.Components.Base.Component", b =>
                 {
                     b.HasOne("Kickoffa.API.Domain.Models.ChecklistSection", "Section")
-                        .WithMany("Items")
+                        .WithMany("Components")
                         .HasForeignKey("SectionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -809,34 +863,26 @@ namespace Kickoffa.API.Data.Migrations
                     b.Navigation("Section");
                 });
 
-            modelBuilder.Entity("Kickoffa.API.Domain.Models.Items.ItemStatus", b =>
+            modelBuilder.Entity("Kickoffa.API.Domain.Models.Components.ComponentStatus", b =>
                 {
-                    b.HasOne("Kickoffa.API.Domain.Models.Items.Base.Item", "Item")
+                    b.HasOne("Kickoffa.API.Domain.Models.Components.Base.Component", "Component")
                         .WithOne("Status")
-                        .HasForeignKey("Kickoffa.API.Domain.Models.Items.ItemStatus", "ItemId")
+                        .HasForeignKey("Kickoffa.API.Domain.Models.Components.ComponentStatus", "ComponentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Item");
+                    b.Navigation("Component");
                 });
 
-            modelBuilder.Entity("Kickoffa.API.Domain.Models.Items.UploadItemFileType", b =>
+            modelBuilder.Entity("Kickoffa.API.Domain.Models.Components.UploadComponentFile", b =>
                 {
-                    b.HasOne("Kickoffa.API.Domain.Models.Items.FileType", "FileType")
-                        .WithMany()
-                        .HasForeignKey("FileTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Kickoffa.API.Domain.Models.Items.UploadItem", "UploadItem")
-                        .WithMany("AllowedFileTypes")
-                        .HasForeignKey("UploadItemId")
+                    b.HasOne("Kickoffa.API.Domain.Models.Components.UploadComponent", "UploadComponent")
+                        .WithMany("ComponentFiles")
+                        .HasForeignKey("UploadComponentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("FileType");
-
-                    b.Navigation("UploadItem");
+                    b.Navigation("UploadComponent");
                 });
 
             modelBuilder.Entity("Kickoffa.API.Domain.Models.Section", b =>
@@ -901,19 +947,34 @@ namespace Kickoffa.API.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UploadComponentAllowedFileTypes", b =>
+                {
+                    b.HasOne("Kickoffa.API.Domain.Models.Components.FileType", null)
+                        .WithMany()
+                        .HasForeignKey("AllowedFileTypesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Kickoffa.API.Domain.Models.Components.UploadComponent", null)
+                        .WithMany()
+                        .HasForeignKey("UploadComponentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Kickoffa.API.Domain.Models.Checklist", b =>
                 {
                     b.Navigation("Sections");
                 });
 
-            modelBuilder.Entity("Kickoffa.API.Domain.Models.Items.Base.Item", b =>
+            modelBuilder.Entity("Kickoffa.API.Domain.Models.Components.Base.Component", b =>
                 {
                     b.Navigation("Status");
                 });
 
-            modelBuilder.Entity("Kickoffa.API.Domain.Models.Items.UploadItem", b =>
+            modelBuilder.Entity("Kickoffa.API.Domain.Models.Components.UploadComponent", b =>
                 {
-                    b.Navigation("AllowedFileTypes");
+                    b.Navigation("ComponentFiles");
                 });
 
             modelBuilder.Entity("Kickoffa.API.Domain.Models.BriefingSection", b =>
@@ -923,7 +984,7 @@ namespace Kickoffa.API.Data.Migrations
 
             modelBuilder.Entity("Kickoffa.API.Domain.Models.ChecklistSection", b =>
                 {
-                    b.Navigation("Items");
+                    b.Navigation("Components");
                 });
 #pragma warning restore 612, 618
         }

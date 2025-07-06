@@ -1,7 +1,7 @@
 using Kickoffa.API.Application.Interfaces;
 using Kickoffa.API.Contracts.FileType;
+using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Models.Enums;
-using Kickoffa.API.Domain.Models.Items;
 using Kickoffa.API.Domain.Repositories;
 
 namespace Kickoffa.API.Application.Services
