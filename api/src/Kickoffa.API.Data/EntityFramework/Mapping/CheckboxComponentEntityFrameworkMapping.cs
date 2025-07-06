@@ -26,7 +26,10 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			// CheckboxComponent não possui propriedades específicas além das herdadas de Component
 			// Mas podemos configurar índices específicos para otimização
 
-			// Índices específicos para CheckboxComponent
+			// Índices básicos (necessários para TPC)
+			entity.HasIndex(c => c.SectionId)
+				.HasDatabaseName("IX_CheckboxComponents_SectionId");
+
 			entity.HasIndex(c => new { c.SectionId, c.Order })
 				.HasDatabaseName("IX_CheckboxComponents_SectionId_Order");
 

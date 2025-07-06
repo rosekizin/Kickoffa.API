@@ -49,12 +49,8 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			entity.Property(i => i.LastUpdatedDateUtc)
 				.IsRequired();
 
-			// Índices
-			entity.HasIndex(i => i.SectionId)
-				.HasDatabaseName("IX_Components_SectionId");
-
-			entity.HasIndex(i => new { i.SectionId, i.Order })
-				.HasDatabaseName("IX_Components_SectionId_Order");
+			// Nota: Índices são definidos nos mapeamentos específicos de cada tipo concreto
+			// devido ao uso de TPC (Table-Per-Concrete-Type)
 
 			// Relacionamentos
 			entity.HasOne(i => i.Section)

@@ -28,6 +28,13 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 				.IsRequired()
 				.HasMaxLength(1000);
 
+			// Índices básicos (necessários para TPC)
+			entity.HasIndex(c => c.SectionId)
+				.HasDatabaseName("IX_ConfirmationComponents_SectionId");
+
+			entity.HasIndex(c => new { c.SectionId, c.Order })
+				.HasDatabaseName("IX_ConfirmationComponents_SectionId_Order");
+
 			// Índices específicos para ConfirmationComponent
 			entity.HasIndex(c => c.ConfirmationText)
 				.HasDatabaseName("IX_ConfirmationComponents_ConfirmationText");

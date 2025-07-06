@@ -41,6 +41,13 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 				.WithMany() // Sem propriedade de volta no FileType
 				.UsingEntity("UploadComponentAllowedFileTypes");
 
+			// Índices básicos (necessários para TPC)
+			entity.HasIndex(u => u.SectionId)
+				.HasDatabaseName("IX_UploadComponents_SectionId");
+
+			entity.HasIndex(u => new { u.SectionId, u.Order })
+				.HasDatabaseName("IX_UploadComponents_SectionId_Order");
+
 			// Índices específicos para UploadComponent
 			entity.HasIndex(u => u.MaxSizeMB)
 				.HasDatabaseName("IX_UploadComponents_MaxSizeMB");

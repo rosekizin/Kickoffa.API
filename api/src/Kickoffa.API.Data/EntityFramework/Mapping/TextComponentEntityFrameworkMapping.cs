@@ -29,6 +29,13 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 
 			entity.Property(t => t.MaxLength);
 
+			// Índices básicos (necessários para TPC)
+			entity.HasIndex(t => t.SectionId)
+				.HasDatabaseName("IX_TextComponents_SectionId");
+
+			entity.HasIndex(t => new { t.SectionId, t.Order })
+				.HasDatabaseName("IX_TextComponents_SectionId_Order");
+
 			// Índices específicos para TextComponent
 			entity.HasIndex(t => t.Placeholder)
 				.HasDatabaseName("IX_TextComponents_Placeholder");

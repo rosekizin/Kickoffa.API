@@ -1,6 +1,5 @@
 using Kickoffa.API.AspNet.Infrastructure.Configuration.Data;
 using Kickoffa.API.Data.EntityFramework.Context;
-using Kickoffa.API.Data.EntityFramework.Mapping;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -31,7 +30,7 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 					npgsqlOptions.CommandTimeout(postgreDbConfiguration.CommandTimeout);
 					npgsqlOptions.MigrationsAssembly("Kickoffa.API.Data");
 				})
-                .UseLazyLoadingProxies(useLazyLoadingProxies: true);
+				.UseLazyLoadingProxies(false);
 
 				// Configurações para ambiente de desenvolvimento
 				var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -147,7 +146,6 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 
             return $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode={sslMode};Trust Server Certificate=true;";
         }
-        */
 
 		private static void AddEntityFrameworkMappings(IServiceCollection services)
 		{
@@ -160,5 +158,6 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 			services.AddSingleton<IBriefingMediaEntityFrameworkMapping, BriefingMediaEntityFrameworkMapping>();
 			services.AddSingleton<IFileTypeEntityFrameworkMapping, FileTypeEntityFrameworkMapping>();
 		}
+        */
 	}
 }
