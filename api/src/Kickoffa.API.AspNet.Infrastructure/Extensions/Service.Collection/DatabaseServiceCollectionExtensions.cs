@@ -1,6 +1,5 @@
 using Kickoffa.API.AspNet.Infrastructure.Configuration.Data;
 using Kickoffa.API.Data.EntityFramework.Context;
-using Kickoffa.API.Data.EntityFramework.Mapping;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,8 +15,6 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 		/// <returns>IServiceCollection para chaining</returns>
 		public static IServiceCollection AddDatabase(this IServiceCollection services, IPostgreDbConfiguration postgreDbConfiguration)
 		{
-			//AddEntityFrameworkMappings(services);
-
 			var connectionString = postgreDbConfiguration.GetConnectionString();
 
 			services.AddDbContext<KickoffaDbContext>(options =>
@@ -32,7 +29,8 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 
 					npgsqlOptions.CommandTimeout(postgreDbConfiguration.CommandTimeout);
 					npgsqlOptions.MigrationsAssembly("Kickoffa.API.Data");
-				});
+				})
+				.UseLazyLoadingProxies(false);
 
 				// Configurações para ambiente de desenvolvimento
 				var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -148,7 +146,6 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 
             return $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode={sslMode};Trust Server Certificate=true;";
         }
-        */
 
 		private static void AddEntityFrameworkMappings(IServiceCollection services)
 		{
@@ -156,11 +153,11 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 			services.AddSingleton<ICustomerEntityFrameworkMapping, CustomerEntityFrameworkMapping>();
 			services.AddSingleton<IChecklistEntityFrameworkMapping, ChecklistEntityFrameworkMapping>();
 			services.AddSingleton<ISectionEntityFrameworkMapping, SectionEntityFrameworkMapping>();
-			services.AddSingleton<IItemEntityFrameworkMapping, ItemEntityFrameworkMapping>();
-			services.AddSingleton<IItemStatusEntityFrameworkMapping, ItemStatusEntityFrameworkMapping>();
+			services.AddSingleton<IComponentEntityFrameworkMapping, ComponentEntityFrameworkMapping>();
+			services.AddSingleton<IComponentStatusEntityFrameworkMapping, ComponentStatusEntityFrameworkMapping>();
 			services.AddSingleton<IBriefingMediaEntityFrameworkMapping, BriefingMediaEntityFrameworkMapping>();
 			services.AddSingleton<IFileTypeEntityFrameworkMapping, FileTypeEntityFrameworkMapping>();
-			services.AddSingleton<IUploadItemFileTypeEntityFrameworkMapping, UploadItemFileTypeEntityFrameworkMapping>();
 		}
+        */
 	}
 }

@@ -1,10 +1,10 @@
 using Kickoffa.API.Domain.Models.Enums;
-using Kickoffa.API.Domain.Models.Items.Base;
+using Kickoffa.API.Domain.Models.Components.Base;
 
 namespace Kickoffa.API.Domain.Models
 {
 	/// <summary>
-	/// Seção do tipo Checklist - contém itens interativos
+	/// Seção do tipo Checklist - contém componentes interativos
 	/// </summary>
 	public class ChecklistSection : Section
 	{
@@ -14,9 +14,9 @@ namespace Kickoffa.API.Domain.Models
 		public override SectionType Type => SectionType.Checklist;
 
 		/// <summary>
-		/// Itens da seção de checklist
+		/// Componentes da seção de checklist
 		/// </summary>
-		public ICollection<Item> Items { get; private set; }
+		public virtual ICollection<Component> Components { get; private set; }
 
 		/// <summary>
 		/// Construtor para criação de nova seção de checklist
@@ -24,7 +24,7 @@ namespace Kickoffa.API.Domain.Models
 		public ChecklistSection(long checklistId, string title, int order)
 			: base(checklistId, title, order)
 		{
-			Items = [];
+			Components = [];
 		}
 
 		/// <summary>
@@ -32,104 +32,104 @@ namespace Kickoffa.API.Domain.Models
 		/// </summary>
 		protected ChecklistSection() : base()
 		{
-			Items = [];
+			Components = [];
 		}
 
 		/// <summary>
-		/// Adiciona um item à seção
+		/// Adiciona um componente à seção
 		/// </summary>
-		/// <param name="item">Item a ser adicionado</param>
-		public void AddItem(Item item)
+		/// <param name="component">Componente a ser adicionado</param>
+		public void AddComponent(Component component)
 		{
-			ArgumentNullException.ThrowIfNull(item);
+			ArgumentNullException.ThrowIfNull(component);
 
-			item.UpdateSectionId(Id);
-			item.UpdateOrder(Items.Count + 1);
-			Items.Add(item);
+			component.UpdateSectionId(Id);
+			component.UpdateOrder(Components.Count + 1);
+			Components.Add(component);
 			UpdateLastUpdatedDate();
 		}
 
 		/// <summary>
-		/// Remove um item da seção
+		/// Remove um componente da seção
 		/// </summary>
-		/// <param name="item">Item a ser removido</param>
-		public void RemoveItem(Item item)
+		/// <param name="component">Componente a ser removido</param>
+		public void RemoveComponent(Component component)
 		{
-			ArgumentNullException.ThrowIfNull(item);
+			ArgumentNullException.ThrowIfNull(component);
 
-			Items.Remove(item);
-			ReorderItems();
+			Components.Remove(component);
+			ReorderComponents();
 			UpdateLastUpdatedDate();
 		}
 
 		/// <summary>
-		/// Reordena os itens da seção
+		/// Reordena os componentes da seção
 		/// </summary>
-		public void ReorderItems()
+		public void ReorderComponents()
 		{
-			var orderedItems = Items.OrderBy(i => i.Order).ToList();
-			for (int i = 0; i < orderedItems.Count; i++)
+			var orderedComponents = Components.OrderBy(i => i.Order).ToList();
+			for (int i = 0; i < orderedComponents.Count; i++)
 			{
-				orderedItems[i].UpdateOrder(i + 1);
+				orderedComponents[i].UpdateOrder(i + 1);
 			}
 			UpdateLastUpdatedDate();
 		}
 
 		/// <summary>
-		/// Move um item para uma nova posição
+		/// Move um componente para uma nova posição
 		/// </summary>
-		/// <param name="item">Item a ser movido</param>
+		/// <param name="component">Componente a ser movido</param>
 		/// <param name="newOrder">Nova posição</param>
-		public void MoveItem(Item item, int newOrder)
+		public void MoveComponent(Component component, int newOrder)
 		{
-			ArgumentNullException.ThrowIfNull(item);
-			if (!Items.Contains(item))
+			ArgumentNullException.ThrowIfNull(component);
+			if (!Components.Contains(component))
 				return;
 
-			item.UpdateOrder(newOrder);
-			ReorderItems();
+			component.UpdateOrder(newOrder);
+			ReorderComponents();
 		}
 
 		/// <summary>
-		/// Obtém itens por tipo
+		/// Obtém componentes por tipo
 		/// </summary>
-		/// <param name="itemType">Tipo do item</param>
-		/// <returns>Lista de itens do tipo especificado</returns>
-		public IEnumerable<Item> GetItemsByType(ItemType itemType)
+		/// <param name="componenteType">Tipo do componente</param>
+		/// <returns>Lista de componentes do tipo especificado</returns>
+		public IEnumerable<Component> GetComponentsByType(ComponentType componenteType)
 		{
-			return Items.Where(i => i.Type == itemType).OrderBy(i => i.Order);
+			return Components.Where(i => i.Type == componenteType).OrderBy(i => i.Order);
 		}
 
 		/// <summary>
-		/// Verifica se a seção tem itens
+		/// Verifica se a seção tem componentes
 		/// </summary>
-		/// <returns>True se tem itens, false caso contrário</returns>
-		public bool HasItems()
+		/// <returns>True se tem componentes, false caso contrário</returns>
+		public bool HasComponents()
 		{
-			return Items.Count != 0;
+			return Components.Count != 0;
 		}
 
 		/// <summary>
-		/// Calcula o progresso da seção (percentual de itens completados)
+		/// Calcula o progresso da seção (percentual de componentes completados)
 		/// </summary>
 		/// <returns>Percentual de progresso (0-100)</returns>
 		public decimal CalculateProgress()
 		{
-			if (Items.Count == 0)
+			if (Components.Count == 0)
 				return 0;
 
-			var completedItems = Items.Count(i => i.Status?.IsCompleted == true);
-			return Math.Round((decimal)completedItems / Items.Count * 100, 2);
+			var completedComponents = Components.Count(i => i.Status?.IsCompleted == true);
+			return Math.Round((decimal)completedComponents / Components.Count * 100, 2);
 		}
 
 		/// <summary>
-		/// Verifica se todos os itens obrigatórios foram completados
+		/// Verifica se todos os componentes obrigatórios foram completados
 		/// </summary>
 		/// <returns>True se todos os obrigatórios estão completos, false caso contrário</returns>
-		public bool AreRequiredItemsCompleted()
+		public bool AreRequiredComponentsCompleted()
 		{
-			var requiredItems = Items.Where(i => i.IsRequired);
-			return requiredItems.All(i => i.Status?.IsCompleted == true);
+			var requiredComponents = Components.Where(i => i.IsRequired);
+			return requiredComponents.All(i => i.Status?.IsCompleted == true);
 		}
 	}
 }

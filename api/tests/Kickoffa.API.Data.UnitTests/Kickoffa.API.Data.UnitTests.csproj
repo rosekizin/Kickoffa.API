@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -29,14 +29,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Kickoffa.API.Data\Kickoffa.API.Data.csproj" />
     <ProjectReference Include="..\..\src\Kickoffa.API.Domain\Kickoffa.API.Domain.csproj" />
+    <ProjectReference Include="..\Kickoffa.API.TestUtils\Kickoffa.API.TestUtils.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Repositories\" />
   </ItemGroup>
 
 </Project>

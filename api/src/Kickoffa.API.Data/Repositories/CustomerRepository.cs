@@ -81,12 +81,12 @@ namespace Kickoffa.API.Data.Repositories
                 query = query.OrderBy(c => c.FirstName).ThenBy(c => c.LastName);
             }
 
-            var items = await query
+            var components = await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
 
-            return (items, totalCount);
+            return (components, totalCount);
         }
     }
 }

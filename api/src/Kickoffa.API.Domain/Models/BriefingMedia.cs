@@ -2,7 +2,7 @@
 
 namespace Kickoffa.API.Domain.Models
 {
-	public class BriefingMedia : BaseEntity<BriefingMedia>
+	public class BriefingMedia : BaseEntity
 	{
 		/// <summary>
 		/// Construtor para criação de nova mídia
@@ -32,6 +32,7 @@ namespace Kickoffa.API.Domain.Models
 			Url = string.Empty;
 			ContentType = string.Empty;
 		}
+
 		public long SectionId { get; private set; }
 		public string FileName { get; private set; }
 		public string StoragePath { get; private set; }
@@ -44,7 +45,7 @@ namespace Kickoffa.API.Domain.Models
 		public DateTime UploadedAt { get; private set; }
 
 		// Relacionamento
-		public BriefingSection Section { get; private set; } = null!;
+		public virtual BriefingSection Section { get; private set; } = null!;
 
 		/// <summary>
 		/// Atualiza o texto alternativo

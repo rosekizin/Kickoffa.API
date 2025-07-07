@@ -9,7 +9,7 @@ export interface UpdateUserProfileRequest {
 }
 
 export interface UpdateUserProfileResponse {
-  id: string
+  id: number
   name: string
   email: string
   role: string

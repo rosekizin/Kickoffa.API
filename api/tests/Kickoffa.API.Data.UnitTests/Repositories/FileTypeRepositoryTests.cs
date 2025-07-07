@@ -1,57 +1,28 @@
 using Kickoffa.API.Data.EntityFramework.Context;
-using Kickoffa.API.Data.EntityFramework.Mapping;
 using Kickoffa.API.Data.Repositories;
+using Kickoffa.API.Data.UnitTests.Repositories.DbContext;
+using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Models.Enums;
-using Kickoffa.API.Domain.Models.Items;
 using Microsoft.EntityFrameworkCore;
-using NSubstitute;
 
 namespace Kickoffa.API.Data.UnitTests.Repositories;
 
-public class FileTypeRepositoryTests : IDisposable
+public class FileTypeRepositoryTests : IClassFixture<KickoffaDbContextFixture>, IDisposable
 {
-	private readonly KickoffaDbContext _context;
+	private readonly KickoffaDbContext _dbContext;
 	private readonly FileTypeRepository _repository;
-	private readonly ICustomerEntityFrameworkMapping _customerEntityFrameworkMapping;
-	private readonly IUserEntityFrameworkMapping _userEntityFrameworkMapping;
-	private readonly IChecklistEntityFrameworkMapping _checklistEntityFrameworkMapping;
-	private readonly ISectionEntityFrameworkMapping _sectionEntityFrameworkMapping;
-	private readonly IItemEntityFrameworkMapping _itemEntityFrameworkMapping;
-	private readonly IItemStatusEntityFrameworkMapping _itemStatusEntityFrameworkMapping;
-	private readonly IBriefingMediaEntityFrameworkMapping _briefingMediaEntityFrameworkMapping;
-	private readonly IFileTypeEntityFrameworkMapping _fileTypeEntityFrameworkMapping;
-	private readonly IUploadItemFileTypeEntityFrameworkMapping _uploadItemFileTypeEntityFrameworkMapping;
+	private readonly CancellationToken _cancellationToken;
 
-	public FileTypeRepositoryTests()
+	public FileTypeRepositoryTests(KickoffaDbContextFixture contextFixture)
 	{
+		_cancellationToken = new();
 		var options = new DbContextOptionsBuilder<KickoffaDbContext>()
 			.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
 			.Options;
 
-		_customerEntityFrameworkMapping = Substitute.For<ICustomerEntityFrameworkMapping>();
-		_userEntityFrameworkMapping = Substitute.For<IUserEntityFrameworkMapping>();
-		_fileTypeEntityFrameworkMapping = Substitute.For<IFileTypeEntityFrameworkMapping>();
-		_checklistEntityFrameworkMapping = Substitute.For<IChecklistEntityFrameworkMapping>();
-		_sectionEntityFrameworkMapping = Substitute.For<ISectionEntityFrameworkMapping>();
-		_itemEntityFrameworkMapping = Substitute.For<IItemEntityFrameworkMapping>();
-		_itemStatusEntityFrameworkMapping = Substitute.For<IItemStatusEntityFrameworkMapping>();
-		_briefingMediaEntityFrameworkMapping = Substitute.For<IBriefingMediaEntityFrameworkMapping>();
-		_fileTypeEntityFrameworkMapping = Substitute.For<IFileTypeEntityFrameworkMapping>();
-		_uploadItemFileTypeEntityFrameworkMapping = Substitute.For<IUploadItemFileTypeEntityFrameworkMapping>();
+		_dbContext = contextFixture.GetNewDbContext();
 
-		_context = new KickoffaDbContext(
-			options,
-			_customerEntityFrameworkMapping,
-			_userEntityFrameworkMapping,
-			_checklistEntityFrameworkMapping,
-			_sectionEntityFrameworkMapping,
-			_itemEntityFrameworkMapping,
-			_itemStatusEntityFrameworkMapping,
-			_briefingMediaEntityFrameworkMapping,
-			_fileTypeEntityFrameworkMapping,
-			_uploadItemFileTypeEntityFrameworkMapping);
-
-		_repository = new FileTypeRepository(_context);
+		_repository = new FileTypeRepository(_dbContext);
 
 		SeedTestData();
 	}
@@ -60,7 +31,7 @@ public class FileTypeRepositoryTests : IDisposable
 	public async Task GetActiveFileTypesAsync_ShouldReturnOnlyActiveFileTypes()
 	{
 		// Act
-		var result = await _repository.GetActiveFileTypesAsync(CancellationToken.None);
+		var result = await _repository.GetActiveFileTypesAsync(_cancellationToken);
 
 		// Assert
 		var fileTypes = result.ToList();
@@ -77,15 +48,15 @@ public class FileTypeRepositoryTests : IDisposable
 	public async Task GetActiveFileTypesAsync_ShouldReturnEmptyList_WhenNoActiveFileTypes()
 	{
 		// Arrange - Desativar todos os tipos
-		var allFileTypes = await _context.FileTypes.ToListAsync(CancellationToken.None);
+		var allFileTypes = await _dbContext.FileTypes.ToListAsync(_cancellationToken);
 		foreach (var ft in allFileTypes)
 		{
 			ft.Deactivate();
 		}
-		await _context.SaveChangesAsync(CancellationToken.None);
+		await _dbContext.SaveChangesAsync(_cancellationToken);
 
 		// Act
-		var result = await _repository.GetActiveFileTypesAsync(CancellationToken.None);
+		var result = await _repository.GetActiveFileTypesAsync(_cancellationToken);
 
 		// Assert
 		Assert.Empty(result);
@@ -101,7 +72,7 @@ public class FileTypeRepositoryTests : IDisposable
 	public async Task SearchFileTypesAsync_ShouldReturnCorrectResults(string searchTerm, int expectedCount)
 	{
 		// Act
-		var result = await _repository.SearchFileTypesAsync(searchTerm, CancellationToken.None);
+		var result = await _repository.SearchFileTypesAsync(searchTerm, _cancellationToken);
 
 		// Assert
 		var fileTypes = result.ToList();
@@ -113,7 +84,7 @@ public class FileTypeRepositoryTests : IDisposable
 	public async Task SearchFileTypesAsync_ShouldSearchInDisplayName()
 	{
 		// Act
-		var result = await _repository.SearchFileTypesAsync("JPEG", CancellationToken.None);
+		var result = await _repository.SearchFileTypesAsync("JPEG", _cancellationToken);
 
 		// Assert
 		var fileTypes = result.ToList();
@@ -125,7 +96,7 @@ public class FileTypeRepositoryTests : IDisposable
 	public async Task SearchFileTypesAsync_ShouldSearchInExtension()
 	{
 		// Act
-		var result = await _repository.SearchFileTypesAsync(".pdf", CancellationToken.None);
+		var result = await _repository.SearchFileTypesAsync(".pdf", _cancellationToken);
 
 		// Assert
 		var fileTypes = result.ToList();
@@ -137,7 +108,7 @@ public class FileTypeRepositoryTests : IDisposable
 	public async Task SearchFileTypesAsync_ShouldSearchInDescription()
 	{
 		// Act
-		var result = await _repository.SearchFileTypesAsync("comprimida", CancellationToken.None);
+		var result = await _repository.SearchFileTypesAsync("comprimida", _cancellationToken);
 
 		// Assert
 		var fileTypes = result.ToList();
@@ -153,7 +124,7 @@ public class FileTypeRepositoryTests : IDisposable
 	public async Task GetFileTypesByCategoryAsync_ShouldReturnCorrectResults(FileTypeCategory category, int expectedCount)
 	{
 		// Act
-		var result = await _repository.GetFileTypesByCategoryAsync(category, CancellationToken.None);
+		var result = await _repository.GetFileTypesByCategoryAsync(category, _cancellationToken);
 
 		// Assert
 		var fileTypes = result.ToList();
@@ -166,7 +137,7 @@ public class FileTypeRepositoryTests : IDisposable
 	public async Task GetFileTypesByCategoryAsync_ShouldReturnOrderedByDisplayOrder()
 	{
 		// Act
-		var result = await _repository.GetFileTypesByCategoryAsync(FileTypeCategory.Image, CancellationToken.None);
+		var result = await _repository.GetFileTypesByCategoryAsync(FileTypeCategory.Image, _cancellationToken);
 
 		// Assert
 		var fileTypes = result.ToList();
@@ -179,10 +150,10 @@ public class FileTypeRepositoryTests : IDisposable
 	public async Task GetByIdAsync_ShouldReturnFileType_WhenExists()
 	{
 		// Arrange
-		var existingFileType = await _context.FileTypes.FirstAsync(CancellationToken.None);
+		var existingFileType = await _dbContext.FileTypes.FirstAsync(_cancellationToken);
 
 		// Act
-		var result = await _repository.GetByIdAsync(existingFileType.Id, CancellationToken.None);
+		var result = await _repository.GetByIdAsync(existingFileType.Id, _cancellationToken);
 
 		// Assert
 		Assert.NotNull(result);
@@ -194,7 +165,7 @@ public class FileTypeRepositoryTests : IDisposable
 	public async Task GetByIdAsync_ShouldReturnNull_WhenNotExists()
 	{
 		// Act
-		var result = await _repository.GetByIdAsync(999, CancellationToken.None);
+		var result = await _repository.GetByIdAsync(999, _cancellationToken);
 
 		// Assert
 		Assert.Null(result);
@@ -204,10 +175,10 @@ public class FileTypeRepositoryTests : IDisposable
 	public async Task GetByIdAsync_ShouldReturnInactiveFileType()
 	{
 		// Arrange - Pegar o tipo inativo
-		var inactiveFileType = await _context.FileTypes.FirstAsync(ft => !ft.IsActive, CancellationToken.None);
+		var inactiveFileType = await _dbContext.FileTypes.FirstAsync(ft => !ft.IsActive, _cancellationToken);
 
 		// Act
-		var result = await _repository.GetByIdAsync(inactiveFileType.Id, CancellationToken.None);
+		var result = await _repository.GetByIdAsync(inactiveFileType.Id, _cancellationToken);
 
 		// Assert
 		Assert.NotNull(result);
@@ -218,11 +189,11 @@ public class FileTypeRepositoryTests : IDisposable
 	public async Task GetByIdsAsync_ShouldReturnMatchingFileTypes()
 	{
 		// Arrange
-		var allFileTypes = await _context.FileTypes.Take(2).ToListAsync(CancellationToken.None);
+		var allFileTypes = await _dbContext.FileTypes.Take(2).ToListAsync(_cancellationToken);
 		var ids = allFileTypes.Select(ft => ft.Id).ToList();
 
 		// Act
-		var result = await _repository.GetByIdsAsync(ids, CancellationToken.None);
+		var result = await _repository.GetByIdsAsync(ids, _cancellationToken);
 
 		// Assert
 		var fileTypes = result.ToList();
@@ -237,7 +208,7 @@ public class FileTypeRepositoryTests : IDisposable
 		var nonExistentIds = new List<long> { 999, 998, 997 };
 
 		// Act
-		var result = await _repository.GetByIdsAsync(nonExistentIds, CancellationToken.None);
+		var result = await _repository.GetByIdsAsync(nonExistentIds, _cancellationToken);
 
 		// Assert
 		Assert.Empty(result);
@@ -247,12 +218,12 @@ public class FileTypeRepositoryTests : IDisposable
 	public async Task GetByIdsAsync_ShouldReturnBothActiveAndInactive()
 	{
 		// Arrange
-		var activeFileType = await _context.FileTypes.FirstAsync(ft => ft.IsActive, CancellationToken.None);
-		var inactiveFileType = await _context.FileTypes.FirstAsync(ft => !ft.IsActive, CancellationToken.None);
+		var activeFileType = await _dbContext.FileTypes.FirstAsync(ft => ft.IsActive, _cancellationToken);
+		var inactiveFileType = await _dbContext.FileTypes.FirstAsync(ft => !ft.IsActive, _cancellationToken);
 		var ids = new List<long> { activeFileType.Id, inactiveFileType.Id };
 
 		// Act
-		var result = await _repository.GetByIdsAsync(ids, CancellationToken.None);
+		var result = await _repository.GetByIdsAsync(ids, _cancellationToken);
 
 		// Assert
 		var fileTypes = result.ToList();
@@ -271,13 +242,13 @@ public class FileTypeRepositoryTests : IDisposable
 			new("image/gif", ".pdf", "Imagem GIF", FileTypeCategory.Image, "Formato de imagem animada", 5, 4, false)
 		};
 
-		_context.FileTypes.AddRange(fileTypes);
-		_context.SaveChanges();
+		_dbContext.FileTypes.AddRange(fileTypes);
+		_dbContext.SaveChanges();
 	}
 
 	public void Dispose()
 	{
-		_context.Dispose();
+		_dbContext.Dispose();
 		GC.SuppressFinalize(this);
 	}
 }

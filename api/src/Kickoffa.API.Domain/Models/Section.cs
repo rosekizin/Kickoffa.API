@@ -6,7 +6,7 @@ namespace Kickoffa.API.Domain.Models
 	/// <summary>
 	/// Classe base para seções de checklist
 	/// </summary>
-	public abstract class Section : BaseEntity<Section>
+	public abstract class Section : BaseEntity
 	{
 
 		/// <summary>
@@ -50,7 +50,7 @@ namespace Kickoffa.API.Domain.Models
 		/// <summary>
 		/// Relacionamento com o checklist
 		/// </summary>
-		public Checklist Checklist { get; private set; } = null!;
+		public virtual Checklist Checklist { get; private set; } = null!;
 
 		/// <summary>
 		/// Atualiza o título da seção

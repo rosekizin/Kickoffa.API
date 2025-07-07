@@ -51,7 +51,7 @@ namespace Kickoffa.API.Domain.Models
 		/// <summary>
 		/// Mídias associadas à seção de briefing
 		/// </summary>
-		public ICollection<BriefingMedia> Media { get; private set; }
+		public virtual ICollection<BriefingMedia> Media { get; private set; }
 
 		/// <summary>
 		/// Atualiza o conteúdo da seção

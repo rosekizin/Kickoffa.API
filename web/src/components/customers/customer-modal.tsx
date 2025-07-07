@@ -99,11 +99,11 @@ export function CustomerModal({ isOpen, onClose, onSave, customer }: CustomerMod
       const dataToSend: CreateCustomerRequest = {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
-        email: formData.email.trim() || undefined,
-        phoneNumber: formData.phoneNumber.trim() || undefined,
-        address: formData.address.trim() || undefined,
-        cpf: customerType === 'pf' ? formData.cpf.replace(/\D/g, '') || undefined : undefined,
-        cnpj: customerType === 'pj' ? formData.cnpj.replace(/\D/g, '') || undefined : undefined
+        email: formData.email?.trim() || undefined,
+        phoneNumber: formData.phoneNumber?.trim() || undefined,
+        address: formData.address?.trim() || undefined,
+        cpf: customerType === 'pf' ? formData.cpf?.replace(/\D/g, '') || undefined : undefined,
+        cnpj: customerType === 'pj' ? formData.cnpj?.replace(/\D/g, '') || undefined : undefined
       }
 
       let savedCustomer: Customer

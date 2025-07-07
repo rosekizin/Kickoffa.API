@@ -1,0 +1,55 @@
+using Kickoffa.API.Domain.Models.Enums;
+using Kickoffa.API.Domain.Models.Components.Base;
+
+namespace Kickoffa.API.Domain.Models.Components
+{
+	/// <summary>
+	/// Componente para upload de arquivos pelo cliente
+	/// </summary>
+	public class UploadComponent : Component
+	{
+		public UploadComponent(
+			long sectionId,
+			string title,
+			int order,
+			string? description,
+			bool isRequired,
+			string? placeholder,
+			int? maxSizeMB)
+			: base(sectionId, title, order, description, isRequired)
+		{
+			MaxSizeMB = maxSizeMB;
+			ComponentFiles = [];
+			AllowedFileTypes = [];
+			Placeholder = placeholder;
+		}
+
+		public override ComponentType Type => ComponentType.Upload;
+
+		/// <summary>
+		/// Tamanho máximo por arquivo em MB
+		/// </summary>
+		public int? MaxSizeMB { get; private set; }
+
+		/// <summary>
+		/// Texto de placeholder para a área de upload
+		/// </summary>
+		public string? Placeholder { get; private set; }
+
+		/// <summary>
+		/// Arquivos enviados pelo cliente para este componente
+		/// </summary>
+		public virtual ICollection<UploadComponentFile> ComponentFiles { get; private set; }
+
+		/// <summary>
+		/// Tipos de arquivo permitidos para este somponente de upload
+		/// Relacionamento N:N unidirecional - UploadComponent conhece FileType, mas FileType não conhece UploadComponent
+		/// </summary>
+		public virtual ICollection<FileType> AllowedFileTypes { get; private set; }
+
+		public void AddFiles(UploadComponentFile file)
+		{
+			ComponentFiles.Add(file);
+		}
+	}
+}

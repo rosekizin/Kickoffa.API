@@ -3,12 +3,12 @@
 import { useState } from 'react'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { BriefingEditor } from '@/components/briefing/briefing-editor'
-import { ChecklistItemEditor } from '@/components/shared/checklist-item-editor'
+import { ChecklistComponentEditor } from '@/components/shared/checklist-component-editor'
 import { SortableSectionList, type Section } from '@/components/sections/sortable-section-list'
-import { SortableChecklistItems } from '@/components/checklist/sortable-checklist-items'
+import { SortableChecklistComponents } from '@/components/checklist/sortable-checklist-components'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Button } from '@/components/ui/button'
-import { ItemPreview } from '@/components/preview/item-preview'
+import { ComponentPreview } from '@/components/preview/component-preview'
 import {
   Save,
   Eye,
@@ -37,8 +37,8 @@ export default function NewChecklistPage() {
   const [sectionEditingStates, setSectionEditingStates] = useState<Record<number, boolean>>({})
   const [basicInfoExpanded, setBasicInfoExpanded] = useState(true)
   const [sectionsExpanded, setSectionsExpanded] = useState(true)
-  const [showNewItemEditor, setShowNewItemEditor] = useState(false)
-  const [editingItemId, setEditingItemId] = useState<number | null>(null)
+  const [showNewComponentEditor, setShowNewComponentEditor] = useState(false)
+  const [editingComponentId, setEditingComponentId] = useState<number | null>(null)
 
 
   const addSection = (type: 'briefing' | 'checklist') => {
@@ -47,7 +47,7 @@ export default function NewChecklistPage() {
       title: type === 'briefing' ? 'Nova Seção de Briefing' : 'Nova Seção de Checklist',
       type,
       order: sections.length + 1,
-      items: type === 'checklist' ? [] : undefined,
+      components: type === 'checklist' ? [] : undefined,
       contentHtml: type === 'briefing' ? '' : undefined,
       contentJson: type === 'briefing' ? '' : undefined
     }
@@ -83,7 +83,7 @@ export default function NewChecklistPage() {
     console.log('✅ Seção atualizada')
   }
 
-  const handleSectionEditingChange = (sectionId: string, isEditing: boolean) => {
+  const handleSectionEditingChange = (sectionId: number, isEditing: boolean) => {
     setSectionEditingStates(prev => ({
       ...prev,
       [sectionId]: isEditing
@@ -94,26 +94,26 @@ export default function NewChecklistPage() {
     setSections(reorderedSections)
   }
 
-  const handleItemSave = (sectionId: string, item: any) => {
+  const handleComponentSave = (sectionId: number, component: any) => {
     setSections(prev => prev.map(section => {
       if (section.id === sectionId) {
-        const items = section.items || []
+        const components = section.components || []
 
-        if (editingItemId) {
-          // Editando item existente
+        if (editingComponentId) {
+          // Editando componente existente
           return {
             ...section,
-            items: items.map(existingItem =>
-              existingItem.id === editingItemId
-                ? { ...item, id: editingItemId }
-                : existingItem
+            components: components.map(existingComponent =>
+              existingComponent.id === editingComponentId
+                ? { ...component, id: editingComponentId }
+                : existingComponent
             )
           }
         } else {
-          // Criando novo item
+          // Criando novo componente
           return {
             ...section,
-            items: [...items, { ...item, id: Math.random().toString(36).substr(2, 9) }]
+            components: [...components, { ...component, id: Math.random().toString(36).substr(2, 9) }]
           }
         }
       }
@@ -121,38 +121,38 @@ export default function NewChecklistPage() {
     }))
 
     // Esconder editor e resetar estados
-    setShowNewItemEditor(false)
-    setEditingItemId(null)
+    setShowNewComponentEditor(false)
+    setEditingComponentId(null)
   }
 
-  const handleEditItem = (sectionId: string, itemId: string) => {
-    setEditingItemId(itemId)
-    setShowNewItemEditor(true)
+  const handleEditComponent = (sectionId: number, componentId: number) => {
+    setEditingComponentId(componentId)
+    setShowNewComponentEditor(true)
   }
 
-  const handleDeleteItem = (sectionId: string, itemId: string) => {
+  const handleDeleteComponent = (sectionId: number, componentId: number) => {
     setSections(prev => prev.map(section => {
       if (section.id === sectionId) {
         return {
           ...section,
-          items: section.items?.filter(item => item.id !== itemId) || []
+          components: section.components?.filter(component => component.id !== componentId) || []
         }
       }
       return section
     }))
   }
 
-  const handleCancelItemEdit = () => {
-    setShowNewItemEditor(false)
-    setEditingItemId(null)
+  const handleCancelComponentEdit = () => {
+    setShowNewComponentEditor(false)
+    setEditingComponentId(null)
   }
 
-  const handleItemsReorder = (sectionId: string, reorderedItems: any[]) => {
+  const handleComponentsReorder = (sectionId: number, reorderedComponents: any[]) => {
     setSections(prev => prev.map(section => {
       if (section.id === sectionId) {
         return {
           ...section,
-          items: reorderedItems
+          components: reorderedComponents
         }
       }
       return section
@@ -382,7 +382,7 @@ export default function NewChecklistPage() {
                     <div className="max-w-md mx-auto">
                       <div className="flex justify-between text-sm text-gray-600 mb-2">
                         <span>Progresso</span>
-                        <span>0/{sections.reduce((acc, s) => acc + (s.items?.length || 0), 0)} itens</span>
+                        <span>0/{sections.reduce((acc, s) => acc + (s.components?.length || 0), 0)} componentes</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-3">
                         <div
@@ -433,12 +433,12 @@ export default function NewChecklistPage() {
 
                           {section.type === 'checklist' && (
                             <div className="space-y-6">
-                              {section.items?.length ? (
-                                section.items.map((item, index) => (
-                                  <ItemPreview key={item.id || index} item={item} />
+                              {section.components?.length ? (
+                                section.components.map((component, index) => (
+                                  <ComponentPreview key={component.id || index} component={component} />
                                 ))
                               ) : (
-                                <p className="text-gray-500 italic">Nenhum item adicionado ainda</p>
+                                <p className="text-gray-500 italic">Nenhum componente adicionado ainda</p>
                               )}
                             </div>
                           )}
@@ -483,39 +483,39 @@ export default function NewChecklistPage() {
                   />
                 ) : (
                   <div className="space-y-6">
-                    {/* Existing Items - Sortable */}
-                    {activeSecData.items && activeSecData.items.length > 0 && (
-                      <SortableChecklistItems
-                        items={activeSecData.items}
-                        onItemsReorder={(reorderedItems) => handleItemsReorder(activeSecData.id, reorderedItems)}
-                        onEditItem={(itemId) => handleEditItem(activeSecData.id, itemId)}
-                        onDeleteItem={(itemId) => handleDeleteItem(activeSecData.id, itemId)}
+                    {/* Existing Components - Sortable */}
+                    {activeSecData.components && activeSecData.components.length > 0 && (
+                      <SortableChecklistComponents
+                        components={activeSecData.components}
+                        onComponentsReorder={(reorderedComponents) => handleComponentsReorder(activeSecData.id, reorderedComponents)}
+                        onEditComponent={(componentId) => handleEditComponent(activeSecData.id, componentId)}
+                        onDeleteComponent={(componentId) => handleDeleteComponent(activeSecData.id, componentId)}
                       />
                     )}
 
-                    {/* New Item Editor - Conditional */}
-                    {showNewItemEditor && (
+                    {/* New Component Editor - Conditional */}
+                    {showNewComponentEditor && (
                       <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-6">
-                        <ChecklistItemEditor
-                          item={editingItemId ? activeSecData.items?.find(item => item.id === editingItemId) : undefined}
+                        <ChecklistComponentEditor
+                          component={editingComponentId ? activeSecData.components?.find(component => component.id === editingComponentId) : undefined}
                           sectionId={activeSecData.id}
-                          order={(activeSecData.items?.length || 0) + 1}
-                          onSave={(item) => handleItemSave(activeSecData.id, item)}
-                          onCancel={handleCancelItemEdit}
+                          order={(activeSecData.components?.length || 0) + 1}
+                          onSave={(component) => handleComponentSave(activeSecData.id, component)}
+                          onCancel={handleCancelComponentEdit}
                         />
                       </div>
                     )}
 
-                    {/* Add New Item Button */}
-                    {!showNewItemEditor && (
+                    {/* Add New Component Button */}
+                    {!showNewComponentEditor && (
                       <div className="text-center">
                         <Button
-                          onClick={() => setShowNewItemEditor(true)}
+                          onClick={() => setShowNewComponentEditor(true)}
                           variant="outline"
                           className="border-dashed border-2 border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-700"
                         >
                           <Plus className="h-4 w-4 mr-2" />
-                          Novo Item
+                          Novo Componente (Item)
                         </Button>
                       </div>
                     )}

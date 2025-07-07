@@ -6,6 +6,7 @@ using Kickoffa.API.Application.Services.Email;
 using Kickoffa.API.Application.Wrappers;
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Domain.Models.AppUser;
+using Kickoffa.API.Domain.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,10 +33,14 @@ public static class ApplicationServiceCollectionExtensions
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IFileTypeService, FileTypeService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 		// Register wrappers
 		services.AddScoped<IUserManagerWrapper, UserManagerWrapper>();
 		services.AddScoped<ISignInManagerWrapper, SignInManagerWrapper>();
+
+		// HttpContextAccessor necessário para CurrentUserService
+		services.AddHttpContextAccessor();
 
 		return services;
     }

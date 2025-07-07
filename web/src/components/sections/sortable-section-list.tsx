@@ -36,7 +36,7 @@ export interface Section {
   contentJson?: string
   contentHtml?: string
   contentLastUpdated?: string
-  items?: any[]
+  components?: any[]
 }
 
 interface SortableSectionProps {
@@ -107,9 +107,9 @@ function SortableSection({ section, isActive, onClick, onDelete }: SortableSecti
         </Button>
       </div>
 
-      {section.type === 'checklist' && section.items && (
+      {section.type === 'checklist' && section.components && (
         <div className="mt-2 text-xs text-gray-500">
-          {section.items.length} item{section.items.length !== 1 ? 's' : ''}
+          {section.components.length} componente{section.components.length !== 1 ? 's' : ''}
         </div>
       )}
     </div>
@@ -118,9 +118,9 @@ function SortableSection({ section, isActive, onClick, onDelete }: SortableSecti
 
 interface SortableSectionListProps {
   sections: Section[]
-  activeSection: string | null
-  onSectionClick: (sectionId: string) => void
-  onSectionDelete: (sectionId: string) => void
+  activeSection: number | null
+  onSectionClick: (sectionId: number) => void
+  onSectionDelete: (sectionId: number) => void
   onSectionsReorder: (sections: Section[]) => void
 }
 

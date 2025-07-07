@@ -29,7 +29,7 @@ export class CustomerService {
   /**
    * Busca um cliente por ID
    */
-  static async getCustomerById(id: string): Promise<Customer> {
+  static async getCustomerById(id: number): Promise<Customer> {
     const response = await api.get<Customer>(`${this.BASE_PATH}/${id}`)
     return response.data
   }
@@ -37,7 +37,7 @@ export class CustomerService {
   /**
    * Atualiza um cliente
    */
-  static async updateCustomer(id: string, customerData: Partial<CreateCustomerRequest>): Promise<Customer> {
+  static async updateCustomer(id: number, customerData: Partial<CreateCustomerRequest>): Promise<Customer> {
     const cleanData = this.cleanCustomerData(customerData)
     const response = await api.put<Customer>(`${this.BASE_PATH}/${id}`, cleanData)
     return response.data
@@ -46,7 +46,7 @@ export class CustomerService {
   /**
    * Remove um cliente
    */
-  static async deleteCustomer(id: string): Promise<void> {
+  static async deleteCustomer(id: number): Promise<void> {
     await api.delete(`${this.BASE_PATH}/${id}`)
   }
 

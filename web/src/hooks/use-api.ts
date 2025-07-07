@@ -3,11 +3,11 @@ import api from '@/lib/api'
 import {
   Checklist,
   Section,
-  Item,
+  Component,
   CreateChecklistRequest,
   CreateSectionRequest,
-  CreateItemRequest,
-  UpdateItemStatusRequest,
+  CreateComponentRequest,
+  UpdateComponentStatusRequest,
   PublicChecklistView,
   Customer,
   CreateCustomerRequest,
@@ -81,13 +81,13 @@ export const useUpdateSection = () => {
   })
 }
 
-// Items
-export const useCreateItem = () => {
+// Components
+export const useCreateComponent = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: CreateItemRequest) => {
-      const response = await api.post<Item>('/items', data)
+    mutationFn: async (data: CreateComponentRequest) => {
+      const response = await api.post<Component>('/components', data)
       return response.data
     },
     onSuccess: () => {
@@ -126,12 +126,12 @@ export const usePublicChecklist = (token: string) => {
   })
 }
 
-export const useUpdateItemStatus = () => {
+export const useUpdateComponentStatus = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: UpdateItemStatusRequest) => {
-      const response = await api.post('/public/item-status', data)
+    mutationFn: async (data: UpdateComponentStatusRequest) => {
+      const response = await api.post('/public/component-status', data)
       return response.data
     },
     onSuccess: () => {
@@ -142,10 +142,10 @@ export const useUpdateItemStatus = () => {
 
 export const useUploadFile = () => {
   return useMutation({
-    mutationFn: async ({ file, itemId }: { file: File; itemId: string }) => {
+    mutationFn: async ({ file, componentId }: { file: File; componentId: string }) => {
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('itemId', itemId)
+      formData.append('componentId', componentId)
 
       const response = await api.post('/public/upload', formData, {
         headers: {
@@ -169,7 +169,7 @@ export const useCustomers = () => {
   })
 }
 
-export const useCustomer = (id: string) => {
+export const useCustomer = (id: number) => {
   return useQuery({
     queryKey: ['customer', id],
     queryFn: () => CustomerService.getCustomerById(id),
@@ -192,7 +192,7 @@ export const useUpdateCustomer = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<CreateCustomerRequest> }) =>
+    mutationFn: ({ id, data }: { id: number; data: Partial<CreateCustomerRequest> }) =>
       CustomerService.updateCustomer(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
@@ -204,7 +204,7 @@ export const useDeleteCustomer = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: string) => CustomerService.deleteCustomer(id),
+    mutationFn: (id: number) => CustomerService.deleteCustomer(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
     }

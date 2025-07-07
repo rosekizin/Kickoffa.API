@@ -43,7 +43,7 @@ export interface LoginResponse {
   tokenType: string
   expiresIn: number
   refreshToken: string
-  userId: string
+  userId: number
   email: string
   issuedAt: string | Date
   expiresAt: string | Date
@@ -82,7 +82,7 @@ export interface Section {
   contentLastUpdated?: string
 
   // Para seções de checklist
-  items?: Item[]
+  components?: Component[]
 
   createdAt: string
   updatedAt: string
@@ -99,7 +99,7 @@ export interface BriefingMedia {
   createdAt: string
 }
 
-export interface Item {
+export interface Component {
   id: number
   sectionId: number
   title: string
@@ -115,14 +115,14 @@ export interface Item {
   maxLength?: number
   confirmationText?: string
 
-  status?: ItemStatus
+  status?: ComponentStatus
   createdAt: string
   updatedAt: string
 }
 
-export interface ItemStatus {
+export interface ComponentStatus {
   id: number
-  itemId: number
+  componentId: number
   isCompleted: boolean
   completedAt?: string
 
@@ -137,7 +137,7 @@ export interface ItemStatus {
 
 export interface UploadedFile {
   id: number
-  itemStatusId: number
+  componentStatusId: number
   fileName: string
   originalName: string
   mimeType: string
@@ -167,7 +167,7 @@ export interface FileTypeSizeConfig {
   maxSizeMB: number
 }
 
-export interface CreateItemRequest {
+export interface CreateComponentRequest {
   sectionId: number
   title: string
   description?: string
@@ -182,8 +182,8 @@ export interface CreateItemRequest {
   fileTypeSizeConfigs?: FileTypeSizeConfig[]
 }
 
-export interface UpdateItemStatusRequest {
-  itemId: number
+export interface UpdateComponentStatusRequest {
+  componentId: number
   isCompleted: boolean
   textResponse?: string
   signatureData?: string
@@ -257,8 +257,8 @@ export interface PublicChecklistView {
   deadline?: string
   sections: PublicSectionView[]
   progress: {
-    totalItems: number
-    completedItems: number
+    totalComponents: number
+    completedComponents: number
     percentage: number
   }
 }
@@ -269,10 +269,10 @@ export interface PublicSectionView {
   type: 'briefing' | 'checklist'
   order: number
   contentHtml?: string
-  items?: PublicItemView[]
+  components?: PublicComponentView[]
 }
 
-export interface PublicItemView {
+export interface PublicComponentView {
   id: number
   title: string
   description?: string
