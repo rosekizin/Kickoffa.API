@@ -27,24 +27,25 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			// Mas podemos configurar índices específicos para otimização
 
 			// Índices básicos (necessários para TPC)
-			entity.HasIndex(s => s.SectionId)
-				.HasDatabaseName("IX_SignatureComponents_SectionId");
 
-			entity.HasIndex(s => new { s.SectionId, s.Order })
-				.HasDatabaseName("IX_SignatureComponents_SectionId_Order");
+			/* Nao usar o HasDatabaseName aqui, pois o nome do índice é gerado automaticamente pelo EF Core
+			 * Inclusive há um bug no TPC do EF Core que faz com que o nome do índice seja duplicado se usar HasDatabaseName
+			 * https://github.com/efcore/EFCore.NamingConventions/issues/185#issuecomment-1876016568
+			 */
+
+			entity.HasIndex(s => s.SectionId);
+
+			entity.HasIndex(s => new { s.SectionId, s.Order });
 
 			// Índices específicos para SignatureComponent
-			entity.HasIndex(s => new { s.SectionId, s.IsRequired })
-				.HasDatabaseName("IX_SignatureComponents_SectionId_IsRequired");
+			entity.HasIndex(s => new { s.SectionId, s.IsRequired });
 
 			// Índice para buscar apenas assinaturas obrigatórias
 			entity.HasIndex(s => s.IsRequired)
-				.HasDatabaseName("IX_SignatureComponents_IsRequired")
 				.HasFilter("\"IsRequired\" = true"); // Índice filtrado para PostgreSQL
 
 			// Índice para buscar assinaturas por checklist (através de joins)
-			entity.HasIndex(s => new { s.SectionId, s.IsRequired, s.Order })
-				.HasDatabaseName("IX_SignatureComponents_SectionId_IsRequired_Order");
+			entity.HasIndex(s => new { s.SectionId, s.IsRequired, s.Order });
 		}
 	}
 }

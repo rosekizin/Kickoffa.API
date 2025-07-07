@@ -42,21 +42,22 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 				.UsingEntity("UploadComponentAllowedFileTypes");
 
 			// Índices básicos (necessários para TPC)
-			entity.HasIndex(u => u.SectionId)
-				.HasDatabaseName("IX_UploadComponents_SectionId");
 
-			entity.HasIndex(u => new { u.SectionId, u.Order })
-				.HasDatabaseName("IX_UploadComponents_SectionId_Order");
+			/* Nao usar o HasDatabaseName aqui, pois o nome do índice é gerado automaticamente pelo EF Core
+			 * Inclusive há um bug no TPC do EF Core que faz com que o nome do índice seja duplicado se usar HasDatabaseName
+			 * https://github.com/efcore/EFCore.NamingConventions/issues/185#issuecomment-1876016568
+			 */
+
+			entity.HasIndex(u => u.SectionId);
+
+			entity.HasIndex(u => new { u.SectionId, u.Order });
 
 			// Índices específicos para UploadComponent
-			entity.HasIndex(u => u.MaxSizeMB)
-				.HasDatabaseName("IX_UploadComponents_MaxSizeMB");
+			entity.HasIndex(u => u.MaxSizeMB);
 
-			entity.HasIndex(u => u.Placeholder)
-				.HasDatabaseName("IX_UploadComponents_Placeholder");
+			entity.HasIndex(u => u.Placeholder);
 
-			entity.HasIndex(u => new { u.SectionId, u.MaxSizeMB })
-				.HasDatabaseName("IX_UploadComponents_SectionId_MaxSizeMB");
+			entity.HasIndex(u => new { u.SectionId, u.MaxSizeMB });
 		}
 	}
 }

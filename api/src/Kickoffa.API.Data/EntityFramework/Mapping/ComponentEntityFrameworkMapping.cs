@@ -1,22 +1,24 @@
 using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Models.Components.Base;
+using Kickoffa.API.Domain.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kickoffa.API.Data.EntityFramework.Mapping
 {
 	public interface IComponentEntityFrameworkMapping
 	{
-		void Map(ModelBuilder modelBuilder);
+		void Map(ModelBuilder modelBuilder, ICurrentUserService currentUserService);
 	}
 
 	public class ComponentEntityFrameworkMapping : IComponentEntityFrameworkMapping
 	{
-		public void Map(ModelBuilder modelBuilder)
+		public void Map(ModelBuilder modelBuilder, ICurrentUserService currentUserService)
 		{
 			var entity = modelBuilder.Entity<Component>();
 
 			// Configuração TPC (Table-Per-Concrete-Type)
 			entity.UseTpcMappingStrategy();
+
 
 			// Chave primária
 			entity.HasKey(i => i.Id);
@@ -49,22 +51,24 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			entity.Property(i => i.LastUpdatedDateUtc)
 				.IsRequired();
 
-			// Nota: Índices são definidos nos mapeamentos específicos de cada tipo concreto
-			// devido ao uso de TPC (Table-Per-Concrete-Type)
+			// Ignorar propriedade Type abstrata (pode causar conflitos TPC)
+			entity.Ignore(i => i.Type);
 
-			// Relacionamentos
-			entity.HasOne(i => i.Section)
-				.WithMany(s => s.Components)
-				.HasForeignKey(i => i.SectionId)
-				.OnDelete(DeleteBehavior.Cascade);
+			// Query Filter através do relacionamento Section -> Checklist
+			if (currentUserService.IsAuthenticated)
+			{
+				var currentUserId = currentUserService.UserId.Value;
+				entity.HasQueryFilter(c => c.Section.Checklist.OwnerId == currentUserId);
+			}
 
-			entity.HasOne(i => i.Status)
-				.WithOne(s => s.Component)
-				.HasForeignKey<ComponentStatus>(s => s.ComponentId)
-				.OnDelete(DeleteBehavior.Cascade);
-
-			// Nota: Configurações específicas de cada tipo são feitas em seus próprios mapeamentos
-			// TextComponentEntityFrameworkMapping, UploadComponentEntityFrameworkMapping, etc.
+			// Nota: Com TPC, relacionamentos são inferidos automaticamente através das foreign keys
+			// Não configuramos relacionamentos explicitamente na classe base para evitar
+			// conflitos de índices automáticos.
+			//
+			// Os relacionamentos funcionarão normalmente através das propriedades de navegação
+			// definidas nas entidades do domínio.
+			//
+			// Índices específicos são definidos nos mapeamentos de cada tipo concreto.
 		}
 	}
 }

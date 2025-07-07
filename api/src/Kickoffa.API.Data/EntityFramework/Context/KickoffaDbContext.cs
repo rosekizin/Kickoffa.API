@@ -1,12 +1,13 @@
 using Kickoffa.API.Data.EntityFramework.Mapping;
-using Kickoffa.API.Domain.Models.FreelancerCustomer;
+using Kickoffa.API.Domain.Models;
 using Kickoffa.API.Domain.Models.AppUser;
 using Kickoffa.API.Domain.Models.Components;
+using Kickoffa.API.Domain.Models.Components.Base;
+using Kickoffa.API.Domain.Models.FreelancerCustomer;
+using Kickoffa.API.Domain.Services;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Kickoffa.API.Domain.Models.Components.Base;
-using Kickoffa.API.Domain.Models;
 
 namespace Kickoffa.API.Data.EntityFramework.Context
 {
@@ -33,6 +34,7 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 
 	public class KickoffaDbContext : IdentityDbContext<User, Role, long>, IKickoffaDbContext
 	{
+		private readonly ICurrentUserService _currentUserService;
 		private readonly ICustomerEntityFrameworkMapping _customerEntityFrameworkMapping;
 		private readonly IUserEntityFrameworkMapping _userEntityFrameworkMapping;
 		private readonly IChecklistEntityFrameworkMapping _checklistEntityFrameworkMapping;
@@ -51,6 +53,7 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 
 		public KickoffaDbContext(
 			DbContextOptions<KickoffaDbContext> options,
+			ICurrentUserService currentUserService,
 			ICustomerEntityFrameworkMapping customerEntityFrameworkMapping,
 			IUserEntityFrameworkMapping userEntityFrameworkMapping,
 			IChecklistEntityFrameworkMapping checklistEntityFrameworkMapping,
@@ -66,6 +69,7 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 			ICheckboxComponentEntityFrameworkMapping checkboxComponentEntityFrameworkMapping,
 			ISignatureComponentEntityFrameworkMapping signatureComponentEntityFrameworkMapping) : base(options)
 		{
+			_currentUserService = currentUserService;
 			_customerEntityFrameworkMapping = customerEntityFrameworkMapping;
 			_userEntityFrameworkMapping = userEntityFrameworkMapping;
 			_checklistEntityFrameworkMapping = checklistEntityFrameworkMapping;
@@ -105,15 +109,22 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 		{
 			base.OnModelCreating(modelBuilder);
 
+			// Mapeamentos sem filtro de usuário (dados globais)
 			_customerEntityFrameworkMapping.Map(modelBuilder);
 			_userEntityFrameworkMapping.Map(modelBuilder);
-			_checklistEntityFrameworkMapping.Map(modelBuilder);
-			_sectionEntityFrameworkMapping.Map(modelBuilder);
-			_componentEntityFrameworkMapping.Map(modelBuilder);
-			_componentStatusEntityFrameworkMapping.Map(modelBuilder);
-			_briefingMediaEntityFrameworkMapping.Map(modelBuilder);
 			_fileTypeEntityFrameworkMapping.Map(modelBuilder);
+			_briefingMediaEntityFrameworkMapping.Map(modelBuilder);
 			_uploadComponentFileEntityFrameworkMapping.Map(modelBuilder);
+
+			// Mapeamentos com filtro de usuário (exceto Component base)
+			_checklistEntityFrameworkMapping.Map(modelBuilder, _currentUserService);
+			_sectionEntityFrameworkMapping.Map(modelBuilder, _currentUserService);
+			_componentStatusEntityFrameworkMapping.Map(modelBuilder, _currentUserService);
+
+			// ✅ MAPEAMENTO BASE COMPONENT POR ÚLTIMO (evita vazamento de configurações TPC)
+			_componentEntityFrameworkMapping.Map(modelBuilder, _currentUserService);
+
+			// ✅ MAPEAMENTOS ESPECÍFICOS DE COMPONENTES PRIMEIRO (para TPC funcionar corretamente)
 			_textComponentEntityFrameworkMapping.Map(modelBuilder);
 			_uploadComponentEntityFrameworkMapping.Map(modelBuilder);
 			_confirmationComponentEntityFrameworkMapping.Map(modelBuilder);

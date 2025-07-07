@@ -29,19 +29,21 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 				.HasMaxLength(1000);
 
 			// Índices básicos (necessários para TPC)
-			entity.HasIndex(c => c.SectionId)
-				.HasDatabaseName("IX_ConfirmationComponents_SectionId");
 
-			entity.HasIndex(c => new { c.SectionId, c.Order })
-				.HasDatabaseName("IX_ConfirmationComponents_SectionId_Order");
+			/* Nao usar o HasDatabaseName aqui, pois o nome do índice é gerado automaticamente pelo EF Core
+			 * Inclusive há um bug no TPC do EF Core que faz com que o nome do índice seja duplicado se usar HasDatabaseName
+			 * https://github.com/efcore/EFCore.NamingConventions/issues/185#issuecomment-1876016568
+			 */
+
+			entity.HasIndex(c => c.SectionId);
+
+			entity.HasIndex(c => new { c.SectionId, c.Order });
 
 			// Índices específicos para ConfirmationComponent
-			entity.HasIndex(c => c.ConfirmationText)
-				.HasDatabaseName("IX_ConfirmationComponents_ConfirmationText");
+			entity.HasIndex(c => c.ConfirmationText);
 
 			// Índice para busca de texto (full-text search se necessário)
-			entity.HasIndex(c => new { c.SectionId, c.ConfirmationText })
-				.HasDatabaseName("IX_ConfirmationComponents_SectionId_ConfirmationText");
+			entity.HasIndex(c => new { c.SectionId, c.ConfirmationText });
 		}
 	}
 }

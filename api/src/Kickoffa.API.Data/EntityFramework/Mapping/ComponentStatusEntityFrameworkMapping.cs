@@ -1,16 +1,17 @@
 using Kickoffa.API.Domain.Models.Components;
+using Kickoffa.API.Domain.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kickoffa.API.Data.EntityFramework.Mapping
 {
 	public interface IComponentStatusEntityFrameworkMapping
 	{
-		void Map(ModelBuilder modelBuilder);
+		void Map(ModelBuilder modelBuilder, ICurrentUserService currentUserService);
 	}
 
 	public class ComponentStatusEntityFrameworkMapping : IComponentStatusEntityFrameworkMapping
 	{
-		public void Map(ModelBuilder modelBuilder)
+		public void Map(ModelBuilder modelBuilder, ICurrentUserService currentUserService)
 		{
 			var entity = modelBuilder.Entity<ComponentStatus>();
 
@@ -33,13 +34,20 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 				.HasDefaultValue(false);
 
 			entity.Property(ist => ist.Response)
-				.HasColumnType("TEXT");			
+				.HasColumnType("TEXT");
 
 			entity.Property(ist => ist.CreatedDateUtc)
 				.IsRequired();
 
 			entity.Property(ist => ist.LastUpdatedDateUtc)
 				.IsRequired();
+
+			// Query Filter através do relacionamento Component -> Section -> Checklist
+			if (currentUserService.IsAuthenticated)
+			{
+				var currentUserId = currentUserService.UserId.Value;
+				entity.HasQueryFilter(cs => cs.Component.Section.Checklist.OwnerId == currentUserId);
+			}
 
 			// Índices
 			entity.HasIndex(ist => ist.ComponentId)

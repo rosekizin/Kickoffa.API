@@ -27,18 +27,20 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			// Mas podemos configurar índices específicos para otimização
 
 			// Índices básicos (necessários para TPC)
-			entity.HasIndex(c => c.SectionId)
-				.HasDatabaseName("IX_CheckboxComponents_SectionId");
 
-			entity.HasIndex(c => new { c.SectionId, c.Order })
-				.HasDatabaseName("IX_CheckboxComponents_SectionId_Order");
+			/* Nao usar o HasDatabaseName aqui, pois o nome do índice é gerado automaticamente pelo EF Core
+			 * Inclusive há um bug no TPC do EF Core que faz com que o nome do índice seja duplicado se usar HasDatabaseName
+			 * https://github.com/efcore/EFCore.NamingConventions/issues/185#issuecomment-1876016568
+			 */
 
-			entity.HasIndex(c => new { c.SectionId, c.IsRequired })
-				.HasDatabaseName("IX_CheckboxComponents_SectionId_IsRequired");
+			entity.HasIndex(c => c.SectionId);
+
+			entity.HasIndex(c => new { c.SectionId, c.Order });
+
+			entity.HasIndex(c => new { c.SectionId, c.IsRequired });
 
 			// Índice para buscar apenas checkboxes obrigatórios
 			entity.HasIndex(c => c.IsRequired)
-				.HasDatabaseName("IX_CheckboxComponents_IsRequired")
 				.HasFilter("\"IsRequired\" = true"); // Índice filtrado para PostgreSQL
 		}
 	}

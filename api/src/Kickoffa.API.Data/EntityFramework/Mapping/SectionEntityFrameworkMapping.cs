@@ -1,16 +1,17 @@
 using Kickoffa.API.Domain.Models;
+using Kickoffa.API.Domain.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kickoffa.API.Data.EntityFramework.Mapping
 {
 	public interface ISectionEntityFrameworkMapping
 	{
-		void Map(ModelBuilder modelBuilder);
+		void Map(ModelBuilder modelBuilder, ICurrentUserService currentUserService);
 	}
 
 	public class SectionEntityFrameworkMapping : ISectionEntityFrameworkMapping
 	{
-		public void Map(ModelBuilder modelBuilder)
+		public void Map(ModelBuilder modelBuilder, ICurrentUserService currentUserService)
 		{
 			// Configuração da hierarquia usando Table-Per-Hierarchy (TPH)
 			var entity = modelBuilder.Entity<Section>();
@@ -46,6 +47,13 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 
 			entity.Property(s => s.LastUpdatedDateUtc)
 				.IsRequired();
+
+			// Query Filter através do relacionamento com Checklist
+			if (currentUserService.IsAuthenticated)
+			{
+				var currentUserId = currentUserService.UserId.Value;
+				entity.HasQueryFilter(s => s.Checklist.OwnerId == currentUserId);
+			}
 
 			// Relacionamento com Checklist
 			entity.HasOne(s => s.Checklist)

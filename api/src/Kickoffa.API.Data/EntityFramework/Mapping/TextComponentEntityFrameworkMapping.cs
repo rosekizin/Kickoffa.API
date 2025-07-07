@@ -30,21 +30,22 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			entity.Property(t => t.MaxLength);
 
 			// Índices básicos (necessários para TPC)
-			entity.HasIndex(t => t.SectionId)
-				.HasDatabaseName("IX_TextComponents_SectionId");
 
-			entity.HasIndex(t => new { t.SectionId, t.Order })
-				.HasDatabaseName("IX_TextComponents_SectionId_Order");
+			/* Nao usar o HasDatabaseName aqui, pois o nome do índice é gerado automaticamente pelo EF Core
+			 * Inclusive há um bug no TPC do EF Core que faz com que o nome do índice seja duplicado se usar HasDatabaseName
+			 * https://github.com/efcore/EFCore.NamingConventions/issues/185#issuecomment-1876016568
+			 */
+
+			entity.HasIndex(t => t.SectionId);
+
+			entity.HasIndex(t => new { t.SectionId, t.Order });
 
 			// Índices específicos para TextComponent
-			entity.HasIndex(t => t.Placeholder)
-				.HasDatabaseName("IX_TextComponents_Placeholder");
+			entity.HasIndex(t => t.Placeholder);
 
-			entity.HasIndex(t => new { t.SectionId, t.Placeholder })
-				.HasDatabaseName("IX_TextComponents_SectionId_Placeholder");
+			entity.HasIndex(t => new { t.SectionId, t.Placeholder });
 
-			entity.HasIndex(t => t.MaxLength)
-				.HasDatabaseName("IX_TextComponents_MaxLength");
+			entity.HasIndex(t => t.MaxLength);
 		}
 	}
 }
