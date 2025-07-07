@@ -41,7 +41,7 @@ export default function CustomersPage() {
     )
   })
 
-  const handleDeleteCustomer = async (id: string) => {
+  const handleDeleteCustomer = async (id: number) => {
     if (!confirm('Tem certeza que deseja excluir este cliente?')) return
 
     try {

@@ -55,7 +55,7 @@ const mockChecklist = {
       title: 'Documentos e Assets',
       type: 'checklist' as const,
       order: 2,
-      items: [
+      components: [
         {
           id: '1',
           title: 'Logo da empresa',
@@ -123,8 +123,8 @@ const mockChecklist = {
     }
   ],
   progress: {
-    totalItems: 5,
-    completedItems: 0,
+    totalComponents: 5,
+    completedComponents: 0,
     percentage: 0
   }
 }
@@ -134,93 +134,108 @@ export default function PublicChecklistPage() {
   const token = params.token as string
   
   const [checklist, setChecklist] = useState(mockChecklist)
-  const [itemResponses, setItemResponses] = useState<Record<string, any>>({})
+  const [componentResponses, setComponentResponses] = useState<Record<string, any>>({})
   const [isLoading, setIsLoading] = useState(false)
-  const [editingItem, setEditingItem] = useState<string | null>(null)
+  const [editingComponent, setEditingComponent] = useState<string | null>(null)
 
-  const handleItemComplete = (itemId: string, value: any) => {
-    setItemResponses(prev => ({ ...prev, [itemId]: value }))
-    
-    // Atualizar status do item
+  const handleComponentComplete = (componentId: string, value: any) => {
+    setComponentResponses(prev => ({ ...prev, [componentId]: value }))
+
+    // Atualizar status do componente
     setChecklist(prev => ({
       ...prev,
-      sections: prev.sections.map(section => ({
-        ...section,
-        items: section.items?.map(item => 
-          item.id === itemId 
-            ? { ...item, isCompleted: true }
-            : item
-        )
-      }))
+      sections: prev.sections.map(section => {
+        if (section.type === 'checklist' && section.components) {
+          return {
+            ...section,
+            components: section.components.map(component =>
+              component.id === componentId
+                ? { ...component, isCompleted: true }
+                : component
+            )
+          }
+        }
+        return section
+      })
     }))
 
     // Recalcular progresso
-    const totalItems = checklist.sections.reduce((acc, section) => 
-      acc + (section.items?.length || 0), 0
+    const totalComponents = checklist.sections.reduce((acc, section) =>
+      acc + (section.components?.length || 0), 0
     )
-    const completedItems = Object.keys(itemResponses).length + 1
-    
+    const completedComponents = Object.keys(componentResponses).length + 1
+
     setChecklist(prev => ({
       ...prev,
       progress: {
-        totalItems,
-        completedItems,
-        percentage: Math.round((completedItems / totalItems) * 100)
+        totalComponents,
+        completedComponents,
+        percentage: Math.round((completedComponents / totalComponents) * 100)
       }
     }))
   }
 
-  const handleFilesSelected = (itemId: string, files: File[]) => {
-    handleItemComplete(itemId, files)
-    setEditingItem(null)
+  const handleFilesSelected = (componentId: string, files: File[]) => {
+    handleComponentComplete(componentId, files)
+    setEditingComponent(null)
   }
 
-  const handleTextChange = (itemId: string, text: string) => {
+  const handleTextChange = (componentId: string, text: string) => {
     if (text.trim()) {
-      handleItemComplete(itemId, text)
-      setEditingItem(null)
+      handleComponentComplete(componentId, text)
+      setEditingComponent(null)
     }
   }
 
-  const handleSignature = (itemId: string, signature: string | null) => {
+  const handleSignature = (componentId: string, signature: string | null) => {
     if (signature) {
-      handleItemComplete(itemId, signature)
-      setEditingItem(null)
+      handleComponentComplete(componentId, signature)
+      setEditingComponent(null)
     }
   }
 
-  const handleEditItem = (itemId: string) => {
-    setEditingItem(itemId)
+  const handleEditComponent = (componentId: string) => {
+    setEditingComponent(componentId)
 
-    // Marcar item como não concluído para permitir edição
+    // Marcar componente como não concluído para permitir edição
     setChecklist(prev => ({
       ...prev,
-      sections: prev.sections.map(section => ({
-        ...section,
-        items: section.items?.map(item =>
-          item.id === itemId
-            ? { ...item, isCompleted: false }
-            : item
-        )
-      }))
+      sections: prev.sections.map(section => {
+        if (section.type === 'checklist' && section.components) {
+          return {
+            ...section,
+            components: section.components.map(component =>
+              component.id === componentId
+                ? { ...component, isCompleted: false }
+                : component
+            )
+          }
+        }
+        return section
+      })
     }))
   }
 
-  const handleCancelEdit = (itemId: string) => {
-    setEditingItem(null)
+  const handleCancelEdit = (componentId: string) => {
+    setEditingComponent(null)
 
     // Se tinha resposta, marcar como concluído novamente
-    if (itemResponses[itemId]) {
+    if (componentResponses[componentId]) {
       setChecklist(prev => ({
         ...prev,
-        sections: prev.sections.map(section => ({
-          ...section,
-          items: section.items?.map(item =>
-            item.id === itemId
-              ? { ...item, isCompleted: true }
-              : item
-          )
-        }))
+        sections: prev.sections.map(section => {
+          if (section.type === 'checklist' && section.components) {
+            return {
+              ...section,
+              components: section.components.map(component =>
+                component.id === componentId
+                  ? { ...component, isCompleted: true }
+                  : component
+              )
+            }
+          }
+          return section
+        })
       }))
     }
   }
@@ -241,7 +256,7 @@ export default function PublicChecklistPage() {
     }
   }
 
-  const getItemIcon = (type: string) => {
+  const getComponentIcon = (type: string) => {
     switch (type) {
       case 'upload': return <Upload className="h-5 w-5 text-blue-600" />
       case 'text': return <FileText className="h-5 w-5 text-purple-600" />
@@ -277,7 +292,7 @@ export default function PublicChecklistPage() {
             <div className="max-w-md mx-auto">
               <div className="flex justify-between text-sm text-gray-600 mb-2">
                 <span>Progresso</span>
-                <span>{checklist.progress.completedItems}/{checklist.progress.totalItems} itens</span>
+                <span>{checklist.progress.completedComponents}/{checklist.progress.totalComponents} componentes</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
                 <div 
@@ -319,16 +334,16 @@ export default function PublicChecklistPage() {
                   />
                 )}
 
-                {section.type === 'checklist' && section.items && (
+                {section.type === 'checklist' && section.components && (
                   <div className="space-y-6">
-                    {section.items.map((item) => (
-                      <div key={item.id} className="border border-gray-200 rounded-lg p-4">
+                    {section.components.map((component) => (
+                      <div key={component.id} className="border border-gray-200 rounded-lg p-4">
                         <div className="flex items-start space-x-3">
                           <div className="flex-shrink-0 mt-1">
-                            {item.isCompleted ? (
+                            {component.isCompleted ? (
                               <CheckCircle className="h-5 w-5 text-green-500" />
                             ) : (
-                              getItemIcon(item.type)
+                              getComponentIcon(component.type)
                             )}
                           </div>
                           
@@ -336,24 +351,24 @@ export default function PublicChecklistPage() {
                             <div className="flex justify-between items-start">
                               <div>
                                 <h3 className="font-medium text-gray-900 flex items-center">
-                                  {item.title}
-                                  {item.isRequired && (
+                                  {component.title}
+                                  {component.isRequired && (
                                     <span className="ml-2 text-red-500 text-sm">*</span>
                                   )}
                                 </h3>
-                                {item.description && (
+                                {component.description && (
                                   <p className="text-sm text-gray-600 mt-1">
-                                    {item.description}
+                                    {component.description}
                                   </p>
                                 )}
                               </div>
 
                               {/* Botões de ação */}
-                              {item.isCompleted && editingItem !== item.id && (
+                              {component.isCompleted && editingComponent !== component.id && (
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleEditItem(item.id)}
+                                  onClick={() => handleEditComponent(component.id)}
                                   className="text-blue-600 hover:text-blue-700"
                                 >
                                   <Edit3 className="h-4 w-4 mr-1" />
@@ -361,11 +376,11 @@ export default function PublicChecklistPage() {
                                 </Button>
                               )}
 
-                              {editingItem === item.id && (
+                              {editingComponent === component.id && (
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleCancelEdit(item.id)}
+                                  onClick={() => handleCancelEdit(component.id)}
                                   className="text-gray-600 hover:text-gray-700"
                                 >
                                   <X className="h-4 w-4 mr-1" />
@@ -375,7 +390,7 @@ export default function PublicChecklistPage() {
                             </div>
 
                             {/* Mostrar resposta quando concluído e não editando */}
-                            {item.isCompleted && editingItem !== item.id && itemResponses[item.id] && (
+                            {component.isCompleted && editingComponent !== component.id && componentResponses[component.id] && (
                               <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                                 <div className="flex items-center mb-2">
                                   <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
@@ -383,17 +398,17 @@ export default function PublicChecklistPage() {
                                 </div>
 
                                 {/* Mostrar resposta baseada no tipo */}
-                                {item.type === 'text' && (
+                                {component.type === 'text' && (
                                   <div className="text-sm text-gray-700 bg-white p-3 rounded border">
                                     <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
-                                      {itemResponses[item.id]}
+                                      {componentResponses[component.id]}
                                     </pre>
                                   </div>
                                 )}
 
-                                {item.type === 'upload' && Array.isArray(itemResponses[item.id]) && (
+                                {component.type === 'upload' && Array.isArray(componentResponses[component.id]) && (
                                   <div className="space-y-2">
-                                    {itemResponses[item.id].map((file: File, index: number) => (
+                                    {componentResponses[component.id].map((file: File, index: number) => (
                                       <div key={index} className="flex items-center space-x-2 bg-white p-2 rounded border">
                                         {getFileIcon(file.name)}
                                         <span className="text-sm text-gray-700 flex-1">{file.name}</span>
@@ -403,10 +418,10 @@ export default function PublicChecklistPage() {
                                   </div>
                                 )}
 
-                                {item.type === 'signature' && (
+                                {component.type === 'signature' && (
                                   <div className="bg-white p-2 rounded border">
                                     <img
-                                      src={itemResponses[item.id]}
+                                      src={componentResponses[component.id]}
                                       alt="Assinatura"
                                       className="max-w-xs h-20 object-contain border rounded"
                                     />
@@ -416,27 +431,27 @@ export default function PublicChecklistPage() {
                             )}
 
                             {/* Campos de edição */}
-                            {(!item.isCompleted || editingItem === item.id) && (
+                            {(!component.isCompleted || editingComponent === component.id) && (
                               <div>
-                                {item.type === 'upload' && (
+                                {component.type === 'upload' && (
                                   <FileUploader
-                                    onFilesSelected={(files) => handleFilesSelected(item.id, files)}
-                                    maxFiles={item.config?.maxFiles || 5}
-                                    maxSize={item.config?.maxFileSize || 10 * 1024 * 1024}
-                                    acceptedTypes={item.config?.allowedFileTypes || ['image/*', 'application/pdf', '.doc', '.docx', '.txt']}
+                                    onFilesSelected={(files) => handleFilesSelected(component.id, files)}
+                                    maxFiles={component.config?.maxFiles || 5}
+                                    maxSize={component.config?.maxFileSize || 10 * 1024 * 1024}
+                                    acceptedTypes={component.config?.allowedFileTypes || ['image/*', 'application/pdf', '.doc', '.docx', '.txt']}
                                     multiple={true}
                                     className="max-w-lg"
                                   />
                                 )}
 
-                                {item.type === 'text' && (
+                                {component.type === 'text' && (
                                   <div>
                                     <textarea
-                                      placeholder={item.config?.placeholder || 'Digite sua resposta...\n\nVocê pode usar quebras de linha e formatação básica.'}
-                                      defaultValue={itemResponses[item.id] || ''}
-                                      rows={item.config?.multiline ? 6 : 4}
+                                      placeholder={component.config?.placeholder || 'Digite sua resposta...\n\nVocê pode usar quebras de linha e formatação básica.'}
+                                      defaultValue={componentResponses[component.id] || ''}
+                                      rows={component.config?.multiline ? 6 : 4}
                                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-vertical"
-                                      onBlur={(e) => handleTextChange(item.id, e.target.value)}
+                                      onBlur={(e) => handleTextChange(component.id, e.target.value)}
                                       style={{ whiteSpace: 'pre-wrap' }}
                                     />
                                     <p className="text-xs text-gray-500 mt-1">
@@ -445,9 +460,9 @@ export default function PublicChecklistPage() {
                                   </div>
                                 )}
 
-                                {item.type === 'signature' && (
+                                {component.type === 'signature' && (
                                   <SignaturePad
-                                    onSignatureChange={(signature) => handleSignature(item.id, signature)}
+                                    onSignatureChange={(signature) => handleSignature(component.id, signature)}
                                     className="max-w-lg"
                                   />
                                 )}

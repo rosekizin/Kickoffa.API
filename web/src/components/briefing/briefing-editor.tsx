@@ -31,7 +31,7 @@ import {
 interface BriefingEditorProps {
   initialContent?: string
   onSave: (content: { contentJson: string; contentHtml: string }) => void
-  sectionId?: string
+  sectionId?: number
   placeholder?: string
   isEditing?: boolean
   onEditingChange?: (isEditing: boolean) => void

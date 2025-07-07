@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 
 interface UserProfile {
-  id: string
+  id: number
   name: string
   email: string
   role: string

@@ -30,8 +30,8 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
-// Usar o tipo Item existente, mas criar um alias para clareza
-export type ChecklistItem = {
+// Usar o tipo Component existente, mas criar um alias para clareza
+export type ChecklistComponent = {
   id: number
   title: string
   type: 'checkbox' | 'upload' | 'text' | 'signature' | 'confirmation'
@@ -45,13 +45,13 @@ export type ChecklistItem = {
   confirmationText?: string
 }
 
-interface SortableChecklistItemProps {
-  item: ChecklistItem
+interface SortableChecklistComponentProps {
+  component: ChecklistComponent
   onEdit: () => void
   onDelete: () => void
 }
 
-function SortableChecklistItem({ item, onEdit, onDelete }: SortableChecklistItemProps) {
+function SortableChecklistComponent({ component, onEdit, onDelete }: SortableChecklistComponentProps) {
   const {
     attributes,
     listeners,
@@ -59,14 +59,14 @@ function SortableChecklistItem({ item, onEdit, onDelete }: SortableChecklistItem
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: item.id })
+  } = useSortable({ id: component.id })
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   }
 
-  const getItemIcon = (type: string) => {
+  const getComponentIcon = (type: string) => {
     switch (type) {
       case 'checkbox':
         return <CheckSquare className="h-4 w-4 text-green-600" />
@@ -83,7 +83,7 @@ function SortableChecklistItem({ item, onEdit, onDelete }: SortableChecklistItem
     }
   }
 
-  const getItemTypeName = (type: string) => {
+  const getComponentTypeName = (type: string) => {
     switch (type) {
       case 'checkbox':
         return 'caixa de seleção'
@@ -103,7 +103,7 @@ function SortableChecklistItem({ item, onEdit, onDelete }: SortableChecklistItem
       ref={setNodeRef}
       style={style}
       className={`group bg-white rounded-lg p-4 transition-all ${
-        item.isRequired
+        component.isRequired
           ? 'border-l-4 border-l-red-400 border-t border-r border-b border-gray-200'
           : 'border border-gray-200'
       } ${isDragging ? 'opacity-50 z-50 shadow-lg' : ''}`}
@@ -120,16 +120,16 @@ function SortableChecklistItem({ item, onEdit, onDelete }: SortableChecklistItem
           </div>
           
           <div className="flex items-center space-x-2">
-            {getItemIcon(item.type)}
+            {getComponentIcon(component.type)}
             <div className="flex-1">
               <div className="flex items-center space-x-2">
                 <h4 className="font-medium text-gray-900 flex items-center">
-                  {item.title}
-                  {item.isRequired && (
+                  {component.title}
+                  {component.isRequired && (
                     <span className="text-red-500 ml-1">*</span>
                   )}
                 </h4>
-                {item.isRequired ? (
+                {component.isRequired ? (
                   <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-normal bg-red-50 text-red-600 border border-red-200">
                     Obrigatório
                   </span>
@@ -139,9 +139,9 @@ function SortableChecklistItem({ item, onEdit, onDelete }: SortableChecklistItem
                   </span>
                 )}
               </div>
-              <p className="text-sm text-gray-500 mt-1">{getItemTypeName(item.type)}</p>
-              {item.description && (
-                <p className="text-xs text-gray-400 mt-1">{item.description}</p>
+              <p className="text-sm text-gray-500 mt-1">{getComponentTypeName(component.type)}</p>
+              {component.description && (
+                <p className="text-xs text-gray-400 mt-1">{component.description}</p>
               )}
             </div>
           </div>
@@ -153,7 +153,7 @@ function SortableChecklistItem({ item, onEdit, onDelete }: SortableChecklistItem
             size="sm"
             onClick={onEdit}
             className="text-blue-600 hover:text-blue-700"
-            title="Editar item"
+            title="Editar componente"
           >
             <Edit3 className="h-4 w-4" />
           </Button>
@@ -162,7 +162,7 @@ function SortableChecklistItem({ item, onEdit, onDelete }: SortableChecklistItem
             size="sm"
             onClick={onDelete}
             className="text-red-600 hover:text-red-700"
-            title="Excluir item"
+            title="Excluir componente"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -172,19 +172,19 @@ function SortableChecklistItem({ item, onEdit, onDelete }: SortableChecklistItem
   )
 }
 
-interface SortableChecklistItemsProps {
-  items: ChecklistItem[]
-  onItemsReorder: (items: ChecklistItem[]) => void
-  onEditItem: (itemId: string) => void
-  onDeleteItem: (itemId: string) => void
+interface SortableChecklistComponentsProps {
+  components: ChecklistComponent[]
+  onComponentsReorder: (components: ChecklistComponent[]) => void
+  onEditComponent: (componentId: number) => void
+  onDeleteComponent: (componentId: number) => void
 }
 
-export function SortableChecklistItems({
-  items,
-  onItemsReorder,
-  onEditItem,
-  onDeleteItem
-}: SortableChecklistItemsProps) {
+export function SortableChecklistComponents({
+  components,
+  onComponentsReorder,
+  onEditComponent,
+  onDeleteComponent
+}: SortableChecklistComponentsProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -196,22 +196,22 @@ export function SortableChecklistItems({
     const { active, over } = event
 
     if (over && active.id !== over.id) {
-      const oldIndex = items.findIndex((item) => item.id === active.id)
-      const newIndex = items.findIndex((item) => item.id === over.id)
+      const oldIndex = components.findIndex((component) => component.id === active.id)
+      const newIndex = components.findIndex((component) => component.id === over.id)
 
-      const newItems = arrayMove(items, oldIndex, newIndex)
+      const newComponents = arrayMove(components, oldIndex, newIndex)
       
-      // Atualizar a ordem dos itens
-      const reorderedItems = newItems.map((item, index) => ({
-        ...item,
+      // Atualizar a ordem dos componentes
+      const reorderedComponents = newComponents.map((component, index) => ({
+        ...component,
         order: index + 1
       }))
 
-      onItemsReorder(reorderedItems)
+      onComponentsReorder(reorderedComponents)
     }
   }
 
-  if (items.length === 0) {
+  if (components.length === 0) {
     return null
   }
 
@@ -223,16 +223,16 @@ export function SortableChecklistItems({
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={items.map(item => item.id)}
+          items={components.map(component => component.id)}
           strategy={verticalListSortingStrategy}
         >
           <div className="space-y-3 w-full">
-            {items.map((item) => (
-              <SortableChecklistItem
-                key={item.id}
-                item={item}
-                onEdit={() => onEditItem(item.id)}
-                onDelete={() => onDeleteItem(item.id)}
+            {components.map((component) => (
+              <SortableChecklistComponent
+                key={component.id}
+                component={component}
+                onEdit={() => onEditComponent(component.id)}
+                onDelete={() => onDeleteComponent(component.id)}
               />
             ))}
           </div>

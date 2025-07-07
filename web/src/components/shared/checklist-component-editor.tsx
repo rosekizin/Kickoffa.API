@@ -16,47 +16,47 @@ import {
 import { FileTypeSelector } from '@/components/upload/file-type-selector'
 import { FileTypeSizeConfigComponent, FileTypeSizeConfig } from '@/components/upload/file-type-size-config'
 import { FileType } from '@/types'
-import { Item, CreateItemRequest } from '@/types'
+import { Component, CreateComponentRequest } from '@/types'
 
-interface ChecklistItemEditorProps {
-  item?: Item
-  onSave: (item: CreateItemRequest) => void
-  onDelete?: (itemId: number) => void
+interface ChecklistComponentEditorProps {
+  component?: Component
+  onSave: (component: CreateComponentRequest) => void
+  onDelete?: (componentId: number) => void
   onPreview?: () => void
   onCancel?: () => void
   sectionId: number
   order: number
 }
 
-type ItemType = 'checkbox' | 'upload' | 'text' | 'signature' | 'confirmation'
+type ComponentType = 'checkbox' | 'upload' | 'text' | 'signature' | 'confirmation'
 
-export const ChecklistItemEditor = ({
-  item,
+export const ChecklistComponentEditor = ({
+  component,
   onSave,
   onDelete,
   onPreview,
   onCancel,
   sectionId,
   order
-}: ChecklistItemEditorProps) => {
-  const [title, setTitle] = useState(item?.title || '')
-  const [description, setDescription] = useState(item?.description || '')
-  const [type, setType] = useState<ItemType>(item?.type || 'checkbox')
-  const [isRequired, setIsRequired] = useState(item?.isRequired || false)
-  const [allowedMimeTypes, setAllowedMimeTypes] = useState(item?.allowedMimeTypes || '')
-  const [maxSizeMB, setMaxSizeMB] = useState(item?.maxSizeMB || 10)
-  const [placeholder, setPlaceholder] = useState(item?.placeholder || '')
-  const [maxLength, setMaxLength] = useState(item?.maxLength || 500)
-  const [confirmationText, setConfirmationText] = useState(item?.confirmationText || '')
+}: ChecklistComponentEditorProps) => {
+  const [title, setTitle] = useState(component?.title || '')
+  const [description, setDescription] = useState(component?.description || '')
+  const [type, setType] = useState<ComponentType>(component?.type || 'checkbox')
+  const [isRequired, setIsRequired] = useState(component?.isRequired || false)
+  const [allowedMimeTypes, setAllowedMimeTypes] = useState(component?.allowedMimeTypes || '')
+  const [maxSizeMB, setMaxSizeMB] = useState(component?.maxSizeMB || 10)
+  const [placeholder, setPlaceholder] = useState(component?.placeholder || '')
+  const [maxLength, setMaxLength] = useState(component?.maxLength || 500)
+  const [confirmationText, setConfirmationText] = useState(component?.confirmationText || '')
   const [selectedFileTypes, setSelectedFileTypes] = useState<FileType[]>([])
   const [fileTypeSizeConfigs, setFileTypeSizeConfigs] = useState<FileTypeSizeConfig[]>([])
   const [showAdvanced, setShowAdvanced] = useState(false)
 
-  const itemTypes = [
+  const componentTypes = [
     {
       type: 'checkbox' as const,
       label: 'Checkbox',
-      description: 'Item simples para marcar como concluído',
+      description: 'Componente simples para marcar como concluído',
       icon: CheckSquare,
       color: 'text-green-600'
     },
@@ -84,7 +84,7 @@ export const ChecklistItemEditor = ({
     {
       type: 'confirmation' as const,
       label: 'Confirmação',
-      description: 'Item de confirmação com texto personalizado',
+      description: 'Componente de confirmação com texto personalizado',
       icon: Shield,
       color: 'text-indigo-600'
     }
@@ -105,7 +105,7 @@ export const ChecklistItemEditor = ({
       calculatedMaxSize = Math.max(...fileTypeSizeConfigs.map(config => config.maxSizeMB))
     }
 
-    const itemData: CreateItemRequest = {
+    const componentData: CreateComponentRequest = {
       sectionId,
       title: title.trim(),
       description: description.trim() || undefined,
@@ -121,7 +121,7 @@ export const ChecklistItemEditor = ({
       fileTypeSizeConfigs: type === 'upload' && fileTypeSizeConfigs.length > 0 ? fileTypeSizeConfigs : undefined
     }
 
-    onSave(itemData)
+    onSave(componentData)
   }
 
   const renderTypeSpecificConfig = () => {
@@ -229,7 +229,7 @@ export const ChecklistItemEditor = ({
     }
   }
 
-  const selectedType = itemTypes.find(t => t.type === type)
+  const selectedType = componentTypes.find(t => t.type === type)
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
@@ -242,7 +242,7 @@ export const ChecklistItemEditor = ({
               <selectedType.icon className={`h-5 w-5 ${selectedType.color}`} />
             )}
             <span className="font-medium text-gray-900">
-              {selectedType?.label || 'Novo Item'}
+              {selectedType?.label || 'Novo Componente'}
             </span>
           </div>
         </div>
@@ -253,8 +253,8 @@ export const ChecklistItemEditor = ({
               <Eye className="h-4 w-4" />
             </Button>
           )}
-          {onDelete && item && (
-            <Button variant="ghost" size="sm" onClick={() => onDelete(item.id)}>
+          {onDelete && component && (
+            <Button variant="ghost" size="sm" onClick={() => onDelete(component.id)}>
               <Trash2 className="h-4 w-4 text-red-500" />
             </Button>
           )}
@@ -264,25 +264,25 @@ export const ChecklistItemEditor = ({
       {/* Type Selection */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">
-          Tipo do Item
+          Tipo do Componente
         </label>
         <div className="grid grid-cols-2 gap-3">
-          {itemTypes.map((itemType) => (
+          {componentTypes.map((componentType) => (
             <button
-              key={itemType.type}
+              key={componentType.type}
               type="button"
-              onClick={() => setType(itemType.type)}
+              onClick={() => setType(componentType.type)}
               className={`p-3 border rounded-lg text-left transition-colors ${
-                type === itemType.type
+                type === componentType.type
                   ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
               <div className="flex items-center space-x-2 mb-1">
-                <itemType.icon className={`h-4 w-4 ${itemType.color}`} />
-                <span className="text-sm font-medium">{itemType.label}</span>
+                <componentType.icon className={`h-4 w-4 ${componentType.color}`} />
+                <span className="text-sm font-medium">{componentType.label}</span>
               </div>
-              <p className="text-xs text-gray-500">{itemType.description}</p>
+              <p className="text-xs text-gray-500">{componentType.description}</p>
             </button>
           ))}
         </div>
@@ -292,7 +292,7 @@ export const ChecklistItemEditor = ({
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Título do Item *
+            Título do Componente *
           </label>
           <input
             type="text"
@@ -302,7 +302,7 @@ export const ChecklistItemEditor = ({
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Descrição (opcional)
@@ -315,7 +315,7 @@ export const ChecklistItemEditor = ({
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        
+
         <div className="flex items-center">
           <input
             type="checkbox"
@@ -325,7 +325,7 @@ export const ChecklistItemEditor = ({
             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
           />
           <label htmlFor="required" className="ml-2 text-sm text-gray-700">
-            Item obrigatório
+            Componente obrigatório
           </label>
         </div>
       </div>
@@ -341,7 +341,7 @@ export const ChecklistItemEditor = ({
             <Settings className="h-4 w-4" />
             <span>Configurações Avançadas</span>
           </button>
-          
+
           {showAdvanced && (
             <div className="mt-4 p-4 bg-gray-50 rounded-lg">
               {renderTypeSpecificConfig()}
@@ -363,7 +363,7 @@ export const ChecklistItemEditor = ({
           disabled={!title.trim()}
           className="bg-blue-600 hover:bg-blue-700"
         >
-          {item ? 'Atualizar Item' : 'Salvar Item'}
+          {component ? 'Atualizar Componente' : 'Salvar Componente'}
         </Button>
       </div>
     </div>
