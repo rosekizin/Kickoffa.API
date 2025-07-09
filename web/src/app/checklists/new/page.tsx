@@ -13,6 +13,7 @@ import { ComponentPreview } from '@/components/preview/component-preview'
 import { CreateComponentRequest, CreateChecklistRequest, CreateSectionRequest } from '@/types'
 import { useCreateChecklist } from '@/hooks/use-api'
 import { useToast } from '@/components/providers/toast-provider'
+import { useApiError } from '@/hooks/use-api-error'
 import {
   Save,
   Eye,
@@ -32,6 +33,11 @@ import {
 } from 'lucide-react'
 
 export default function NewChecklistPage() {
+  const router = useRouter()
+  const { showToast } = useToast()
+  const { handleApiError } = useApiError()
+  const createChecklistMutation = useCreateChecklist()
+
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [deadline, setDeadline] = useState('')
@@ -163,16 +169,76 @@ export default function NewChecklistPage() {
     }))
   }
 
-  const handleSaveChecklist = () => {
-    const checklistData = {
-      title,
-      description,
-      deadline,
-      sections
+  const handleSaveChecklist = async () => {
+    if (!title.trim()) {
+      showToast({
+        type: 'error',
+        title: 'Erro de validação',
+        description: 'O título do checklist é obrigatório'
+      })
+      return
     }
-    
-    console.log('Salvando checklist:', checklistData)
-    // TODO: Implementar salvamento real
+
+    // Converter sections do estado local para o formato da API
+    const sectionsForAPI: CreateSectionRequest[] = sections.map(section => ({
+      title: section.title,
+      type: section.type,
+      order: section.order,
+      contentJson: section.contentJson,
+      contentHtml: section.contentHtml,
+      components: section.type === 'checklist' ? section.components?.map(component => {
+        // Remover propriedades que não existem na API e garantir que está no formato correto
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, ...componentWithoutId } = component
+
+        // Garantir que o componente está no formato correto
+        const cleanComponent = {
+          title: componentWithoutId.title,
+          description: componentWithoutId.description,
+          isRequired: componentWithoutId.isRequired,
+          order: componentWithoutId.order,
+          type: componentWithoutId.type,
+          // Propriedades específicas por tipo
+          ...(componentWithoutId.type === 'text' && {
+            placeholder: componentWithoutId.placeholder,
+            maxLength: componentWithoutId.maxLength
+          }),
+          ...(componentWithoutId.type === 'upload' && {
+            placeholder: componentWithoutId.placeholder,
+            maxSizeMB: componentWithoutId.maxSizeMB,
+            allowedFileTypeIds: componentWithoutId.allowedFileTypeIds
+          }),
+          ...(componentWithoutId.type === 'confirmation' && {
+            confirmationText: componentWithoutId.confirmationText
+          })
+        }
+
+        return cleanComponent as CreateComponentRequest
+      }) : undefined
+    }))
+
+    const checklistData: CreateChecklistRequest = {
+      title: title.trim(),
+      description: description.trim() || undefined,
+      deadline: deadline || undefined,
+      sections: sectionsForAPI
+    }
+
+    try {
+      const result = await createChecklistMutation.mutateAsync(checklistData)
+      
+      showToast({
+        type: 'success',
+        title: 'Checklist salvo!',
+        description: 'O checklist foi criado com sucesso'
+      })
+
+      // Redirecionar para a página de edição do checklist criado
+      router.push(`/checklists/${result.id}`)
+    } catch (error) {
+      // Usar o sistema de tratamento de erros
+      handleApiError(error, 'Erro ao salvar checklist')
+    }
   }
 
   const handlePublishChecklist = () => {
@@ -238,13 +304,13 @@ export default function NewChecklistPage() {
 
             <Button
               onClick={handleSaveChecklist}
-              disabled={!title.trim()}
+              disabled={!title.trim() || createChecklistMutation.isPending}
               variant="ghost"
               size="sm"
               className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-50"
               title="Salvar Rascunho"
             >
-              <Save className="h-4 w-4" />
+              <Save className={`h-4 w-4 ${createChecklistMutation.isPending ? 'animate-spin' : ''}`} />
             </Button>
 
             <Button

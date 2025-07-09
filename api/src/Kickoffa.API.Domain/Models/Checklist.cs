@@ -15,7 +15,7 @@ namespace Kickoffa.API.Domain.Models
 			Title = title ?? throw new ArgumentNullException(nameof(title));
 			Slug = slug ?? throw new ArgumentNullException(nameof(slug));
 			Description = description;
-			DueDate = dueDate;
+			DueDate = CalculateDueDate(dueDate);
 			IsPublished = false;
 			AccessToken = GenerateAccessToken();
 			Sections = [];
@@ -110,6 +110,16 @@ namespace Kickoffa.API.Domain.Models
 		private static string GenerateAccessToken()
 		{
 			return Guid.NewGuid().ToString("N")[..16]; // 16 caracteres
+		}
+
+		/// <summary>
+		/// Se não informado o due date terá o padrão de 7 dias.
+		/// </summary>
+		/// <param name="dueDate"></param>
+		/// <returns></returns>
+		private static DateTime CalculateDueDate(DateTime? dueDate)
+		{
+			return DateTime.SpecifyKind(dueDate ?? DateTime.Now.AddDays(7), DateTimeKind.Utc);
 		}
 	}
 }

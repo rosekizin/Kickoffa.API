@@ -56,7 +56,7 @@ public sealed record ComponentResponse
     
     // Propriedades específicas por tipo
     public string? AllowedMimeTypes { get; init; }
-    public decimal? MaxSizeMB { get; init; }
+    public int? MaxSizeMB { get; init; }
     public string? Placeholder { get; init; }
     public int? MaxLength { get; init; }
     public string? ConfirmationText { get; init; }

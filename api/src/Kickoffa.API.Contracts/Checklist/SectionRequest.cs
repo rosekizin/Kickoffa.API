@@ -1,4 +1,6 @@
 ﻿using Kickoffa.API.Contracts.Checklist.Components;
+using Kickoffa.API.Contracts.Newtonsoft;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
 namespace Kickoffa.API.Contracts.Checklist
@@ -17,6 +19,7 @@ namespace Kickoffa.API.Contracts.Checklist
 		public string? ContentHtml { get; init; }
 
 		// Para seções de checklist
+		[JsonConverter(typeof(ComponentRequestCollectionConverter))]
 		public ICollection<ComponentRequest>? Components { get; init; }
 
 		/// <summary>

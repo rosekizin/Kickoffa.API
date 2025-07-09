@@ -145,7 +145,7 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 			var result = await _checklistController.CreateAsync(request, CancellationToken.None);
 
 			// Assert
-			var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
+			var createdResult = Assert.IsType<CreatedResult>(result.Result);
 			var value = Assert.IsType<ChecklistResponse>(createdResult.Value);
 			Assert.Equal(expectedResponse.Id, value.Id);
 			Assert.Equal(expectedResponse.Title, value.Title);

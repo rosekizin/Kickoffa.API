@@ -68,10 +68,10 @@ const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
       <div
         ref={ref}
         className={cn(
-          'pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg border shadow-lg transition-all duration-300',
+          'pointer-events-auto w-full max-w-md overflow-hidden rounded-lg border shadow-lg transition-all duration-300',
           getStyles(),
-          isExiting 
-            ? 'translate-x-full opacity-0' 
+          isExiting
+            ? 'translate-x-full opacity-0'
             : 'translate-x-0 opacity-100'
         )}
       >
@@ -80,7 +80,7 @@ const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
             <div className="flex-shrink-0">
               {getIcon()}
             </div>
-            <div className="ml-3 w-0 flex-1">
+            <div className="ml-3 flex-1 min-w-0">
               {title && (
                 <p className="text-sm font-medium text-gray-900">
                   {title}
@@ -88,7 +88,7 @@ const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
               )}
               {description && (
                 <p className={cn(
-                  "text-sm text-gray-500",
+                  "text-sm text-gray-500 whitespace-pre-line break-words",
                   title ? "mt-1" : ""
                 )}>
                   {description}

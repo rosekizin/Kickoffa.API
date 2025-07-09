@@ -135,10 +135,7 @@ namespace Kickoffa.API.Controllers
 
 				_logger.LogInformation("Checklist criado com sucesso. ID: {ChecklistId}, Usuário: {UserId}", checklist.Id, userId);
 
-				return CreatedAtAction(
-					nameof(GetByIdAsync),
-					new { id = checklist.Id },
-					checklist);
+				return Created($"/api/checklist/{checklist.Id}", checklist);
 			}
 			catch (Exception ex)
 			{

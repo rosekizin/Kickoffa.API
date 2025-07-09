@@ -83,7 +83,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 				IsRequired = component.IsRequired,
 				Order = component.Order,
 				AllowedMimeTypes = GetComponentProperty<string?>(component, "AllowedMimeTypes"),
-				MaxSizeMB = GetComponentProperty<decimal?>(component, "MaxSizeMB"),
+				MaxSizeMB = GetComponentProperty<int?>(component, "MaxSizeMB"),
 				Placeholder = GetComponentProperty<string?>(component, "Placeholder"),
 				MaxLength = GetComponentProperty<int?>(component, "MaxLength"),
 				ConfirmationText = GetComponentProperty<string?>(component, "ConfirmationText"),
