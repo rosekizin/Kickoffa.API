@@ -1,11 +1,9 @@
-﻿namespace Kickoffa.API.Domain.Models.Base
-{
-	public class BaseEntity
-	{
-		public long Id { get; private set; }
-		public DateTime CreatedDateUtc { get; private set; }
-		public DateTime LastUpdatedDateUtc { get; private set; }
+﻿using Kickoffa.API.Domain.Interfaces.Models;
 
+namespace Kickoffa.API.Domain.Models.Base
+{
+	public class BaseEntity : IBaseEntity
+	{
 		public BaseEntity()
 		{
 			// Id será gerado pelo banco de dados (auto increment)
@@ -13,7 +11,11 @@
 			LastUpdatedDateUtc = CreatedDateUtc;
 		}
 
-		protected void UpdateLastUpdatedDate() 
+		public long Id { get; private set; }
+		public DateTime CreatedDateUtc { get; private set; }
+		public DateTime LastUpdatedDateUtc { get; private set; }
+
+		public void UpdateLastUpdatedDate() 
 		{
 			LastUpdatedDateUtc = DateTime.UtcNow;
 		}

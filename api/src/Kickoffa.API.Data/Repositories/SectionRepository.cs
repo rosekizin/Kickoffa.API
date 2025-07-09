@@ -1,5 +1,6 @@
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.Repositories.Base;
+using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models;
 using Kickoffa.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace Kickoffa.API.Data.Repositories
 	/// <summary>
 	/// Implementação do repositório de Section
 	/// </summary>
-	public class SectionRepository : BaseRepository<Section>, ISectionRepository
+	public class SectionRepository : BaseRepository<ISection, Section>, ISectionRepository
 	{
 		public SectionRepository(KickoffaDbContext context) : base(context)
 		{
@@ -18,7 +19,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca seções por checklist
 		/// </summary>
-		public async Task<IEnumerable<Section>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ISection>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
 		{
 			return await _context.Sections
 				.Where(s => s.ChecklistId == checklistId)
@@ -28,7 +29,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca seções por checklist ordenadas por Order
 		/// </summary>
-		public async Task<IEnumerable<Section>> GetByChecklistIdOrderedAsync(long checklistId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ISection>> GetByChecklistIdOrderedAsync(long checklistId, CancellationToken cancellationToken)
 		{
 			return await _context.Sections
 				.Where(s => s.ChecklistId == checklistId)
@@ -71,7 +72,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<Section?> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public override async Task<ISection?> GetByIdAsync(long id, CancellationToken cancellationToken)
 		{
 			return await _context.Sections
 				.Include(s => s.Checklist)
@@ -81,7 +82,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<IEnumerable<Section>> GetAllAsync(CancellationToken cancellationToken)
+		public override async Task<IEnumerable<ISection>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			return await _context.Sections
 				.Include(s => s.Checklist)

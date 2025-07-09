@@ -151,35 +151,62 @@ export interface CreateChecklistRequest {
   title: string
   description?: string
   deadline?: string
+  sections: CreateSectionRequest[]
 }
 
 export interface CreateSectionRequest {
-  checklistId: number
   title: string
   type: 'briefing' | 'checklist'
   order: number
   contentJson?: string
   contentHtml?: string
+  components?: CreateComponentRequest[]
 }
+
+// Interfaces base para componentes
+export interface CreateComponentBaseRequest {
+  title: string
+  description?: string
+  isRequired: boolean
+  order: number
+}
+
+export interface CreateCheckboxComponentRequest extends CreateComponentBaseRequest {
+  type: 'checkbox'
+}
+
+export interface CreateTextComponentRequest extends CreateComponentBaseRequest {
+  type: 'text'
+  placeholder?: string
+  maxLength?: number
+}
+
+export interface CreateUploadComponentRequest extends CreateComponentBaseRequest {
+  type: 'upload'
+  placeholder?: string
+  maxSizeMB?: number
+  allowedFileTypeIds: number[]
+}
+
+export interface CreateSignatureComponentRequest extends CreateComponentBaseRequest {
+  type: 'signature'
+}
+
+export interface CreateConfirmationComponentRequest extends CreateComponentBaseRequest {
+  type: 'confirmation'
+  confirmationText?: string
+}
+
+export type CreateComponentRequest =
+  | CreateCheckboxComponentRequest
+  | CreateTextComponentRequest
+  | CreateUploadComponentRequest
+  | CreateSignatureComponentRequest
+  | CreateConfirmationComponentRequest
 
 export interface FileTypeSizeConfig {
   fileTypeId: number
   maxSizeMB: number
-}
-
-export interface CreateComponentRequest {
-  sectionId: number
-  title: string
-  description?: string
-  type: 'checkbox' | 'upload' | 'text' | 'signature' | 'confirmation'
-  isRequired: boolean
-  order: number
-  allowedMimeTypes?: string
-  maxSizeMB?: number
-  placeholder?: string
-  maxLength?: number
-  confirmationText?: string
-  fileTypeSizeConfigs?: FileTypeSizeConfig[]
 }
 
 export interface UpdateComponentStatusRequest {

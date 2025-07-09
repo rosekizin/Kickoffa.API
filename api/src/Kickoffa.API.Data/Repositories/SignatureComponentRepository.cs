@@ -1,5 +1,6 @@
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.Repositories.Base;
+using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace Kickoffa.API.Data.Repositories
 	/// <summary>
 	/// Implementação do repositório de SignatureComponent
 	/// </summary>
-	public class SignatureComponentRepository : BaseRepository<SignatureComponent>, ISignatureComponentRepository
+	public class SignatureComponentRepository : BaseRepository<ISignatureComponent, SignatureComponent>, ISignatureComponentRepository
 	{
 		public SignatureComponentRepository(KickoffaDbContext context) : base(context)
 		{
@@ -18,7 +19,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de assinatura por seção
 		/// </summary>
-		public async Task<IEnumerable<SignatureComponent>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ISignatureComponent>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
 			return await _context.SignatureComponents
 				.Where(s => s.SectionId == sectionId)
@@ -28,7 +29,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de assinatura ordenados por seção
 		/// </summary>
-		public async Task<IEnumerable<SignatureComponent>> GetBySectionIdOrderedAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ISignatureComponent>> GetBySectionIdOrderedAsync(long sectionId, CancellationToken cancellationToken)
 		{
 			return await _context.SignatureComponents
 				.Where(s => s.SectionId == sectionId)
@@ -39,7 +40,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de assinatura obrigatórios por seção
 		/// </summary>
-		public async Task<IEnumerable<SignatureComponent>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ISignatureComponent>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
 			return await _context.SignatureComponents
 				.Where(s => s.SectionId == sectionId && s.IsRequired)
@@ -50,7 +51,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de assinatura por checklist
 		/// </summary>
-		public async Task<IEnumerable<SignatureComponent>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ISignatureComponent>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
 		{
 			return await _context.SignatureComponents
 				.Include(s => s.Section)
@@ -63,7 +64,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de assinatura por múltiplas seções
 		/// </summary>
-		public async Task<IEnumerable<SignatureComponent>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ISignatureComponent>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken)
 		{
 			return await _context.SignatureComponents
 				.Where(s => sectionIds.Contains(s.SectionId))
@@ -93,7 +94,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de assinatura por status de obrigatoriedade
 		/// </summary>
-		public async Task<IEnumerable<SignatureComponent>> GetByRequiredStatusAsync(bool isRequired, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ISignatureComponent>> GetByRequiredStatusAsync(bool isRequired, CancellationToken cancellationToken)
 		{
 			return await _context.SignatureComponents
 				.Where(s => s.IsRequired == isRequired)
@@ -105,7 +106,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de assinatura completados por seção
 		/// </summary>
-		public async Task<IEnumerable<SignatureComponent>> GetCompletedBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ISignatureComponent>> GetCompletedBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
 			return await _context.SignatureComponents
 				.Include(s => s.Status)
@@ -127,7 +128,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de assinatura pendentes por checklist
 		/// </summary>
-		public async Task<IEnumerable<SignatureComponent>> GetPendingByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ISignatureComponent>> GetPendingByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
 		{
 			return await _context.SignatureComponents
 				.Include(s => s.Section)
@@ -142,7 +143,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<SignatureComponent?> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public override async Task<ISignatureComponent?> GetByIdAsync(long id, CancellationToken cancellationToken)
 		{
 			return await _context.SignatureComponents
 				.Include(s => s.Section)
@@ -153,7 +154,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<IEnumerable<SignatureComponent>> GetAllAsync(CancellationToken cancellationToken)
+		public override async Task<IEnumerable<ISignatureComponent>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			return await _context.SignatureComponents
 				.Include(s => s.Section)

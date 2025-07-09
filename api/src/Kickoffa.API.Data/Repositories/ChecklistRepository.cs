@@ -1,5 +1,6 @@
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.Repositories.Base;
+using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models;
 using Kickoffa.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace Kickoffa.API.Data.Repositories
 	/// <summary>
 	/// Implementação do repositório de Checklist
 	/// </summary>
-	public class ChecklistRepository : BaseRepository<Checklist>, IChecklistRepository
+	public class ChecklistRepository : BaseRepository<IChecklist, Checklist>, IChecklistRepository
 	{
 		public ChecklistRepository(KickoffaDbContext context) : base(context)
 		{
@@ -18,7 +19,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca checklist por slug
 		/// </summary>
-		public async Task<Checklist?> GetBySlugAsync(string slug, CancellationToken cancellationToken)
+		public async Task<IChecklist?> GetBySlugAsync(string slug, CancellationToken cancellationToken)
 		{
 			return await _context.Checklists
 				.Include(c => c.Sections)
@@ -28,7 +29,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca checklist por token de acesso
 		/// </summary>
-		public async Task<Checklist?> GetByAccessTokenAsync(string accessToken, CancellationToken cancellationToken)
+		public async Task<IChecklist?> GetByAccessTokenAsync(string accessToken, CancellationToken cancellationToken)
 		{
 			return await _context.Checklists
 				.Include(c => c.Sections)
@@ -38,7 +39,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca checklists por proprietário
 		/// </summary>
-		public async Task<IEnumerable<Checklist>> GetByOwnerIdAsync(long ownerId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IChecklist>> GetByOwnerIdAsync(long ownerId, CancellationToken cancellationToken)
 		{
 			return await _context.Checklists
 				.Include(c => c.Sections)
@@ -50,7 +51,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca checklists publicados por proprietário
 		/// </summary>
-		public async Task<IEnumerable<Checklist>> GetPublishedByOwnerIdAsync(long ownerId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IChecklist>> GetPublishedByOwnerIdAsync(long ownerId, CancellationToken cancellationToken)
 		{
 			return await _context.Checklists
 				.Include(c => c.Sections)
@@ -77,7 +78,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir seções por padrão
 		/// </summary>
-		public override async Task<Checklist?> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public override async Task<IChecklist?> GetByIdAsync(long id, CancellationToken cancellationToken)
 		{
 			return await _context.Checklists
 				.Include(c => c.Sections)
@@ -87,7 +88,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir seções por padrão
 		/// </summary>
-		public override async Task<IEnumerable<Checklist>> GetAllAsync(CancellationToken cancellationToken)
+		public override async Task<IEnumerable<IChecklist>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			return await _context.Checklists
 				.Include(c => c.Sections)

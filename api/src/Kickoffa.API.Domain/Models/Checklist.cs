@@ -1,9 +1,10 @@
 ﻿
+using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models.Base;
 
 namespace Kickoffa.API.Domain.Models
 {
-	public class Checklist : BaseEntity
+	public class Checklist : BaseEntity, IChecklist
 	{
 		/// <summary>
 		/// Construtor para criação de novo checklist
@@ -40,81 +41,66 @@ namespace Kickoffa.API.Domain.Models
 
 		// Relacionamentos
 		public virtual ICollection<Section> Sections { get; private set; }
+		IEnumerable<ISection> IChecklist.Sections => Sections;
 
-		/// <summary>
-		/// Atualiza o título do checklist
-		/// </summary>
+		/// <inheritdoc/>
 		public void UpdateTitle(string title)
 		{
 			Title = title ?? throw new ArgumentNullException(nameof(title));
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Atualiza a descrição do checklist
-		/// </summary>
+		/// <inheritdoc/>
 		public void UpdateDescription(string? description)
 		{
 			Description = description;
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Atualiza a data de vencimento
-		/// </summary>
+		/// <inheritdoc/>
 		public void UpdateDueDate(DateTime? dueDate)
 		{
 			DueDate = dueDate;
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Publica o checklist
-		/// </summary>
+		/// <inheritdoc/>
 		public void Publish()
 		{
 			IsPublished = true;
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Despublica o checklist
-		/// </summary>
+		/// <inheritdoc/>
 		public void Unpublish()
 		{
 			IsPublished = false;
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Regenera o token de acesso
-		/// </summary>
+		/// <inheritdoc/>
 		public void RegenerateAccessToken()
 		{
 			AccessToken = GenerateAccessToken();
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Adiciona uma seção ao checklist
-		/// </summary>
-		public void AddSection(Section section)
+		/// <inheritdoc/>
+		public void AddSection(ISection section)
 		{
 			ArgumentNullException.ThrowIfNull(section);
 
 			section.SetChecklist(this);
-			Sections.Add(section);
+			Sections.Add((Section)section);
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Remove uma seção do checklist
-		/// </summary>
-		public void RemoveSection(Section section)
+		/// <inheritdoc/>
+		public void RemoveSection(ISection section)
 		{
 			ArgumentNullException.ThrowIfNull(section);
 
-			Sections.Remove(section);
+			Sections.Remove((Section)section);
 			UpdateLastUpdatedDate();
 		}
 

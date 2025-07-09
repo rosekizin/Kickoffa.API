@@ -1,28 +1,29 @@
 using System.Linq.Expressions;
+using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models.Base;
 
 namespace Kickoffa.API.Domain.Repositories
 {
-    public interface IBaseRepository<T> where T : BaseEntity
-    {
-        // Métodos síncronos
-        T? GetById(long id);
-        IEnumerable<T> GetAll();
-        IEnumerable<T> Find(Expression<Func<T, bool>> predicate);
-        T? FirstOrDefault(Expression<Func<T, bool>> predicate);
+    public interface IBaseRepository<TInterface, T> where T : BaseEntity, TInterface where TInterface : IBaseEntity
+	{
+		// Métodos síncronos
+		TInterface? GetById(long id);
+        IEnumerable<TInterface> GetAll();
+        IEnumerable<TInterface> Find(Expression<Func<T, bool>> predicate);
+		TInterface? FirstOrDefault(Expression<Func<T, bool>> predicate);
         bool Any(Expression<Func<T, bool>> predicate);
         int Count(Expression<Func<T, bool>>? predicate = null);
 
         // Métodos assíncronos
-        Task<T?> GetByIdAsync(long id, CancellationToken cancellationToken);
-        Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken);
-        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken);
-        Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken);
+        Task<TInterface?> GetByIdAsync(long id, CancellationToken cancellationToken);
+        Task<IEnumerable<TInterface>> GetAllAsync(CancellationToken cancellationToken);
+        Task<IEnumerable<TInterface>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken);
+        Task<TInterface?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken);
         Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken);
         Task<int> CountAsync(Expression<Func<T, bool>>? predicate, CancellationToken cancellationToken);
 
         // Métodos de paginação
-        Task<(IEnumerable<T> Items, int TotalCount)> GetPagedAsync(
+        Task<(IEnumerable<TInterface> Items, int TotalCount)> GetPagedAsync(
             int pageNumber,
             int pageSize,
             Expression<Func<T, bool>>? predicate,
@@ -31,17 +32,17 @@ namespace Kickoffa.API.Domain.Repositories
             CancellationToken cancellationToken);
 
         // Métodos de modificação
-        void Add(T entity);
-        void AddRange(IEnumerable<T> entities);
-        void Update(T entity);
-        void UpdateRange(IEnumerable<T> entities);
-        void Remove(T entity);
-        void RemoveRange(IEnumerable<T> entities);
+        void Add(TInterface entity);
+        void AddRange(IEnumerable<TInterface> entities);
+        void Update(TInterface entity);
+        void UpdateRange(IEnumerable<TInterface> entities);
+        void Remove(TInterface entity);
+        void RemoveRange(IEnumerable<TInterface> entities);
         void RemoveById(long id);
 
         // Métodos de modificação assíncronos
-        Task AddAsync(T entity, CancellationToken cancellationToken);
-        Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken);
+        Task AddAsync(TInterface entity, CancellationToken cancellationToken);
+        Task AddRangeAsync(IEnumerable<TInterface> entities, CancellationToken cancellationToken);
 
         // Métodos de persistência
         int SaveChanges();

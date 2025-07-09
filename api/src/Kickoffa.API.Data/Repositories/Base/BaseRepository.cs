@@ -3,11 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using Kickoffa.API.Domain.Models.Base;
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Domain.Repositories;
+using Kickoffa.API.Domain.Interfaces.Models;
 
 namespace Kickoffa.API.Data.Repositories.Base
 {
-    public class BaseRepository<T> : IBaseRepository<T> where T : BaseEntity
-    {
+    public class BaseRepository<TInterface, T>
+        : IBaseRepository<TInterface, T> where T : BaseEntity, TInterface where TInterface : IBaseEntity
+	{
         protected readonly KickoffaDbContext _context;
         protected readonly DbSet<T> _dbSet;
 
@@ -18,22 +20,22 @@ namespace Kickoffa.API.Data.Repositories.Base
         }
 
         // Métodos síncronos
-        public virtual T? GetById(long id)
+        public virtual TInterface? GetById(long id)
         {
             return _dbSet.Find(id);
         }
 
-        public virtual IEnumerable<T> GetAll()
+        public virtual IEnumerable<TInterface> GetAll()
         {
-            return _dbSet.ToList();
+            return [.. _dbSet];
         }
 
-        public virtual IEnumerable<T> Find(Expression<Func<T, bool>> predicate)
+        public virtual IEnumerable<TInterface> Find(Expression<Func<T, bool>> predicate)
         {
-            return _dbSet.Where(predicate).ToList();
+            return [.. _dbSet.Where(predicate)];
         }
 
-        public virtual T? FirstOrDefault(Expression<Func<T, bool>> predicate)
+        public virtual TInterface? FirstOrDefault(Expression<Func<T, bool>> predicate)
         {
             return _dbSet.FirstOrDefault(predicate);
         }
@@ -49,22 +51,22 @@ namespace Kickoffa.API.Data.Repositories.Base
         }
 
         // Métodos assíncronos
-        public virtual async Task<T?> GetByIdAsync(long id, CancellationToken cancellationToken)
+        public virtual async Task<TInterface?> GetByIdAsync(long id, CancellationToken cancellationToken)
         {
-            return await _dbSet.FindAsync(new object[] { id }, cancellationToken);
+            return await _dbSet.FindAsync([id], cancellationToken);
         }
 
-        public virtual async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken)
+        public virtual async Task<IEnumerable<TInterface>> GetAllAsync(CancellationToken cancellationToken)
         {
             return await _dbSet.ToListAsync(cancellationToken);
         }
 
-        public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken)
+        public virtual async Task<IEnumerable<TInterface>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken)
         {
             return await _dbSet.Where(predicate).ToListAsync(cancellationToken);
         }
 
-        public virtual async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken)
+        public virtual async Task<TInterface?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken)
         {
             return await _dbSet.FirstOrDefaultAsync(predicate, cancellationToken);
         }
@@ -82,7 +84,7 @@ namespace Kickoffa.API.Data.Repositories.Base
         }
 
         // Métodos de paginação
-        public virtual async Task<(IEnumerable<T> Items, int TotalCount)> GetPagedAsync(
+        public virtual async Task<(IEnumerable<TInterface> Items, int TotalCount)> GetPagedAsync(
             int pageNumber,
             int pageSize,
             Expression<Func<T, bool>>? predicate,
@@ -118,34 +120,34 @@ namespace Kickoffa.API.Data.Repositories.Base
         }
 
         // Métodos de modificação
-        public virtual void Add(T entity)
+        public virtual void Add(TInterface entity)
         {
-            _dbSet.Add(entity);
+            _dbSet.Add((T)entity);
         }
 
-        public virtual void AddRange(IEnumerable<T> entities)
+        public virtual void AddRange(IEnumerable<TInterface> entities)
         {
-            _dbSet.AddRange(entities);
+            _dbSet.AddRange(entities.Cast<T>());
         }
 
-        public virtual void Update(T entity)
+        public virtual void Update(TInterface entity)
         {
-            _dbSet.Update(entity);
+            _dbSet.Update((T)entity);
         }
 
-        public virtual void UpdateRange(IEnumerable<T> entities)
+        public virtual void UpdateRange(IEnumerable<TInterface> entities)
         {
-            _dbSet.UpdateRange(entities);
+            _dbSet.UpdateRange(entities.Cast<T>());
         }
 
-        public virtual void Remove(T entity)
+        public virtual void Remove(TInterface entity)
         {
-            _dbSet.Remove(entity);
+            _dbSet.Remove((T)entity);
         }
 
-        public virtual void RemoveRange(IEnumerable<T> entities)
+        public virtual void RemoveRange(IEnumerable<TInterface> entities)
         {
-            _dbSet.RemoveRange(entities);
+            _dbSet.RemoveRange(entities.Cast<T>());
         }
 
         public virtual void RemoveById(long id)
@@ -153,19 +155,19 @@ namespace Kickoffa.API.Data.Repositories.Base
             var entity = GetById(id);
             if (entity != null)
             {
-                Remove(entity);
+                Remove((T)entity);
             }
         }
 
         // Métodos de modificação assíncronos
-        public virtual async Task AddAsync(T entity, CancellationToken cancellationToken)
+        public virtual async Task AddAsync(TInterface entity, CancellationToken cancellationToken)
         {
-            await _dbSet.AddAsync(entity, cancellationToken);
+            await _dbSet.AddAsync((T)entity, cancellationToken);
         }
 
-        public virtual async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken)
+        public virtual async Task AddRangeAsync(IEnumerable<TInterface> entities, CancellationToken cancellationToken)
         {
-            await _dbSet.AddRangeAsync(entities, cancellationToken);
+            await _dbSet.AddRangeAsync(entities.Cast<T>(), cancellationToken);
         }
 
         // Métodos de persistência

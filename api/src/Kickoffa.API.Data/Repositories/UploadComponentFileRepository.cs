@@ -1,5 +1,6 @@
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.Repositories.Base;
+using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace Kickoffa.API.Data.Repositories
 	/// <summary>
 	/// Implementação do repositório de UploadComponentFile
 	/// </summary>
-	public class UploadComponentFileRepository : BaseRepository<UploadComponentFile>, IUploadComponentFileRepository
+	public class UploadComponentFileRepository : BaseRepository<IUploadComponentFile, UploadComponentFile>, IUploadComponentFileRepository
 	{
 		public UploadComponentFileRepository(KickoffaDbContext context) : base(context)
 		{
@@ -18,7 +19,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca arquivos por componente de upload
 		/// </summary>
-		public async Task<IEnumerable<UploadComponentFile>> GetByUploadComponentIdAsync(long uploadComponentId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IUploadComponentFile>> GetByUploadComponentIdAsync(long uploadComponentId, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponentFiles
 				.Where(f => f.UploadComponent.Id == uploadComponentId)
@@ -29,7 +30,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca arquivo por nome
 		/// </summary>
-		public async Task<UploadComponentFile?> GetByFileNameAsync(string fileName, CancellationToken cancellationToken)
+		public async Task<IUploadComponentFile?> GetByFileNameAsync(string fileName, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponentFiles
 				.Include(f => f.UploadComponent)
@@ -39,7 +40,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca arquivo por hash SHA256
 		/// </summary>
-		public async Task<UploadComponentFile?> GetBySha256HashAsync(string sha256Hash, CancellationToken cancellationToken)
+		public async Task<IUploadComponentFile?> GetBySha256HashAsync(string sha256Hash, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponentFiles
 				.Include(f => f.UploadComponent)
@@ -49,7 +50,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca arquivos por múltiplos componentes de upload
 		/// </summary>
-		public async Task<IEnumerable<UploadComponentFile>> GetByUploadComponentIdsAsync(IEnumerable<long> uploadComponentIds, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IUploadComponentFile>> GetByUploadComponentIdsAsync(IEnumerable<long> uploadComponentIds, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponentFiles
 				.Include(f => f.UploadComponent)
@@ -62,7 +63,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca arquivos por tipo de conteúdo
 		/// </summary>
-		public async Task<IEnumerable<UploadComponentFile>> GetByContentTypeAsync(string contentType, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IUploadComponentFile>> GetByContentTypeAsync(string contentType, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponentFiles
 				.Include(f => f.UploadComponent)
@@ -74,7 +75,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca arquivos por seção (através do relacionamento com UploadComponent)
 		/// </summary>
-		public async Task<IEnumerable<UploadComponentFile>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IUploadComponentFile>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponentFiles
 				.Include(f => f.UploadComponent)
@@ -88,7 +89,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca arquivos por checklist (através do relacionamento com UploadComponent e Section)
 		/// </summary>
-		public async Task<IEnumerable<UploadComponentFile>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IUploadComponentFile>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponentFiles
 				.Include(f => f.UploadComponent)
@@ -149,7 +150,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<UploadComponentFile?> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public override async Task<IUploadComponentFile?> GetByIdAsync(long id, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponentFiles
 				.Include(f => f.UploadComponent)
@@ -160,7 +161,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<IEnumerable<UploadComponentFile>> GetAllAsync(CancellationToken cancellationToken)
+		public override async Task<IEnumerable<IUploadComponentFile>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponentFiles
 				.Include(f => f.UploadComponent)

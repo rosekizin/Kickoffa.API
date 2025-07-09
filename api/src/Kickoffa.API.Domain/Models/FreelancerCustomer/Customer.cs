@@ -1,8 +1,9 @@
-﻿using Kickoffa.API.Domain.Models.Base;
+﻿using Kickoffa.API.Domain.Interfaces.Models;
+using Kickoffa.API.Domain.Models.Base;
 
 namespace Kickoffa.API.Domain.Models.FreelancerCustomer
 {
-	public class Customer : BaseEntity
+	public class Customer : BaseEntity, ICustomer
 	{
 		public string FirstName { get; private set; }
 		public string LastName { get; private set; }

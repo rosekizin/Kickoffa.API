@@ -1,12 +1,12 @@
-﻿using Kickoffa.API.Domain.Models.Base;
+﻿using Kickoffa.API.Domain.Interfaces.Models;
+using Kickoffa.API.Domain.Interfaces.Models.Components;
+using Kickoffa.API.Domain.Models.Base;
 using Kickoffa.API.Domain.Models.Enums;
 
 namespace Kickoffa.API.Domain.Models.Components.Base
 {
-	/// <summary>
-	/// Classe base abstrata para todos os tipos de componentes de checklist
-	/// </summary>
-	public abstract class Component : BaseEntity
+	/// <inheritdoc/>
+	public abstract class Component : BaseEntity, IComponent
 	{
 		public long SectionId { get; private set; }
 		public int Order { get; private set; }
@@ -14,14 +14,15 @@ namespace Kickoffa.API.Domain.Models.Components.Base
 		public string? Description { get; private set; }
 		public bool IsRequired { get; private set; }
 
-		/// <summary>
-		/// Tipo do componente definido pela classe concreta
-		/// </summary>
+		/// <inheritdoc/>
 		public abstract ComponentType Type { get; }
 
 		// Relacionamentos
 		public ChecklistSection Section { get; private set; } = null!;
+		IChecklistSection IComponent.Section => Section;
+
 		public ComponentStatus? Status { get; private set; }
+		IComponentStatus? IComponent.Status => Status;
 
 		/// <summary>
 		/// Construtor protegido para uso pelas classes derivadas
@@ -43,62 +44,48 @@ namespace Kickoffa.API.Domain.Models.Components.Base
 			Title = string.Empty;
 		}
 
-		/// <summary>
-		/// Atualiza o título do componente
-		/// </summary>
+		/// <inheritdoc/>
 		public void UpdateTitle(string title)
 		{
 			Title = title ?? throw new ArgumentNullException(nameof(title));
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Atualiza a descrição do componente
-		/// </summary>
+		/// <inheritdoc/>
 		public void UpdateDescription(string? description)
 		{
 			Description = description;
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Atualiza se o componente é obrigatório
-		/// </summary>
+		/// <inheritdoc/>
 		public void UpdateRequired(bool isRequired)
 		{
 			IsRequired = isRequired;
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Atualiza a ordem do componente (usado internamente pela seção)
-		/// </summary>
+		/// <inheritdoc/>
 		public void UpdateOrder(int order)
 		{
 			Order = order;
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Atualiza o ID da seção (usado internamente pela seção)
-		/// </summary>
+		/// <inheritdoc/>
 		public void UpdateSectionId(long sectionId)
 		{
 			SectionId = sectionId;
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Define o relacionamento com a seção (usado pelo EF)
-		/// </summary>
+		/// <inheritdoc/>
 		public void SetSection(ChecklistSection section)
 		{
 			Section = section;
 		}
 
-		/// <summary>
-		/// Define o status do componente (usado pelo EF)
-		/// </summary>
+		/// <inheritdoc/>
 		public void SetStatus(ComponentStatus? status)
 		{
 			Status = status;

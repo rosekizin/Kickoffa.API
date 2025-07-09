@@ -1,9 +1,10 @@
-﻿using Kickoffa.API.Domain.Models.Base;
+﻿using Kickoffa.API.Domain.Interfaces.Models.Components;
+using Kickoffa.API.Domain.Models.Base;
 using Kickoffa.API.Domain.Models.Components.Base;
 
 namespace Kickoffa.API.Domain.Models.Components
 {
-	public class ComponentStatus : BaseEntity
+	public class ComponentStatus : BaseEntity, IComponentStatus
 	{
 		public ComponentStatus(long componentId, bool isCompleted, DateTime? completedAt, string? response)
 		{
@@ -19,6 +20,7 @@ namespace Kickoffa.API.Domain.Models.Components
 		public string? Response { get; private set; } // Resposta textual quando aplicável
 
 		// Relacionamento
-		public virtual Component Component { get; set; } = null!;
+		public virtual Component Component { get; private set; } = null!;
+		IComponent IComponentStatus.Component => Component;
 	}
 }

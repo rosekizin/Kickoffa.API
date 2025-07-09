@@ -57,7 +57,7 @@ export const useCreateSection = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: CreateSectionRequest) => {
+    mutationFn: async (data: CreateSectionRequest & { checklistId: number }) => {
       const response = await api.post<Section>('/sections', data)
       return response.data
     },

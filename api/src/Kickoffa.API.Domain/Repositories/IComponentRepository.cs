@@ -1,3 +1,4 @@
+using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models.Components.Base;
 
 namespace Kickoffa.API.Domain.Repositories
@@ -5,7 +6,7 @@ namespace Kickoffa.API.Domain.Repositories
 	/// <summary>
 	/// Interface para repositório de Componente
 	/// </summary>
-	public interface IComponentRepository : IBaseRepository<Component>
+	public interface IComponentRepository : IBaseRepository<IComponent, Component>
 	{
 		/// <summary>
 		/// Busca componentes por seção

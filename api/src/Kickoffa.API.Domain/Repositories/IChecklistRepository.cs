@@ -1,3 +1,4 @@
+using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models;
 
 namespace Kickoffa.API.Domain.Repositories
@@ -5,7 +6,7 @@ namespace Kickoffa.API.Domain.Repositories
 	/// <summary>
 	/// Interface para repositório de Checklist
 	/// </summary>
-	public interface IChecklistRepository : IBaseRepository<Checklist>
+	public interface IChecklistRepository : IBaseRepository<IChecklist, Checklist>
 	{
 		/// <summary>
 		/// Busca checklist por slug
@@ -13,7 +14,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="slug">Slug do checklist</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Checklist encontrado ou null</returns>
-		Task<Checklist?> GetBySlugAsync(string slug, CancellationToken cancellationToken);
+		Task<IChecklist?> GetBySlugAsync(string slug, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca checklist por token de acesso
@@ -21,7 +22,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="accessToken">Token de acesso</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Checklist encontrado ou null</returns>
-		Task<Checklist?> GetByAccessTokenAsync(string accessToken, CancellationToken cancellationToken);
+		Task<IChecklist?> GetByAccessTokenAsync(string accessToken, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca checklists por proprietário
@@ -29,7 +30,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="ownerId">ID do proprietário</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de checklists do proprietário</returns>
-		Task<IEnumerable<Checklist>> GetByOwnerIdAsync(long ownerId, CancellationToken cancellationToken);
+		Task<IEnumerable<IChecklist>> GetByOwnerIdAsync(long ownerId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca checklists publicados por proprietário
@@ -37,7 +38,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="ownerId">ID do proprietário</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de checklists publicados do proprietário</returns>
-		Task<IEnumerable<Checklist>> GetPublishedByOwnerIdAsync(long ownerId, CancellationToken cancellationToken);
+		Task<IEnumerable<IChecklist>> GetPublishedByOwnerIdAsync(long ownerId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Verifica se existe checklist com o slug especificado

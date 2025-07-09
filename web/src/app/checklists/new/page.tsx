@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { BriefingEditor } from '@/components/briefing/briefing-editor'
 import { ChecklistComponentEditor } from '@/components/shared/checklist-component-editor'
@@ -9,6 +10,9 @@ import { SortableChecklistComponents } from '@/components/checklist/sortable-che
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Button } from '@/components/ui/button'
 import { ComponentPreview } from '@/components/preview/component-preview'
+import { CreateComponentRequest, CreateChecklistRequest, CreateSectionRequest } from '@/types'
+import { useCreateChecklist } from '@/hooks/use-api'
+import { useToast } from '@/components/providers/toast-provider'
 import {
   Save,
   Eye,
@@ -94,7 +98,7 @@ export default function NewChecklistPage() {
     setSections(reorderedSections)
   }
 
-  const handleComponentSave = (sectionId: number, component: any) => {
+  const handleComponentSave = (sectionId: number, component: CreateComponentRequest) => {
     setSections(prev => prev.map(section => {
       if (section.id === sectionId) {
         const components = section.components || []

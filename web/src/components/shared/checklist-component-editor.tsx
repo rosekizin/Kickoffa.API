@@ -93,32 +93,65 @@ export const ChecklistComponentEditor = ({
   const handleSave = () => {
     if (!title.trim()) return
 
-    // Para upload, usar selectedFileTypes ao invés de allowedMimeTypes string
-    const uploadMimeTypes = type === 'upload' && selectedFileTypes.length > 0
-      ? selectedFileTypes.map(ft => ft.mimeType).join(',')
-      : allowedMimeTypes
-
-    // Calcular tamanho máximo baseado nas configurações específicas ou usar o padrão
-    let calculatedMaxSize = maxSizeMB
-    if (type === 'upload' && fileTypeSizeConfigs.length > 0) {
-      // Usar o maior tamanho configurado como limite geral
-      calculatedMaxSize = Math.max(...fileTypeSizeConfigs.map(config => config.maxSizeMB))
-    }
-
-    const componentData: CreateComponentRequest = {
-      sectionId,
+    const baseData = {
       title: title.trim(),
       description: description.trim() || undefined,
-      type,
       isRequired,
-      order,
-      allowedMimeTypes: type === 'upload' && uploadMimeTypes ? uploadMimeTypes : undefined,
-      maxSizeMB: type === 'upload' ? calculatedMaxSize : undefined,
-      placeholder: (type === 'text' || type === 'upload') && placeholder ? placeholder : undefined,
-      maxLength: type === 'text' ? maxLength : undefined,
-      confirmationText: type === 'confirmation' && confirmationText ? confirmationText : undefined,
-      // Adicionar configurações específicas de tamanho (para uso futuro)
-      fileTypeSizeConfigs: type === 'upload' && fileTypeSizeConfigs.length > 0 ? fileTypeSizeConfigs : undefined
+      order
+    }
+
+    let componentData: CreateComponentRequest
+
+    switch (type) {
+      case 'checkbox':
+        componentData = {
+          ...baseData,
+          type: 'checkbox'
+        }
+        break
+
+      case 'text':
+        componentData = {
+          ...baseData,
+          type: 'text',
+          placeholder: placeholder || undefined,
+          maxLength: maxLength || undefined
+        }
+        break
+
+      case 'upload':
+        // Calcular tamanho máximo baseado nas configurações específicas ou usar o padrão
+        let calculatedMaxSize = maxSizeMB
+        if (fileTypeSizeConfigs.length > 0) {
+          calculatedMaxSize = Math.max(...fileTypeSizeConfigs.map(config => config.maxSizeMB))
+        }
+
+        componentData = {
+          ...baseData,
+          type: 'upload',
+          placeholder: placeholder || undefined,
+          maxSizeMB: calculatedMaxSize || undefined,
+          allowedFileTypeIds: selectedFileTypes.map(ft => ft.id)
+        }
+        break
+
+      case 'signature':
+        componentData = {
+          ...baseData,
+          type: 'signature'
+        }
+        break
+
+      case 'confirmation':
+        componentData = {
+          ...baseData,
+          type: 'confirmation',
+          confirmationText: confirmationText || undefined
+        }
+        break
+
+      default:
+        throw new Error(`Tipo de componente não suportado: ${type}`)
     }
 
     onSave(componentData)

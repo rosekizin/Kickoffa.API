@@ -1,5 +1,6 @@
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.Repositories.Base;
+using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace Kickoffa.API.Data.Repositories
 	/// <summary>
 	/// Implementação do repositório de CheckboxComponent
 	/// </summary>
-	public class CheckboxComponentRepository : BaseRepository<CheckboxComponent>, ICheckboxComponentRepository
+	public class CheckboxComponentRepository : BaseRepository<ICheckboxComponent, CheckboxComponent>, ICheckboxComponentRepository
 	{
 		public CheckboxComponentRepository(KickoffaDbContext context) : base(context)
 		{
@@ -18,7 +19,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca components de checkbox por seção
 		/// </summary>
-		public async Task<IEnumerable<CheckboxComponent>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ICheckboxComponent>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
 			return await _context.CheckboxComponents
 				.Where(c => c.SectionId == sectionId)
@@ -28,7 +29,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca components de checkbox ordenados por seção
 		/// </summary>
-		public async Task<IEnumerable<CheckboxComponent>> GetBySectionIdOrderedAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ICheckboxComponent>> GetBySectionIdOrderedAsync(long sectionId, CancellationToken cancellationToken)
 		{
 			return await _context.CheckboxComponents
 				.Where(c => c.SectionId == sectionId)
@@ -39,7 +40,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca components de checkbox obrigatórios por seção
 		/// </summary>
-		public async Task<IEnumerable<CheckboxComponent>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ICheckboxComponent>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
 			return await _context.CheckboxComponents
 				.Where(c => c.SectionId == sectionId && c.IsRequired)
@@ -50,7 +51,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca components de checkbox por checklist
 		/// </summary>
-		public async Task<IEnumerable<CheckboxComponent>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ICheckboxComponent>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
 		{
 			return await _context.CheckboxComponents
 				.Include(c => c.Section)
@@ -63,7 +64,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca components de checkbox por múltiplas seções
 		/// </summary>
-		public async Task<IEnumerable<CheckboxComponent>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ICheckboxComponent>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken)
 		{
 			return await _context.CheckboxComponents
 				.Where(c => sectionIds.Contains(c.SectionId))
@@ -93,7 +94,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca components de checkbox por status de obrigatoriedade
 		/// </summary>
-		public async Task<IEnumerable<CheckboxComponent>> GetByRequiredStatusAsync(bool isRequired, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ICheckboxComponent>> GetByRequiredStatusAsync(bool isRequired, CancellationToken cancellationToken)
 		{
 			return await _context.CheckboxComponents
 				.Where(c => c.IsRequired == isRequired)
@@ -105,7 +106,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca components de checkbox completados por seção
 		/// </summary>
-		public async Task<IEnumerable<CheckboxComponent>> GetCompletedBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ICheckboxComponent>> GetCompletedBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
 			return await _context.CheckboxComponents
 				.Include(c => c.Status)
@@ -127,7 +128,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<CheckboxComponent?> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public override async Task<ICheckboxComponent?> GetByIdAsync(long id, CancellationToken cancellationToken)
 		{
 			return await _context.CheckboxComponents
 				.Include(c => c.Section)
@@ -138,7 +139,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<IEnumerable<CheckboxComponent>> GetAllAsync(CancellationToken cancellationToken)
+		public override async Task<IEnumerable<ICheckboxComponent>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			return await _context.CheckboxComponents
 				.Include(c => c.Section)
