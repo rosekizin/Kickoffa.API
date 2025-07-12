@@ -45,6 +45,7 @@ public static class ApplicationServiceCollectionExtensions
 		services.AddScoped<IFileTypeService, FileTypeService>();
 		services.AddScoped<IChecklistService, ChecklistService>();
 		services.AddScoped<ICreateChecklistService, CreateChecklistService>();
+		services.AddScoped<IUpdateChecklistService, UpdateChecklistService>();
 		services.AddScoped<IMapChecklistToResponse, MapChecklistToResponse>();
 
 		// Register wrappers

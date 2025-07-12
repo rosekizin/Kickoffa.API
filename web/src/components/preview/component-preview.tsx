@@ -10,10 +10,12 @@ interface ComponentPreviewProps {
     description?: string
     type: 'checkbox' | 'upload' | 'text' | 'signature' | 'confirmation'
     isRequired?: boolean
-    allowedMimeTypes?: string
-    maxSizeMB?: number
+
+    // Propriedades específicas por tipo - seguindo padrão do domínio
     placeholder?: string
     maxLength?: number
+    maxSizeMB?: number
+    allowedFileTypes?: import('@/types').FileType[]
     confirmationText?: string
   }
 }

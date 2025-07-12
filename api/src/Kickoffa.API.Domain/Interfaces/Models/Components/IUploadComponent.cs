@@ -24,5 +24,9 @@
 		IEnumerable<IFileType> AllowedFileTypes { get; }
 
 		void AddFiles(IUploadComponentFile file);
+
+		void AddAllowedFileType(IFileType fileType);
+
+		void UpdateBasicProperties(int? maxSizeMB, string? placeholder);
 	}
 }

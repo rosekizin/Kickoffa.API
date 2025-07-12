@@ -7,7 +7,8 @@ namespace Kickoffa.API.Contracts.Checklist;
 /// </summary>
 public sealed record ChecklistRequest : IValidatableObject
 {
-    public required string Title { get; init; }
+	public required long Id { get; init; }
+	public required string Title { get; init; }
     public string? Description { get; init; }
     public DateTime? Deadline { get; init; }
     public required ICollection<SectionRequest> Sections { get; init; } = [];

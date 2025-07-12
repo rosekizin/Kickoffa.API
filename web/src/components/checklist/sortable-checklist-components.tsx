@@ -38,10 +38,12 @@ export type ChecklistComponent = {
   description?: string
   isRequired?: boolean
   order: number
-  allowedMimeTypes?: string
-  maxSizeMB?: number
+
+  // Propriedades específicas por tipo - seguindo padrão do domínio
   placeholder?: string
   maxLength?: number
+  maxSizeMB?: number
+  allowedFileTypes?: import('@/types').FileType[]
   confirmationText?: string
 }
 

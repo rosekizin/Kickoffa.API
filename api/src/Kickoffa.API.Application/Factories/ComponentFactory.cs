@@ -2,19 +2,27 @@ using Kickoffa.API.Application.Interfaces.Factories;
 using Kickoffa.API.Contracts.Checklist.Components;
 using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models.Components;
+using Kickoffa.API.Domain.Repositories;
 
 namespace Kickoffa.API.Application.Factories
 {
 	///<inheritdoc/>
 	public class ComponentFactory : IComponentFactory
 	{
-		public IComponent CreateComponent(ComponentRequest componentRequest)
+		private readonly IFileTypeRepository _fileTypeRepository;
+
+		public ComponentFactory(IFileTypeRepository fileTypeRepository)
+		{
+			_fileTypeRepository = fileTypeRepository;
+		}
+
+		public async Task<IComponent> CreateComponent(ComponentRequest componentRequest, CancellationToken cancellationToken)
 		{
 			return componentRequest.Type switch
 			{
 				ComponentTypeRequest.Checkbox => CreateCheckBoxComponent((CheckboxComponentRequest)componentRequest),
 				ComponentTypeRequest.Text => CreateTextComponent((TextComponentRequest)componentRequest),
-				ComponentTypeRequest.Upload => CreateUploadComponent((UploadComponentRequest)componentRequest),
+				ComponentTypeRequest.Upload => await CreateUploadComponent((UploadComponentRequest)componentRequest, cancellationToken),
 				ComponentTypeRequest.Signature => CreateSignatureComponent((SignatureComponentRequest)componentRequest),
 				ComponentTypeRequest.Confirmation => CreateConfirmationComponent((ConfirmationComponentRequest)componentRequest),
 				_ => throw new ArgumentException($"Tipo de componente inválido: {componentRequest.Type}")
@@ -46,21 +54,30 @@ namespace Kickoffa.API.Application.Factories
 				request.MaxLength);
 		}
 
-		public static IComponent CreateUploadComponent(UploadComponentRequest request)
+		public async Task<IComponent> CreateUploadComponent(UploadComponentRequest request, CancellationToken cancellationToken)
 		{
-			return new UploadComponent(0,
+			var uploadComponent = new UploadComponent(0,
 				request.Title,
 				request.Order,
 				request.Description,
 				request.IsRequired,
 				request.Placeholder,
 				request.MaxSizeMB);
+
+			var allowedFileTypesToAdd = await _fileTypeRepository.GetByIdsAsync(request.AllowedFileTypeIds, cancellationToken);
+
+			foreach (var fileType in allowedFileTypesToAdd)
+			{
+				uploadComponent.AddAllowedFileType(fileType);
+			}
+
+			return uploadComponent;
 		}
 
 		public static IComponent CreateConfirmationComponent(ConfirmationComponentRequest request)
 		{
-			return new ConfirmationComponent(0, 
-				request.Title, request.Order, 
+			return new ConfirmationComponent(0,
+				request.Title, request.Order,
 				request.Description, request.IsRequired, request.ConfirmationText);
 		}
 	}

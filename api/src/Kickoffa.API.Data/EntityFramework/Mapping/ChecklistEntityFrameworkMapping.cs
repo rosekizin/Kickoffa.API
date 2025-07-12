@@ -56,7 +56,7 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			// Query Filter para isolamento por usuário
 			if (currentUserService.IsAuthenticated)
 			{
-				var currentUserId = currentUserService.UserId.Value;
+				var currentUserId = currentUserService.UserId!.Value;
 				entity.HasQueryFilter(c => c.OwnerId == currentUserId);
 			}
 

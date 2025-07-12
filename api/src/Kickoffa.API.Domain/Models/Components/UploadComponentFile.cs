@@ -26,6 +26,6 @@ namespace Kickoffa.API.Domain.Models.Components
 		/// </summary>
 		public virtual UploadComponent UploadComponent { get; private set; } = null!;
 
-		IUploadComponent IUploadComponentFile.UploadComponent => (IUploadComponent)UploadComponent;
+		IUploadComponent IUploadComponentFile.UploadComponent => UploadComponent;
 	}
 }

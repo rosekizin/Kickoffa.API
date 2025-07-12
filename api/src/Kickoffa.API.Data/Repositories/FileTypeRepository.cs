@@ -56,7 +56,7 @@ namespace Kickoffa.API.Data.Repositories
 				.ToListAsync(cancellationToken);
 		}
 
-		public async Task<IFileType?> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public new async Task<IFileType?> GetByIdAsync(long id, CancellationToken cancellationToken)
 		{
 			return await _context.FileTypes
 				.FirstOrDefaultAsync(ft => ft.Id == id, cancellationToken);

@@ -1,6 +1,7 @@
 using Kickoffa.API.Application.Interfaces.Checkilists;
 using Kickoffa.API.Contracts.Checklist;
 using Kickoffa.API.Domain.Repositories;
+using System.Diagnostics;
 
 namespace Kickoffa.API.Application.Services.Checklists
 {
@@ -11,6 +12,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 	{
 		private readonly IUnitOfWork _unitOfWork;
 		private readonly IChecklistRepository _checklistRepository;
+		private readonly IUpdateChecklistService _updateChecklistService;
 		private readonly IMapChecklistToResponse _mapChecklistToResponse;
 
 		/// <summary>
@@ -18,13 +20,17 @@ namespace Kickoffa.API.Application.Services.Checklists
 		/// </summary>
 		/// <param name="checklistRepository">Repositório de checklists</param>
 		/// <param name="unitOfWork">Unit of Work para transações</param>
+		/// <param name="updateChecklistService">Serviço de atualização de checklists</param>
+		/// <param name="mapChecklistToResponse">Serviço de mapeamento</param>
 		public ChecklistService(
 			IUnitOfWork unitOfWork,
 			IChecklistRepository checklistRepository,
+			IUpdateChecklistService updateChecklistService,
 			IMapChecklistToResponse mapChecklistToResponse)
 		{
 			_unitOfWork = unitOfWork;
 			_checklistRepository = checklistRepository;
+			_updateChecklistService = updateChecklistService;
 			_mapChecklistToResponse = mapChecklistToResponse;
 		}
 
@@ -38,7 +44,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 		/// <inheritdoc />
 		public async Task<ChecklistResponse?> GetByIdAsync(long id, CancellationToken cancellationToken)
 		{
-			var checklist = await _checklistRepository.GetByIdAsync(id, cancellationToken);
+			var checklist = await _checklistRepository.GetByIdWithCompleteHierarchyAsync(id, cancellationToken);
 			return checklist != null ? _mapChecklistToResponse.MapToResponse(checklist) : null;
 		}
 
@@ -59,20 +65,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 		/// <inheritdoc />
 		public async Task<ChecklistResponse?> UpdateAsync(long id, long ownerId, ChecklistRequest request, CancellationToken cancellationToken)
 		{
-			var checklist = await _checklistRepository.GetByIdAsync(id, cancellationToken);
-			if (checklist == null || checklist.OwnerId != ownerId)
-				return null;
-
-			// Atualizar propriedades básicas
-			checklist.UpdateTitle(request.Title);
-			checklist.UpdateDescription(request.Description);
-			checklist.UpdateDueDate(request.Deadline);
-
-			// TODO: Implementar atualização de seções (mais complexo, requer comparação)
-			// Por enquanto, vamos apenas atualizar as propriedades básicas
-
-			await _unitOfWork.SaveChangesAsync(cancellationToken);
-			return _mapChecklistToResponse.MapToResponse(checklist);
+			return await _updateChecklistService.UpdateAsync(id, ownerId, request, cancellationToken);
 		}
 
 		/// <inheritdoc />

@@ -108,16 +108,34 @@ export interface Component {
   isRequired: boolean
   order: number
 
-  // Propriedades específicas por tipo (movidas de config)
-  allowedMimeTypes?: string
-  maxSizeMB?: number
+  // Propriedades específicas por tipo - seguindo padrão do domínio
+
+  // Para TextComponent
   placeholder?: string
   maxLength?: number
+
+  // Para UploadComponent
+  maxSizeMB?: number
+  allowedFileTypes?: FileType[]
+  componentFiles?: UploadComponentFile[]
+
+  // Para ConfirmationComponent
   confirmationText?: string
 
   status?: ComponentStatus
   createdAt: string
   updatedAt: string
+}
+
+export interface UploadComponentFile {
+  id: number
+  componentId: number
+  fileName: string
+  originalName: string
+  mimeType: string
+  size: number
+  url: string
+  createdAt: string
 }
 
 export interface ComponentStatus {
@@ -307,9 +325,11 @@ export interface PublicComponentView {
   isRequired: boolean
   order: number
   isCompleted: boolean
-  allowedMimeTypes?: string
-  maxSizeMB?: number
+
+  // Propriedades específicas por tipo - seguindo padrão do domínio
   placeholder?: string
   maxLength?: number
+  maxSizeMB?: number
+  allowedFileTypes?: FileType[]
   confirmationText?: string
 }

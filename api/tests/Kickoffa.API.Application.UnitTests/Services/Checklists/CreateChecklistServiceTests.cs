@@ -50,7 +50,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			foreach (var sectionRequest in request.Sections)
 			{
 				_sectionFactory
-					.CreateSection(sectionRequest)
+					.CreateSection(sectionRequest, _cancellationToken)
 					.Returns(Substitute.For<Section>());
 			}
 
@@ -65,7 +65,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 
 			// Assert
 			Assert.NotNull(result);
-			_sectionFactory.CreateSection(Arg.Any<SectionRequest>()).Received(request.Sections.Count);
+			await _sectionFactory.Received(request.Sections.Count).CreateSection(Arg.Is<SectionRequest>(x => request.Sections.Contains(x)), _cancellationToken);
 			await _checklistRepository.Received(1).AddAsync(Arg.Any<Checklist>(), _cancellationToken);
 			await _unitOfWork.Received(1).SaveChangesAsync(_cancellationToken);
 		}
@@ -92,7 +92,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			foreach (var sectionRequest in request.Sections)
 			{
 				_sectionFactory
-					.CreateSection(sectionRequest)
+					.CreateSection(sectionRequest, _cancellationToken)
 					.Returns(Substitute.For<Section>());
 			}
 
@@ -111,7 +111,9 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			Assert.NotNull(result);
 			Assert.Equal("test-acao-checklist-1", result.Slug);
 
-			_sectionFactory.CreateSection(Arg.Any<SectionRequest>()).Received(request.Sections.Count);
+			await _sectionFactory
+				.Received(request.Sections.Count)
+				.CreateSection(Arg.Is<SectionRequest>(x => request.Sections.Contains(x)), _cancellationToken);
 			await _checklistRepository.Received(1).ExistsBySlugAsync("test-acao-checklist", null, _cancellationToken);
 			await _checklistRepository.Received(1).ExistsBySlugAsync("test-acao-checklist-1", null, _cancellationToken);
 		}
@@ -120,6 +122,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 		{
 			return new ChecklistRequest
 			{
+				Id = 1,
 				Title = "Test Ação - Checklist $",
 				Description = "Test description",
 				Deadline = DateTime.UtcNow.AddDays(7),
@@ -127,6 +130,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 				[
 					new SectionRequest
 					{
+						Id = 1,
 						Title = "Test Section",
 						Type = SectionTypeRequest.Briefing,
 						Order = 1,

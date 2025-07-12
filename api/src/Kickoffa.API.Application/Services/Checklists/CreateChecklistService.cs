@@ -53,7 +53,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 			// Adicionar seções
 			foreach (var sectionRequest in request.Sections.OrderBy(s => s.Order))
 			{
-				var section = _sectionFactory.CreateSection(sectionRequest);
+				var section = await _sectionFactory.CreateSection(sectionRequest, cancellationToken);
 				checklist.AddSection(section);
 			}
 

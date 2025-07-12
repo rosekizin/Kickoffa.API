@@ -15,7 +15,7 @@ namespace Kickoffa.API.Application.Interfaces.Factories
 		/// </summary>
 		/// <param name="sectionRequest">Request</param>
 		/// <returns>Instância de Section</returns>
-		ISection CreateSection(SectionRequest sectionRequest);
+		Task<ISection> CreateSection(SectionRequest sectionRequest, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Cria uma seção de briefing

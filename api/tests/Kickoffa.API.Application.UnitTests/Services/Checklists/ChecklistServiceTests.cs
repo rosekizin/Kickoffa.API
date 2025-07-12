@@ -14,14 +14,16 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 		private readonly IUnitOfWork _unitOfWork;
 		private readonly ChecklistService _checklistService;
 		private readonly IChecklistRepository _checklistRepository;
+		private readonly IUpdateChecklistService _updateChecklistService;
 		private readonly IMapChecklistToResponse _mapChecklistToResponse;
 
 		public ChecklistServiceTests()
 		{
 			_unitOfWork = Substitute.For<IUnitOfWork>();
 			_checklistRepository = Substitute.For<IChecklistRepository>();
+			_updateChecklistService = Substitute.For<IUpdateChecklistService>();
 			_mapChecklistToResponse = Substitute.For<IMapChecklistToResponse>();
-			_checklistService = new ChecklistService(_unitOfWork, _checklistRepository, _mapChecklistToResponse);
+			_checklistService = new ChecklistService(_unitOfWork, _checklistRepository, _updateChecklistService, _mapChecklistToResponse);
 		}
 
 		[Fact]
@@ -61,7 +63,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			var checklist = Substitute.For<IChecklist>();
 
 			_checklistRepository
-				.GetByIdAsync(checklistId, Arg.Any<CancellationToken>())
+				.GetByIdWithCompleteHierarchyAsync(checklistId, Arg.Any<CancellationToken>())
 				.Returns(checklist);
 
 			var checklistResponse = new Faker<ChecklistResponse>().Generate();
@@ -76,7 +78,9 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			Assert.NotNull(result);
 			Assert.Same(checklistResponse, result);
 
-			await _checklistRepository.Received(1).GetByIdAsync(checklistId, Arg.Any<CancellationToken>());
+			await _checklistRepository
+				.Received(1)
+				.GetByIdWithCompleteHierarchyAsync(checklistId, Arg.Any<CancellationToken>());
 		}
 
 		[Fact]
@@ -85,7 +89,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			// Arrange
 			var checklistId = 1L;
 
-			_checklistRepository.GetByIdAsync(checklistId, Arg.Any<CancellationToken>())
+			_checklistRepository.GetByIdWithCompleteHierarchyAsync(checklistId, Arg.Any<CancellationToken>())
 				.Returns((Checklist?)null);
 
 			// Act
@@ -94,7 +98,9 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			// Assert
 			Assert.Null(result);
 
-			await _checklistRepository.Received(1).GetByIdAsync(checklistId, Arg.Any<CancellationToken>());
+			await _checklistRepository
+				.Received(1)
+				.GetByIdWithCompleteHierarchyAsync(checklistId, Arg.Any<CancellationToken>());
 		}
 
 		[Fact]

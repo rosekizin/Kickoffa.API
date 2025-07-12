@@ -38,7 +38,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="id">ID do tipo de arquivo</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Tipo de arquivo ou null se não encontrado</returns>
-		Task<IFileType?> GetByIdAsync(long id, CancellationToken cancellationToken);
+		new Task<IFileType?> GetByIdAsync(long id, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Obtém tipos de arquivo por lista de IDs

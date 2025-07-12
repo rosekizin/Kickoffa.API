@@ -1,3 +1,5 @@
+using Kickoffa.API.Contracts.FileType;
+
 namespace Kickoffa.API.Contracts.Checklist;
 
 /// <summary>
@@ -53,17 +55,24 @@ public sealed record ComponentResponse
     public required string Type { get; init; } // "checkbox", "upload", "text", "signature", "confirmation"
     public required bool IsRequired { get; init; }
     public required int Order { get; init; }
-    
-    // Propriedades específicas por tipo
-    public string? AllowedMimeTypes { get; init; }
-    public int? MaxSizeMB { get; init; }
+
+    // Propriedades específicas por tipo - seguindo padrão do domínio
+
+    // Para TextComponent
     public string? Placeholder { get; init; }
     public int? MaxLength { get; init; }
+
+    // Para UploadComponent
+    public int? MaxSizeMB { get; init; }
+    public ICollection<FileTypeResponse>? AllowedFileTypes { get; init; }
+    public ICollection<UploadComponentFileResponse>? ComponentFiles { get; init; }
+
+    // Para ConfirmationComponent
     public string? ConfirmationText { get; init; }
-    
+
     // Status do componente (se disponível)
     public ComponentStatusResponse? Status { get; init; }
-    
+
     public required DateTime CreatedDateUtc { get; init; }
     public required DateTime LastUpdatedDateUtc { get; init; }
 }
@@ -88,7 +97,22 @@ public sealed record ComponentStatusResponse
 }
 
 /// <summary>
-/// Response de um arquivo enviado
+/// Response de um arquivo enviado pelo cliente (relacionado ao componente)
+/// </summary>
+public sealed record UploadComponentFileResponse
+{
+    public required long Id { get; init; }
+    public required long ComponentId { get; init; }
+    public required string FileName { get; init; }
+    public required string OriginalName { get; init; }
+    public required string MimeType { get; init; }
+    public required long Size { get; init; }
+    public required string Url { get; init; }
+    public required DateTime CreatedDateUtc { get; init; }
+}
+
+/// <summary>
+/// Response de um arquivo enviado (relacionado ao status do componente)
 /// </summary>
 public sealed record UploadedFileResponse
 {

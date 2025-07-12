@@ -17,7 +17,7 @@ namespace Kickoffa.API.Application.Factories
 		}
 
 		///<inheritdoc/>
-		public ISection CreateSection(SectionRequest sectionRequest)
+		public async Task<ISection> CreateSection(SectionRequest sectionRequest, CancellationToken cancellationToken)
 		{
 			return sectionRequest.Type switch
 			{
@@ -28,7 +28,7 @@ namespace Kickoffa.API.Application.Factories
 					contentJson: sectionRequest.ContentJson,
 					contentHtml: sectionRequest.ContentHtml
 				),
-				SectionTypeRequest.Checklist => CreateChecklistSection(sectionRequest),
+				SectionTypeRequest.Checklist => await CreateChecklistSection(sectionRequest, cancellationToken),
 				_ => throw new ArgumentException($"Tipo de seção inválido: {sectionRequest.Type}")
 			};
 		}
@@ -65,7 +65,7 @@ namespace Kickoffa.API.Application.Factories
 		/// <summary>
 		/// Cria uma seção de checklist com seus componentes
 		/// </summary>
-		private IChecklistSection CreateChecklistSection(SectionRequest sectionRequest)
+		private async Task<IChecklistSection> CreateChecklistSection(SectionRequest sectionRequest,	CancellationToken cancellationToken)
 		{
 			var section = CreateChecklistSection(
 				checklistId: 0, // Será definido quando adicionado ao checklist
@@ -78,7 +78,7 @@ namespace Kickoffa.API.Application.Factories
 			{
 				foreach (var componentRequest in sectionRequest.Components.OrderBy(c => c.Order))
 				{
-					var component = _componentFactory.CreateComponent(componentRequest);
+					var component = await _componentFactory.CreateComponent(componentRequest, cancellationToken);
 					section.AddComponent(component);
 				}
 			}

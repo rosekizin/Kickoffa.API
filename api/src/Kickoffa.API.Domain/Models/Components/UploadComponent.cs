@@ -55,5 +55,16 @@ namespace Kickoffa.API.Domain.Models.Components
 		{
 			ComponentFiles.Add((UploadComponentFile)file);
 		}
+
+		public void UpdateBasicProperties(int? maxSizeMB, string? placeholder)
+		{
+			MaxSizeMB = maxSizeMB;
+			Placeholder = placeholder;
+		}
+
+		public void AddAllowedFileType(IFileType fileType)
+		{
+			AllowedFileTypes.Add((FileType)fileType);
+		}
 	}
 }

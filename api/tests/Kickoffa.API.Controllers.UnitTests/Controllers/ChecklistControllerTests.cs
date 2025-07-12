@@ -114,7 +114,6 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 		{
 			// Arrange
 			var checklistId = 1L;
-			var userId = 1L;
 			var differentUserId = 2L;
 			var checklist = CreateChecklistResponse(checklistId, differentUserId, "Test Checklist");
 
@@ -322,19 +321,21 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 		{
 			return new ChecklistRequest
 			{
+				Id = 1,
 				Title = "Test Checklist",
 				Description = "Test description",
 				Deadline = DateTime.UtcNow.AddDays(7),
-				Sections = new List<SectionRequest>
-			{
-				new SectionRequest
-				{
-					Title = "Test Section",
-					Type = SectionTypeRequest.Briefing,
-					Order = 1,
-					ContentHtml = "<p>Test content</p>"
-				}
-			}
+				Sections =
+				[
+					new SectionRequest
+					{
+						Id = 1,
+						Title = "Test Section",
+						Type = SectionTypeRequest.Briefing,
+						Order = 1,
+						ContentHtml = "<p>Test content</p>"
+					}
+				]
 			};
 		}
 

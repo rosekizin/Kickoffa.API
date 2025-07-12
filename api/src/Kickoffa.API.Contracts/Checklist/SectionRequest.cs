@@ -10,6 +10,7 @@ namespace Kickoffa.API.Contracts.Checklist
 	/// </summary>
 	public sealed record SectionRequest : IValidatableObject
 	{
+		public required long Id { get; init; }
 		public required string Title { get; init; }
 		public required SectionTypeRequest Type { get; init; } // "briefing" ou "checklist"
 		public required int Order { get; init; }

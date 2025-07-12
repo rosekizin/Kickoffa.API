@@ -1,5 +1,6 @@
 ﻿using Kickoffa.API.Application.Interfaces.Checkilists;
 using Kickoffa.API.Contracts.Checklist;
+using Kickoffa.API.Contracts.FileType;
 using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models;
@@ -69,7 +70,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 		}
 
 		/// <summary>
-		/// Mapeia uma entidade Component para ComponentResponse
+		/// Mapeia uma entidade Component para ComponentResponse seguindo padrão do domínio
 		/// </summary>
 		private static ComponentResponse MapComponentToResponse(IComponent component)
 		{
@@ -82,11 +83,19 @@ namespace Kickoffa.API.Application.Services.Checklists
 				Type = component.Type.ToString().ToLowerInvariant(),
 				IsRequired = component.IsRequired,
 				Order = component.Order,
-				AllowedMimeTypes = GetComponentProperty<string?>(component, "AllowedMimeTypes"),
-				MaxSizeMB = GetComponentProperty<int?>(component, "MaxSizeMB"),
-				Placeholder = GetComponentProperty<string?>(component, "Placeholder"),
-				MaxLength = GetComponentProperty<int?>(component, "MaxLength"),
-				ConfirmationText = GetComponentProperty<string?>(component, "ConfirmationText"),
+
+				// Propriedades específicas por tipo - seguindo padrão do domínio
+				Placeholder = component is ITextComponent textComp ? textComp.Placeholder :
+							 component is IUploadComponent uploadComp ? uploadComp.Placeholder : null,
+				MaxLength = component is ITextComponent textComponent ? textComponent.MaxLength : null,
+				MaxSizeMB = component is IUploadComponent uploadComponent ? uploadComponent.MaxSizeMB : null,
+				AllowedFileTypes = component is IUploadComponent upload ?
+					upload.AllowedFileTypes?.Select(MapFileTypeToResponse).ToList() : null,
+				ComponentFiles = component is IUploadComponent uploadComp2 ?
+					uploadComp2.ComponentFiles?.Select(MapUploadComponentFileToResponse).ToList() : null,
+				ConfirmationText = component is IConfirmationComponent confirmationComponent ?
+					confirmationComponent.ConfirmationText : null,
+
 				Status = component.Status != null ? MapComponentStatusToResponse(component.Status) : null,
 				CreatedDateUtc = component.CreatedDateUtc,
 				LastUpdatedDateUtc = component.LastUpdatedDateUtc
@@ -94,12 +103,37 @@ namespace Kickoffa.API.Application.Services.Checklists
 		}
 
 		/// <summary>
-		/// Obtém uma propriedade específica de um componente usando reflexão
+		/// Mapeia uma entidade FileType para FileTypeResponse
 		/// </summary>
-		private static T? GetComponentProperty<T>(IComponent component, string propertyName)
+		private static FileTypeResponse MapFileTypeToResponse(IFileType fileType)
 		{
-			var property = component.GetType().GetProperty(propertyName);
-			return property != null ? (T?)property.GetValue(component) : default;
+			return new FileTypeResponse(
+				fileType.Id,
+				fileType.MimeType,
+				fileType.Extension,
+				fileType.DisplayName,
+				fileType.Description,
+				fileType.Category.ToString(),
+				fileType.RecommendedMaxSizeMB
+			);
+		}
+
+		/// <summary>
+		/// Mapeia uma entidade UploadComponentFile para UploadComponentFileResponse
+		/// </summary>
+		private static UploadComponentFileResponse MapUploadComponentFileToResponse(IUploadComponentFile file)
+		{
+			return new UploadComponentFileResponse
+			{
+				Id = file.Id,
+				ComponentId = file.UploadComponent.Id, // Usar o ID do componente através do relacionamento
+				FileName = file.FileName,
+				OriginalName = file.FileName, // Por enquanto, usar o mesmo nome
+				MimeType = file.ContentType,
+				Size = file.FileSize,
+				Url = file.StoragePath, // Por enquanto, usar o storage path como URL
+				CreatedDateUtc = file.CreatedDateUtc
+			};
 		}
 
 		/// <summary>

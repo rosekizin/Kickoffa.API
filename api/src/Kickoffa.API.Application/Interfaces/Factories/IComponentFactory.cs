@@ -8,6 +8,6 @@ namespace Kickoffa.API.Application.Interfaces.Factories
 	/// </summary>
 	public interface IComponentFactory
 	{
-		IComponent CreateComponent(ComponentRequest componentRequest);
+		Task<IComponent> CreateComponent(ComponentRequest componentRequest, CancellationToken cancellationToken);
 	}
 }

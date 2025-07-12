@@ -48,5 +48,65 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>True se existe, false caso contrário</returns>
 		Task<bool> ExistsBySlugAsync(string slug, long? excludeId, CancellationToken cancellationToken);
+
+		/// <summary>
+		/// Busca checklist por ID incluindo toda a hierarquia: Sections -> Components -> Status
+		/// </summary>
+		/// <param name="id">ID do checklist</param>
+		/// <param name="cancellationToken">Token de cancelamento</param>
+		/// <returns>Checklist com hierarquia completa ou null</returns>
+		Task<IChecklist?> GetByIdWithFullHierarchyAsync(long id, CancellationToken cancellationToken);
+
+		/// <summary>
+		/// Busca checklist por ID incluindo toda a hierarquia com componentes específicos
+		/// Inclui todos os tipos de componentes e seus relacionamentos (FileTypes, ComponentFiles, etc.)
+		/// </summary>
+		/// <param name="id">ID do checklist</param>
+		/// <param name="cancellationToken">Token de cancelamento</param>
+		/// <returns>Checklist com hierarquia completa ou null</returns>
+		Task<IChecklist?> GetByIdWithCompleteHierarchyAsync(long id, CancellationToken cancellationToken);
+
+		/// <summary>
+		/// Busca checklist por slug incluindo toda a hierarquia
+		/// </summary>
+		/// <param name="slug">Slug do checklist</param>
+		/// <param name="cancellationToken">Token de cancelamento</param>
+		/// <returns>Checklist com hierarquia completa ou null</returns>
+		Task<IChecklist?> GetBySlugWithFullHierarchyAsync(string slug, CancellationToken cancellationToken);
+
+		/// <summary>
+		/// Busca checklist por token de acesso incluindo toda a hierarquia
+		/// </summary>
+		/// <param name="accessToken">Token de acesso</param>
+		/// <param name="cancellationToken">Token de cancelamento</param>
+		/// <returns>Checklist com hierarquia completa ou null</returns>
+		Task<IChecklist?> GetByAccessTokenWithFullHierarchyAsync(string accessToken, CancellationToken cancellationToken);
+
+		/*
+		/// <summary>
+		/// OTIMIZADO: Busca checklist com carregamento manual em etapas para máxima performance
+		/// </summary>
+		/// <param name="id">ID do checklist</param>
+		/// <param name="cancellationToken">Token de cancelamento</param>
+		/// <returns>Checklist com hierarquia completa ou null</returns>
+		Task<IChecklist?> GetByIdWithOptimizedHierarchyAsync(long id, CancellationToken cancellationToken);
+
+		/// <summary>
+		/// OTIMIZADO: Busca com projeção para leitura eficiente (não modificação)
+		/// </summary>
+		/// <param name="id">ID do checklist</param>
+		/// <param name="cancellationToken">Token de cancelamento</param>
+		/// <returns>Checklist com hierarquia completa ou null</returns>
+		Task<IChecklist?> GetByIdWithProjectionAsync(long id, CancellationToken cancellationToken);
+
+		/// <summary>
+		/// OTIMIZADO: Busca com filtro de segurança por owner
+		/// </summary>
+		/// <param name="id">ID do checklist</param>
+		/// <param name="ownerId">ID do proprietário</param>
+		/// <param name="cancellationToken">Token de cancelamento</param>
+		/// <returns>Checklist com hierarquia completa ou null</returns>
+		Task<IChecklist?> GetByIdWithFullHierarchyForOwnerAsync(long id, long ownerId, CancellationToken cancellationToken);
+		*/
 	}
 }

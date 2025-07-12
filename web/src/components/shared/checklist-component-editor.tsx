@@ -43,7 +43,6 @@ export const ChecklistComponentEditor = ({
   const [description, setDescription] = useState(component?.description || '')
   const [type, setType] = useState<ComponentType>(component?.type || 'checkbox')
   const [isRequired, setIsRequired] = useState(component?.isRequired || false)
-  const [allowedMimeTypes, setAllowedMimeTypes] = useState(component?.allowedMimeTypes || '')
   const [maxSizeMB, setMaxSizeMB] = useState(component?.maxSizeMB || 10)
   const [placeholder, setPlaceholder] = useState(component?.placeholder || '')
   const [maxLength, setMaxLength] = useState(component?.maxLength || 500)

@@ -7,6 +7,7 @@ namespace Kickoffa.API.Contracts.Checklist.Components
 	/// </summary>
 	public abstract record ComponentRequest : IValidatableObject
 	{
+		public required long Id { get; init; }
 		public required string Title { get; init; }
 		public string? Description { get; init; }
 		public required bool IsRequired { get; init; }
