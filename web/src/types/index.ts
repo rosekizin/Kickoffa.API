@@ -166,6 +166,7 @@ export interface UploadedFile {
 
 // Tipos para formulários
 export interface CreateChecklistRequest {
+  id?: number // ID para updates (0 ou undefined para criações)
   title: string
   description?: string
   deadline?: string
@@ -173,6 +174,7 @@ export interface CreateChecklistRequest {
 }
 
 export interface CreateSectionRequest {
+  id?: number // ID para updates (0 ou undefined para criações)
   title: string
   type: 'briefing' | 'checklist'
   order: number
@@ -183,6 +185,7 @@ export interface CreateSectionRequest {
 
 // Interfaces base para componentes
 export interface CreateComponentBaseRequest {
+  id?: number // ID para updates (0 ou undefined para criações)
   title: string
   description?: string
   isRequired: boolean
@@ -204,6 +207,7 @@ export interface CreateUploadComponentRequest extends CreateComponentBaseRequest
   placeholder?: string
   maxSizeMB?: number
   allowedFileTypeIds: number[]
+  allowedFileTypes?: FileType[]
 }
 
 export interface CreateSignatureComponentRequest extends CreateComponentBaseRequest {

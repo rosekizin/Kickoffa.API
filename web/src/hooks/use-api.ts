@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
+import { AuthService } from '@/services/auth.service'
 import {
   Checklist,
   Section,
@@ -34,7 +35,7 @@ export const useChecklist = (id: string) => {
       const response = await api.get<Checklist>(`/api/checklist/${id}`)
       return response.data
     },
-    enabled: !!id
+    enabled: !!id && AuthService.isAuthenticated()
   })
 }
 
@@ -174,7 +175,6 @@ export const useUploadFile = () => {
 
 // Customers - usando CustomerService para lógica de negócio
 import { CustomerService } from '@/services/customer.service'
-import { AuthService } from '@/services/auth.service'
 import { UserService, UpdateUserProfileRequest } from '@/services/user.service'
 
 export const useCustomers = () => {

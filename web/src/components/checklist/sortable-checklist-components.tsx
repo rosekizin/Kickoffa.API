@@ -5,6 +5,7 @@ import {
   GripVertical,
   Trash2,
   Edit3,
+  Eye,
   CheckSquare,
   Upload,
   Type,
@@ -50,10 +51,14 @@ export type ChecklistComponent = {
 interface SortableChecklistComponentProps {
   component: ChecklistComponent
   onEdit: () => void
+  onView: () => void
   onDelete: () => void
+  isActive?: boolean
+  isDisabled?: boolean
+  isEditMode?: boolean
 }
 
-function SortableChecklistComponent({ component, onEdit, onDelete }: SortableChecklistComponentProps) {
+function SortableChecklistComponent({ component, onEdit, onView, onDelete, isActive = false, isDisabled = false, isEditMode = false }: SortableChecklistComponentProps) {
   const {
     attributes,
     listeners,
@@ -104,10 +109,14 @@ function SortableChecklistComponent({ component, onEdit, onDelete }: SortableChe
     <div
       ref={setNodeRef}
       style={style}
-      className={`group bg-white rounded-lg p-4 transition-all ${
-        component.isRequired
-          ? 'border-l-4 border-l-red-400 border-t border-r border-b border-gray-200'
-          : 'border border-gray-200'
+      className={`group rounded-lg p-4 transition-all ${
+        isActive
+          ? 'bg-blue-50 border-l-4 border-l-blue-500 border-t border-r border-b border-blue-200 shadow-sm'
+          : isDisabled
+          ? 'bg-gray-50 border border-gray-300 opacity-60'
+          : component.isRequired
+          ? 'bg-white border-l-4 border-l-red-400 border-t border-r border-b border-gray-200'
+          : 'bg-white border border-gray-200'
       } ${isDragging ? 'opacity-50 z-50 shadow-lg' : ''}`}
     >
       <div className="flex items-center justify-between">
@@ -131,7 +140,11 @@ function SortableChecklistComponent({ component, onEdit, onDelete }: SortableChe
                     <span className="text-red-500 ml-1">*</span>
                   )}
                 </h4>
-                {component.isRequired ? (
+                {isActive ? (
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-normal bg-blue-50 text-blue-600 border border-blue-200">
+                    Ativo
+                  </span>
+                ) : component.isRequired ? (
                   <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-normal bg-red-50 text-red-600 border border-red-200">
                     Obrigatório
                   </span>
@@ -149,22 +162,40 @@ function SortableChecklistComponent({ component, onEdit, onDelete }: SortableChe
           </div>
         </div>
         
-        <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button 
-            variant="ghost" 
+        <div className={`flex items-center space-x-2 transition-opacity ${
+          isDisabled ? 'opacity-30' : 'opacity-0 group-hover:opacity-100'
+        }`}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onView}
+            disabled={isDisabled || (isActive && isEditMode)}
+            className="text-gray-600 hover:text-gray-700 disabled:cursor-not-allowed"
+            title={
+              isDisabled ? "Finalize a edição atual primeiro" :
+              (isActive && isEditMode) ? "Já está editando este componente" :
+              "Visualizar componente"
+            }
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
             size="sm"
             onClick={onEdit}
-            className="text-blue-600 hover:text-blue-700"
-            title="Editar componente"
+            disabled={isDisabled}
+            className="text-blue-600 hover:text-blue-700 disabled:cursor-not-allowed"
+            title={isDisabled ? "Finalize a edição atual primeiro" : "Editar componente"}
           >
             <Edit3 className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="sm"
             onClick={onDelete}
-            className="text-red-600 hover:text-red-700"
-            title="Excluir componente"
+            disabled={isDisabled}
+            className="text-red-600 hover:text-red-700 disabled:cursor-not-allowed"
+            title={isDisabled ? "Finalize a edição atual primeiro" : "Excluir componente"}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -177,15 +208,21 @@ function SortableChecklistComponent({ component, onEdit, onDelete }: SortableChe
 interface SortableChecklistComponentsProps {
   components: ChecklistComponent[]
   onComponentsReorder: (components: ChecklistComponent[]) => void
+  onViewComponent: (componentId: number) => void
   onEditComponent: (componentId: number) => void
   onDeleteComponent: (componentId: number) => void
+  activeComponentId?: number | null
+  isEditMode?: boolean
 }
 
 export function SortableChecklistComponents({
   components,
   onComponentsReorder,
+  onViewComponent,
   onEditComponent,
-  onDeleteComponent
+  onDeleteComponent,
+  activeComponentId,
+  isEditMode = false
 }: SortableChecklistComponentsProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -194,7 +231,12 @@ export function SortableChecklistComponents({
     })
   )
 
+
+
   const handleDragEnd = (event: DragEndEvent) => {
+    // Não permitir reordenação quando em modo de edição
+    if (isEditMode) return
+
     const { active, over } = event
 
     if (over && active.id !== over.id) {
@@ -202,7 +244,7 @@ export function SortableChecklistComponents({
       const newIndex = components.findIndex((component) => component.id === over.id)
 
       const newComponents = arrayMove(components, oldIndex, newIndex)
-      
+
       // Atualizar a ordem dos componentes
       const reorderedComponents = newComponents.map((component, index) => ({
         ...component,
@@ -217,29 +259,51 @@ export function SortableChecklistComponents({
     return null
   }
 
+  const componentList = (
+    <div className="space-y-3 w-full">
+      {components.map((component) => {
+        const isActive = activeComponentId === component.id
+        const isDisabled = isEditMode && activeComponentId !== null && activeComponentId !== component.id
+
+        return (
+          <SortableChecklistComponent
+            key={component.id}
+            component={component}
+            onView={() => onViewComponent(component.id)}
+            onEdit={() => onEditComponent(component.id)}
+            onDelete={() => onDeleteComponent(component.id)}
+            isActive={isActive}
+            isDisabled={isDisabled}
+            isEditMode={isEditMode}
+          />
+        )
+      })}
+    </div>
+  )
+
   return (
     <div className="w-full">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={components.map(component => component.id)}
-          strategy={verticalListSortingStrategy}
+      {/*
+        Renderização condicional para evitar erro "useEffect changed size between renders":
+        - Quando editando: renderiza apenas a lista (sem DndContext)
+        - Quando não editando: renderiza com DndContext para permitir drag-and-drop
+      */}
+      {isEditMode ? (
+        componentList
+      ) : (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
         >
-          <div className="space-y-3 w-full">
-            {components.map((component) => (
-              <SortableChecklistComponent
-                key={component.id}
-                component={component}
-                onEdit={() => onEditComponent(component.id)}
-                onDelete={() => onDeleteComponent(component.id)}
-              />
-            ))}
-          </div>
-        </SortableContext>
-      </DndContext>
+          <SortableContext
+            items={components.map(component => component.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {componentList}
+          </SortableContext>
+        </DndContext>
+      )}
     </div>
   )
 }

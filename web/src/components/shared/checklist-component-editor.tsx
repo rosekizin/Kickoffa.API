@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   CheckSquare,
@@ -11,7 +11,9 @@ import {
   Eye,
   Trash2,
   GripVertical,
-  Shield
+  Shield,
+  Edit3,
+  X
 } from 'lucide-react'
 import { FileTypeSelector } from '@/components/upload/file-type-selector'
 import { FileTypeSizeConfigComponent, FileTypeSizeConfig } from '@/components/upload/file-type-size-config'
@@ -24,8 +26,10 @@ interface ChecklistComponentEditorProps {
   onDelete?: (componentId: number) => void
   onPreview?: () => void
   onCancel?: () => void
+  onEdit?: () => void
   sectionId: number
   order: number
+  isViewMode?: boolean
 }
 
 type ComponentType = 'checkbox' | 'upload' | 'text' | 'signature' | 'confirmation'
@@ -36,8 +40,10 @@ export const ChecklistComponentEditor = ({
   onDelete,
   onPreview,
   onCancel,
+  onEdit,
   sectionId,
-  order
+  order,
+  isViewMode = false
 }: ChecklistComponentEditorProps) => {
   const [title, setTitle] = useState(component?.title || '')
   const [description, setDescription] = useState(component?.description || '')
@@ -50,6 +56,40 @@ export const ChecklistComponentEditor = ({
   const [selectedFileTypes, setSelectedFileTypes] = useState<FileType[]>([])
   const [fileTypeSizeConfigs, setFileTypeSizeConfigs] = useState<FileTypeSizeConfig[]>([])
   const [showAdvanced, setShowAdvanced] = useState(false)
+
+  // Inicializar dados do componente quando ele for passado para edição
+  useEffect(() => {
+    if (component) {
+      // Inicializar tipos de arquivo permitidos se for um componente de upload
+      if (component.type === 'upload' && component.allowedFileTypes) {
+        setSelectedFileTypes(component.allowedFileTypes)
+
+        // Inicializar configurações de tamanho se existirem
+        const sizeConfigs: FileTypeSizeConfig[] = component.allowedFileTypes.map(fileType => ({
+          fileTypeId: fileType.id,
+          maxSizeMB: fileType.recommendedMaxSizeMB || component.maxSizeMB || 10
+        }))
+        setFileTypeSizeConfigs(sizeConfigs)
+      }
+
+      // Mostrar configurações avançadas se for um tipo que as possui e tiver dados específicos
+      if (component.type === 'upload' && (component.allowedFileTypes?.length || component.placeholder)) {
+        setShowAdvanced(true)
+      } else if (component.type === 'text' && (component.placeholder || component.maxLength)) {
+        setShowAdvanced(true)
+      } else if (component.type === 'confirmation' && component.confirmationText) {
+        setShowAdvanced(true)
+      }
+    }
+  }, [
+    component?.id,
+    component?.type,
+    component?.allowedFileTypes,
+    component?.placeholder,
+    component?.maxLength,
+    component?.maxSizeMB,
+    component?.confirmationText
+  ])
 
   const componentTypes = [
     {
@@ -130,8 +170,9 @@ export const ChecklistComponentEditor = ({
           type: 'upload',
           placeholder: placeholder || undefined,
           maxSizeMB: calculatedMaxSize || undefined,
+          allowedFileTypes: selectedFileTypes,
           allowedFileTypeIds: selectedFileTypes.map(ft => ft.id)
-        }
+        } as CreateComponentRequest
         break
 
       case 'signature':
@@ -262,6 +303,124 @@ export const ChecklistComponentEditor = ({
   }
 
   const selectedType = componentTypes.find(t => t.type === type)
+
+  // Modo de visualização - apenas mostrar informações
+  if (isViewMode && component) {
+    return (
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
+              {selectedType && (
+                <selectedType.icon className={`h-5 w-5 ${selectedType.color}`} />
+              )}
+              <span className="font-medium text-gray-900">
+                {component.title}
+              </span>
+              {component.isRequired && (
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-normal bg-red-50 text-red-600 border border-red-200">
+                  Obrigatório
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEdit}
+              className="text-blue-600 hover:text-blue-700"
+              title="Editar componente"
+            >
+              <Edit3 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onCancel}
+              className="text-gray-600 hover:text-gray-700"
+              title="Fechar visualização"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Informações do componente */}
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Tipo</label>
+            <p className="text-sm text-gray-900">{selectedType?.label}</p>
+          </div>
+
+          {component.description && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Descrição</label>
+              <p className="text-sm text-gray-900">{component.description}</p>
+            </div>
+          )}
+
+          {component.type === 'text' && (
+            <>
+              {component.placeholder && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Placeholder</label>
+                  <p className="text-sm text-gray-900">{component.placeholder}</p>
+                </div>
+              )}
+              {component.maxLength && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Tamanho máximo</label>
+                  <p className="text-sm text-gray-900">{component.maxLength} caracteres</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {component.type === 'upload' && (
+            <>
+              {component.placeholder && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Placeholder</label>
+                  <p className="text-sm text-gray-900">{component.placeholder}</p>
+                </div>
+              )}
+              {component.maxSizeMB && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Tamanho máximo</label>
+                  <p className="text-sm text-gray-900">{component.maxSizeMB} MB</p>
+                </div>
+              )}
+              {component.allowedFileTypes && component.allowedFileTypes.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Tipos de arquivo permitidos</label>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {component.allowedFileTypes.map((fileType) => (
+                      <span
+                        key={fileType.id}
+                        className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200"
+                      >
+                        {fileType.displayName}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {component.type === 'confirmation' && component.confirmationText && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Texto de confirmação</label>
+              <p className="text-sm text-gray-900">{component.confirmationText}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">

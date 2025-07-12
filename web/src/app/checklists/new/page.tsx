@@ -50,7 +50,6 @@ export default function NewChecklistPage() {
   const [showNewComponentEditor, setShowNewComponentEditor] = useState(false)
   const [editingComponentId, setEditingComponentId] = useState<number | null>(null)
 
-
   const addSection = (type: 'briefing' | 'checklist') => {
     const newSection: Section = {
       id: Date.now(), // Usar timestamp como ID temporário
@@ -525,14 +524,18 @@ export default function NewChecklistPage() {
               {/* Section Header */}
               <div className="bg-white border-b border-gray-200 p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <input
-                      type="text"
-                      value={activeSecData.title}
-                      onChange={(e) => updateSection(activeSecData.id, { title: e.target.value })}
-                      className="text-xl font-bold text-gray-900 bg-transparent border-none outline-none focus:ring-0 p-0"
-                    />
-                    <p className="text-sm text-gray-500 mt-1">
+                  <div className="flex-1">
+                    <div className="group flex items-center space-x-2">
+                      <input
+                        type="text"
+                        value={activeSecData.title}
+                        onChange={(e) => updateSection(activeSecData.id, { title: e.target.value })}
+                        className="text-xl font-bold text-gray-900 bg-transparent border-none outline-none focus:ring-0 p-0 flex-1 hover:bg-gray-50 focus:bg-gray-50 rounded px-2 py-1 -mx-2 -my-1 transition-colors"
+                        placeholder="Digite o título da seção..."
+                      />
+                      <Edit3 className="h-4 w-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1 ml-2">
                       {activeSecData.type === 'briefing' ? 'Seção de Briefing' : 'Seção de Checklist'}
                     </p>
                   </div>

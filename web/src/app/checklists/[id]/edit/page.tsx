@@ -9,6 +9,14 @@ import { SortableSectionList, type Section } from '@/components/sections/sortabl
 import { SortableChecklistComponents } from '@/components/checklist/sortable-checklist-components'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { ComponentPreview } from '@/components/preview/component-preview'
 import { CreateComponentRequest, CreateChecklistRequest, CreateSectionRequest } from '@/types'
 import { useChecklist, useUpdateChecklist } from '@/hooks/use-api'
@@ -25,7 +33,8 @@ import {
   Info,
   List,
   Clock,
-  ArrowLeft
+  ArrowLeft,
+  Edit3
 } from 'lucide-react'
 
 export default function EditChecklistPage() {
@@ -47,7 +56,13 @@ export default function EditChecklistPage() {
   const [sectionEditingStates, setSectionEditingStates] = useState<Record<number, boolean>>({})
   const [showNewComponentEditor, setShowNewComponentEditor] = useState(false)
   const [editingComponentId, setEditingComponentId] = useState<number | null>(null)
+  const [viewingComponentId, setViewingComponentId] = useState<number | null>(null)
+  const [isViewMode, setIsViewMode] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
+  const [componentToDelete, setComponentToDelete] = useState<{ sectionId: number, componentId: number } | null>(null)
+  const [sectionToDelete, setSectionToDelete] = useState<number | null>(null)
+
+
 
   // Carregar dados do checklist quando disponível
   useEffect(() => {
@@ -148,11 +163,22 @@ export default function EditChecklistPage() {
     ))
   }
 
-  const deleteSection = (sectionId: number) => {
-    setSections(prev => prev.filter(section => section.id !== sectionId))
-    if (activeSection === sectionId) {
-      setActiveSection(null)
+  const handleDeleteSection = (sectionId: number) => {
+    setSectionToDelete(sectionId)
+  }
+
+  const confirmDeleteSection = () => {
+    if (sectionToDelete) {
+      setSections(prev => prev.filter(section => section.id !== sectionToDelete))
+      if (activeSection === sectionToDelete) {
+        setActiveSection(null)
+      }
+      setSectionToDelete(null)
     }
+  }
+
+  const cancelDeleteSection = () => {
+    setSectionToDelete(null)
   }
 
   const handleBriefingSave = (sectionId: number, content: { contentJson: string; contentHtml: string }) => {
@@ -199,28 +225,67 @@ export default function EditChecklistPage() {
     // Esconder editor e resetar estados
     setShowNewComponentEditor(false)
     setEditingComponentId(null)
+    setViewingComponentId(null)
+    setIsViewMode(false)
+  }
+
+  const handleViewComponent = (sectionId: number, componentId: number) => {
+    setViewingComponentId(componentId)
+    setEditingComponentId(componentId)
+    setIsViewMode(true)
+    setShowNewComponentEditor(true)
   }
 
   const handleEditComponent = (sectionId: number, componentId: number) => {
+    setViewingComponentId(componentId)
     setEditingComponentId(componentId)
+    setIsViewMode(false)
     setShowNewComponentEditor(true)
   }
 
   const handleDeleteComponent = (sectionId: number, componentId: number) => {
-    setSections(prev => prev.map(section => {
-      if (section.id === sectionId) {
-        return {
-          ...section,
-          components: section.components?.filter(component => component.id !== componentId) || []
+    setComponentToDelete({ sectionId, componentId })
+  }
+
+  const confirmDeleteComponent = () => {
+    if (componentToDelete) {
+      const { sectionId, componentId } = componentToDelete
+
+      setSections(prev => prev.map(section => {
+        if (section.id === sectionId) {
+          return {
+            ...section,
+            components: section.components?.filter(component => component.id !== componentId) || []
+          }
         }
+        return section
+      }))
+
+      // Se estava editando/visualizando o componente deletado, fechar o editor
+      if (editingComponentId === componentId || viewingComponentId === componentId) {
+        setShowNewComponentEditor(false)
+        setEditingComponentId(null)
+        setViewingComponentId(null)
+        setIsViewMode(false)
       }
-      return section
-    }))
+
+      setComponentToDelete(null)
+    }
+  }
+
+  const cancelDeleteComponent = () => {
+    setComponentToDelete(null)
   }
 
   const handleCancelComponentEdit = () => {
     setShowNewComponentEditor(false)
     setEditingComponentId(null)
+    setViewingComponentId(null)
+    setIsViewMode(false)
+  }
+
+  const handleSwitchToEdit = () => {
+    setIsViewMode(false)
   }
 
   const handleComponentsReorder = (sectionId: number, reorderedComponents: any[]) => {
@@ -246,44 +311,48 @@ export default function EditChecklistPage() {
     }
 
     // Converter sections do estado local para o formato da API
-    const sectionsForAPI: CreateSectionRequest[] = sections.map(section => ({
+    const sectionsForAPI = sections.map(section => ({
+      id: section.id > 0 ? section.id : 0, // ID da seção (0 para novas)
       title: section.title,
       type: section.type,
       order: section.order,
       contentJson: section.contentJson,
       contentHtml: section.contentHtml,
       components: section.type === 'checklist' ? section.components?.map(component => {
-        // Remover propriedades que não existem na API e garantir que está no formato correto
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { id, ...componentWithoutId } = component
+        // Manter o ID do componente para updates (0 para novos)
+        const componentId = typeof component.id === 'number' ? component.id :
+                           (typeof component.id === 'string' && !isNaN(Number(component.id))) ? Number(component.id) : 0
 
         // Garantir que o componente está no formato correto
         const cleanComponent = {
-          title: componentWithoutId.title,
-          description: componentWithoutId.description,
-          isRequired: componentWithoutId.isRequired,
-          order: componentWithoutId.order,
-          type: componentWithoutId.type,
+          id: componentId,
+          title: component.title,
+          description: component.description,
+          isRequired: component.isRequired,
+          order: component.order,
+          type: component.type,
           // Propriedades específicas por tipo
-          ...(componentWithoutId.type === 'text' && {
-            placeholder: componentWithoutId.placeholder,
-            maxLength: componentWithoutId.maxLength
+          ...(component.type === 'text' && {
+            placeholder: component.placeholder,
+            maxLength: component.maxLength
           }),
-          ...(componentWithoutId.type === 'upload' && {
-            placeholder: componentWithoutId.placeholder,
-            maxSizeMB: componentWithoutId.maxSizeMB,
-            allowedFileTypeIds: componentWithoutId.allowedFileTypeIds
+          ...(component.type === 'upload' && {
+            placeholder: component.placeholder,
+            maxSizeMB: component.maxSizeMB,
+            // Construir allowedFileTypeIds a partir de allowedFileTypes
+            allowedFileTypeIds: component.allowedFileTypes?.map((fileType: any) => fileType.id) || []
           }),
-          ...(componentWithoutId.type === 'confirmation' && {
-            confirmationText: componentWithoutId.confirmationText
+          ...(component.type === 'confirmation' && {
+            confirmationText: component.confirmationText
           })
         }
 
-        return cleanComponent as CreateComponentRequest
+        return cleanComponent
       }) : undefined
     }))
 
     const checklistData: CreateChecklistRequest = {
+      id: Number(checklistId), // ID do checklist sendo atualizado
       title: title.trim(),
       description: description.trim() || undefined,
       deadline: deadline || undefined,
@@ -500,7 +569,7 @@ export default function EditChecklistPage() {
                         sections={sections}
                         activeSection={activeSection}
                         onSectionClick={setActiveSection}
-                        onSectionDelete={deleteSection}
+                        onSectionDelete={handleDeleteSection}
                         onSectionsReorder={handleSectionsReorder}
                       />
                     </div>
@@ -603,14 +672,18 @@ export default function EditChecklistPage() {
                     {/* Section Header */}
                     <div className="bg-white border-b border-gray-200 p-6">
                       <div className="flex items-center justify-between">
-                        <div>
-                          <input
-                            type="text"
-                            value={activeSecData.title}
-                            onChange={(e) => updateSection(activeSecData.id, { title: e.target.value })}
-                            className="text-xl font-bold text-gray-900 bg-transparent border-none outline-none focus:ring-0 p-0"
-                          />
-                          <p className="text-sm text-gray-500 mt-1">
+                        <div className="flex-1">
+                          <div className="group flex items-center space-x-2">
+                            <input
+                              type="text"
+                              value={activeSecData.title}
+                              onChange={(e) => updateSection(activeSecData.id, { title: e.target.value })}
+                              className="text-xl font-bold text-gray-900 bg-transparent border-none outline-none focus:ring-0 p-0 flex-1 hover:bg-gray-50 focus:bg-gray-50 rounded px-2 py-1 -mx-2 -my-1 transition-colors"
+                              placeholder="Digite o título da seção..."
+                            />
+                            <Edit3 className="h-4 w-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                          <p className="text-sm text-gray-500 mt-1 ml-2">
                             {activeSecData.type === 'briefing' ? 'Seção de Briefing' : 'Seção de Checklist'}
                           </p>
                         </div>
@@ -636,8 +709,11 @@ export default function EditChecklistPage() {
                             <SortableChecklistComponents
                               components={activeSecData.components}
                               onComponentsReorder={(reorderedComponents) => handleComponentsReorder(activeSecData.id, reorderedComponents)}
+                              onViewComponent={(componentId) => handleViewComponent(activeSecData.id, componentId)}
                               onEditComponent={(componentId) => handleEditComponent(activeSecData.id, componentId)}
                               onDeleteComponent={(componentId) => handleDeleteComponent(activeSecData.id, componentId)}
+                              activeComponentId={editingComponentId || viewingComponentId}
+                              isEditMode={!isViewMode && (editingComponentId !== null)}
                             />
                           )}
 
@@ -650,6 +726,8 @@ export default function EditChecklistPage() {
                                 order={(activeSecData.components?.length || 0) + 1}
                                 onSave={(component) => handleComponentSave(activeSecData.id, component)}
                                 onCancel={handleCancelComponentEdit}
+                                onEdit={handleSwitchToEdit}
+                                isViewMode={isViewMode}
                               />
                             </div>
                           )}
@@ -689,6 +767,46 @@ export default function EditChecklistPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de confirmação de exclusão de componente */}
+      <Dialog open={componentToDelete !== null} onOpenChange={() => setComponentToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar exclusão</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir este componente? Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={cancelDeleteComponent}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteComponent}>
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de confirmação de exclusão de seção */}
+      <Dialog open={sectionToDelete !== null} onOpenChange={() => setSectionToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar exclusão</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir esta seção? Todos os componentes dentro dela também serão excluídos. Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={cancelDeleteSection}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteSection}>
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   )
 }
