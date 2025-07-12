@@ -1,8 +1,9 @@
-﻿using Kickoffa.API.Domain.Models.Base;
+﻿using Kickoffa.API.Domain.Interfaces.Models;
+using Kickoffa.API.Domain.Models.Base;
 
 namespace Kickoffa.API.Domain.Models
 {
-	public class BriefingMedia : BaseEntity
+	public class BriefingMedia : BaseEntity, IBriefingMedia
 	{
 		/// <summary>
 		/// Construtor para criação de nova mídia
@@ -46,19 +47,16 @@ namespace Kickoffa.API.Domain.Models
 
 		// Relacionamento
 		public virtual BriefingSection Section { get; private set; } = null!;
+		IBriefingSection IBriefingMedia.Section => Section;
 
-		/// <summary>
-		/// Atualiza o texto alternativo
-		/// </summary>
+		/// <inheritdoc/>
 		public void UpdateAltText(string? altText)
 		{
 			AltText = altText;
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Atualiza a URL da mídia
-		/// </summary>
+		/// <inheritdoc/>
 		public void UpdateUrl(string url)
 		{
 			Url = url ?? throw new ArgumentNullException(nameof(url));

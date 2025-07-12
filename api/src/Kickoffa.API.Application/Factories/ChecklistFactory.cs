@@ -1,17 +1,22 @@
+using Kickoffa.API.Application.Interfaces.Factories;
+using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models;
 using System.Text.RegularExpressions;
 
-namespace Kickoffa.API.Domain.Factories
+namespace Kickoffa.API.Application.Factories
 {
-	/// <summary>
-	/// Factory para criação de checklists
-	/// </summary>
-	public static partial class ChecklistFactory
+	///<inheritdoc/>
+	public partial class ChecklistFactory : IChecklistFactory
 	{
-		/// <summary>
-		/// Cria um novo checklist
-		/// </summary>
-		public static Checklist CreateChecklist(
+		private readonly ISectionFactory _sectionFactory;
+
+		public ChecklistFactory(ISectionFactory sectionFactory)
+		{
+			_sectionFactory = sectionFactory;
+		}
+
+		///<inheritdoc/>
+		public IChecklist CreateChecklist(
 			long ownerId,
 			string title,
 			string? description = null,
@@ -25,10 +30,8 @@ namespace Kickoffa.API.Domain.Factories
 			return new Checklist(ownerId, title, slug, description, dueDate);
 		}
 
-		/// <summary>
-		/// Cria um checklist com seções iniciais
-		/// </summary>
-		public static Checklist CreateChecklistWithSections(
+		///<inheritdoc/>
+		public IChecklist CreateChecklistWithSections(
 			long ownerId,
 			string title,
 			string? description = null,
@@ -41,9 +44,9 @@ namespace Kickoffa.API.Domain.Factories
 			for (int i = 0; i < sections.Length; i++)
 			{
 				var (sectionTitle, isBriefing) = sections[i];
-				var section = isBriefing
-					? SectionFactory.CreateBriefingSection(checklist.Id, sectionTitle, i + 1)
-					: (Section)SectionFactory.CreateChecklistSection(checklist.Id, sectionTitle, i + 1);
+				ISection section = isBriefing
+					? _sectionFactory.CreateBriefingSection(checklist.Id, sectionTitle, i + 1)
+					: _sectionFactory.CreateChecklistSection(checklist.Id, sectionTitle, i + 1);
 
 				checklist.AddSection(section);
 			}
@@ -51,10 +54,8 @@ namespace Kickoffa.API.Domain.Factories
 			return checklist;
 		}
 
-		/// <summary>
-		/// Cria um checklist padrão para onboarding
-		/// </summary>
-		public static Checklist CreateOnboardingChecklist(long ownerId, string clientName)
+		///<inheritdoc/>
+		public IChecklist CreateOnboardingChecklist(long ownerId, string clientName)
 		{
 			var title = $"Onboarding - {clientName}";
 			var description = $"Processo de onboarding para o cliente {clientName}";
@@ -72,10 +73,8 @@ namespace Kickoffa.API.Domain.Factories
 			);
 		}
 
-		/// <summary>
-		/// Cria um checklist padrão para desenvolvimento web
-		/// </summary>
-		public static Checklist CreateWebDevelopmentChecklist(long ownerId, string projectName)
+		///<inheritdoc/>
+		public IChecklist CreateWebDevelopmentChecklist(long ownerId, string projectName)
 		{
 			var title = $"Desenvolvimento Web - {projectName}";
 			var description = $"Checklist para desenvolvimento do projeto {projectName}";
@@ -94,10 +93,8 @@ namespace Kickoffa.API.Domain.Factories
 			);
 		}
 
-		/// <summary>
-		/// Cria um checklist padrão para design
-		/// </summary>
-		public static Checklist CreateDesignChecklist(long ownerId, string projectName)
+		///<inheritdoc/>
+		public IChecklist CreateDesignChecklist(long ownerId, string projectName)
 		{
 			var title = $"Design - {projectName}";
 			var description = $"Processo de design para o projeto {projectName}";
@@ -116,10 +113,8 @@ namespace Kickoffa.API.Domain.Factories
 			);
 		}
 
-		/// <summary>
-		/// Valida os dados de um checklist antes da criação
-		/// </summary>
-		public static bool ValidateChecklistData(
+		///<inheritdoc/>
+		public bool ValidateChecklistData(
 			string title,
 			string? slug,
 			out string? errorMessage)
@@ -156,10 +151,8 @@ namespace Kickoffa.API.Domain.Factories
 			return true;
 		}
 
-		/// <summary>
-		/// Gera um slug a partir do título
-		/// </summary>
-		public static string GenerateSlugFromTitle(string title)
+		///<inheritdoc/>
+		public string GenerateSlugFromTitle(string title)
 		{
 			if (string.IsNullOrWhiteSpace(title))
 				throw new ArgumentException("Título não pode ser vazio", nameof(title));
@@ -194,10 +187,8 @@ namespace Kickoffa.API.Domain.Factories
 			return slug;
 		}
 
-		/// <summary>
-		/// Normaliza um slug personalizado
-		/// </summary>
-		public static string NormalizeSlug(string slug)
+		///<inheritdoc/>
+		public string NormalizeSlug(string slug)
 		{
 			if (string.IsNullOrWhiteSpace(slug))
 				throw new ArgumentException("Slug não pode ser vazio", nameof(slug));
@@ -205,23 +196,19 @@ namespace Kickoffa.API.Domain.Factories
 			return GenerateSlugFromTitle(slug);
 		}
 
-		/// <summary>
-		/// Verifica se um slug é válido
-		/// </summary>
-		public static bool IsValidSlug(string slug)
+		///<inheritdoc/>
+		public bool IsValidSlug(string slug)
 		{
 			if (string.IsNullOrWhiteSpace(slug))
 				return false;
 
 			// Deve conter apenas letras minúsculas, números e hífens
 			// Não pode começar ou terminar com hífen
-			return Regex.IsMatch(slug, @"^[a-z0-9]+(-[a-z0-9]+)*$");
+			return AllowOnlyAlphaNumericAndDashes().IsMatch(slug);
 		}
 
-		/// <summary>
-		/// Gera um slug único adicionando sufixo numérico se necessário
-		/// </summary>
-		public static string GenerateUniqueSlug(string baseSlug, Func<string, bool> slugExistsCheck)
+		///<inheritdoc/>
+		public string GenerateUniqueSlug(string baseSlug, Func<string, bool> slugExistsCheck)
 		{
 			var slug = NormalizeSlug(baseSlug);
 			var originalSlug = slug;
@@ -236,10 +223,8 @@ namespace Kickoffa.API.Domain.Factories
 			return slug;
 		}
 
-		/// <summary>
-		/// Remove acentos de uma string
-		/// </summary>
-		private static string RemoveAccents(string text)
+		///<inheritdoc/>
+		private string RemoveAccents(string text)
 		{
 			var normalizedString = text.Normalize(System.Text.NormalizationForm.FormD);
 			var stringBuilder = new System.Text.StringBuilder();
@@ -256,12 +241,10 @@ namespace Kickoffa.API.Domain.Factories
 			return stringBuilder.ToString().Normalize(System.Text.NormalizationForm.FormC);
 		}
 
-		/// <summary>
-		/// Obtém templates de checklist disponíveis
-		/// </summary>
-		public static Dictionary<string, Func<long, string, Checklist>> GetAvailableTemplates()
+		///<inheritdoc/>
+		public Dictionary<string, Func<long, string, IChecklist>> GetAvailableTemplates()
 		{
-			return new Dictionary<string, Func<long, string, Checklist>>
+			return new Dictionary<string, Func<long, string, IChecklist>>
 			{
 				["onboarding"] = (ownerId, name) => CreateOnboardingChecklist(ownerId, name),
 				["web-development"] = (ownerId, name) => CreateWebDevelopmentChecklist(ownerId, name),
@@ -269,10 +252,8 @@ namespace Kickoffa.API.Domain.Factories
 			};
 		}
 
-		/// <summary>
-		/// Cria um checklist a partir de um template
-		/// </summary>
-		public static Checklist? CreateFromTemplate(string templateName, long ownerId, string projectName)
+		///<inheritdoc/>
+		public IChecklist? CreateFromTemplate(string templateName, long ownerId, string projectName)
 		{
 			var templates = GetAvailableTemplates();
 			
@@ -289,5 +270,8 @@ namespace Kickoffa.API.Domain.Factories
 
 		[GeneratedRegex(@"-+")]
 		private static partial Regex ConsecutiveHyphens();
+
+		[GeneratedRegex(@"^[a-z0-9]+(-[a-z0-9]+)*$")]
+		private static partial Regex AllowOnlyAlphaNumericAndDashes();
 	}
 }

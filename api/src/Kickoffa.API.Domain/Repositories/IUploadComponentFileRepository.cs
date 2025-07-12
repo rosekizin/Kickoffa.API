@@ -1,3 +1,4 @@
+using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models.Components;
 
 namespace Kickoffa.API.Domain.Repositories
@@ -5,7 +6,7 @@ namespace Kickoffa.API.Domain.Repositories
 	/// <summary>
 	/// Interface para repositório de UploadComponentFile
 	/// </summary>
-	public interface IUploadComponentFileRepository : IBaseRepository<UploadComponentFile>
+	public interface IUploadComponentFileRepository : IBaseRepository<IUploadComponentFile, UploadComponentFile>
 	{
 		/// <summary>
 		/// Busca arquivos por componente de upload
@@ -13,7 +14,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="uploadComponentId">ID do componente de upload</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de arquivos do componente</returns>
-		Task<IEnumerable<UploadComponentFile>> GetByUploadComponentIdAsync(long uploadComponentId, CancellationToken cancellationToken);
+		Task<IEnumerable<IUploadComponentFile>> GetByUploadComponentIdAsync(long uploadComponentId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca arquivo por nome
@@ -21,7 +22,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="fileName">Nome do arquivo</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Arquivo encontrado ou null</returns>
-		Task<UploadComponentFile?> GetByFileNameAsync(string fileName, CancellationToken cancellationToken);
+		Task<IUploadComponentFile?> GetByFileNameAsync(string fileName, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca arquivo por hash SHA256
@@ -29,7 +30,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="sha256Hash">Hash SHA256 do arquivo</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Arquivo encontrado ou null</returns>
-		Task<UploadComponentFile?> GetBySha256HashAsync(string sha256Hash, CancellationToken cancellationToken);
+		Task<IUploadComponentFile?> GetBySha256HashAsync(string sha256Hash, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca arquivos por múltiplos componentes de upload
@@ -37,7 +38,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="uploadComponentIds">IDs dos componentes de upload</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de arquivos dos componentes</returns>
-		Task<IEnumerable<UploadComponentFile>> GetByUploadComponentIdsAsync(IEnumerable<long> uploadComponentIds, CancellationToken cancellationToken);
+		Task<IEnumerable<IUploadComponentFile>> GetByUploadComponentIdsAsync(IEnumerable<long> uploadComponentIds, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca arquivos por tipo de conteúdo
@@ -45,7 +46,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="contentType">Tipo de conteúdo (MIME type)</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de arquivos do tipo especificado</returns>
-		Task<IEnumerable<UploadComponentFile>> GetByContentTypeAsync(string contentType, CancellationToken cancellationToken);
+		Task<IEnumerable<IUploadComponentFile>> GetByContentTypeAsync(string contentType, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca arquivos por seção (através do relacionamento com UploadComponent)
@@ -53,7 +54,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="sectionId">ID da seção</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de arquivos da seção</returns>
-		Task<IEnumerable<UploadComponentFile>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
+		Task<IEnumerable<IUploadComponentFile>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca arquivos por checklist (através do relacionamento com UploadComponent e Section)
@@ -61,7 +62,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="checklistId">ID do checklist</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de arquivos do checklist</returns>
-		Task<IEnumerable<UploadComponentFile>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken);
+		Task<IEnumerable<IUploadComponentFile>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Calcula o tamanho total de arquivos por componente de upload

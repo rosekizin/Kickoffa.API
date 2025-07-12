@@ -1,5 +1,6 @@
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.Repositories.Base;
+using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace Kickoffa.API.Data.Repositories
 	/// <summary>
 	/// Implementação do repositório de ConfirmationComponent
 	/// </summary>
-	public class ConfirmationComponentRepository : BaseRepository<ConfirmationComponent>, IConfirmationComponentRepository
+	public class ConfirmationComponentRepository : BaseRepository<IConfirmationComponent, ConfirmationComponent>, IConfirmationComponentRepository
 	{
 		public ConfirmationComponentRepository(KickoffaDbContext context) : base(context)
 		{
@@ -18,7 +19,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca components de confirmação por seção
 		/// </summary>
-		public async Task<IEnumerable<ConfirmationComponent>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IConfirmationComponent>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
 			return await _context.ConfirmationComponents
 				.Where(c => c.SectionId == sectionId)
@@ -29,7 +30,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca components de confirmação por texto de confirmação
 		/// </summary>
-		public async Task<IEnumerable<ConfirmationComponent>> GetByConfirmationTextAsync(string confirmationText, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IConfirmationComponent>> GetByConfirmationTextAsync(string confirmationText, CancellationToken cancellationToken)
 		{
 			return await _context.ConfirmationComponents
 				.Where(c => c.ConfirmationText == confirmationText)
@@ -41,7 +42,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca components de confirmação que contêm o texto especificado
 		/// </summary>
-		public async Task<IEnumerable<ConfirmationComponent>> SearchByConfirmationTextAsync(string searchText, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IConfirmationComponent>> SearchByConfirmationTextAsync(string searchText, CancellationToken cancellationToken)
 		{
 			return await _context.ConfirmationComponents
 				.Where(c => c.ConfirmationText != null)
@@ -54,7 +55,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca components de confirmação obrigatórios por seção
 		/// </summary>
-		public async Task<IEnumerable<ConfirmationComponent>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IConfirmationComponent>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
 			return await _context.ConfirmationComponents
 				.Where(c => c.SectionId == sectionId && c.IsRequired)
@@ -65,7 +66,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca components de confirmação por checklist
 		/// </summary>
-		public async Task<IEnumerable<ConfirmationComponent>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IConfirmationComponent>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
 		{
 			return await _context.ConfirmationComponents
 				.Include(c => c.Section)
@@ -87,7 +88,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca components de confirmação por múltiplas seções
 		/// </summary>
-		public async Task<IEnumerable<ConfirmationComponent>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IConfirmationComponent>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken)
 		{
 			return await _context.ConfirmationComponents
 				.Where(c => sectionIds.Contains(c.SectionId))
@@ -108,7 +109,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<ConfirmationComponent?> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public override async Task<IConfirmationComponent?> GetByIdAsync(long id, CancellationToken cancellationToken)
 		{
 			return await _context.ConfirmationComponents
 				.Include(c => c.Section)
@@ -119,7 +120,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<IEnumerable<ConfirmationComponent>> GetAllAsync(CancellationToken cancellationToken)
+		public override async Task<IEnumerable<IConfirmationComponent>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			return await _context.ConfirmationComponents
 				.Include(c => c.Section)

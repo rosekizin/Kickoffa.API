@@ -45,7 +45,7 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			// Query Filter através do relacionamento Component -> Section -> Checklist
 			if (currentUserService.IsAuthenticated)
 			{
-				var currentUserId = currentUserService.UserId.Value;
+				var currentUserId = currentUserService.UserId!.Value;
 				entity.HasQueryFilter(cs => cs.Component.Section.Checklist.OwnerId == currentUserId);
 			}
 

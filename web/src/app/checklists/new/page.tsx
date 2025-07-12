@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { BriefingEditor } from '@/components/briefing/briefing-editor'
 import { ChecklistComponentEditor } from '@/components/shared/checklist-component-editor'
@@ -9,6 +10,10 @@ import { SortableChecklistComponents } from '@/components/checklist/sortable-che
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Button } from '@/components/ui/button'
 import { ComponentPreview } from '@/components/preview/component-preview'
+import { CreateComponentRequest, CreateChecklistRequest, CreateSectionRequest } from '@/types'
+import { useCreateChecklist } from '@/hooks/use-api'
+import { useToast } from '@/components/providers/toast-provider'
+import { useApiError } from '@/hooks/use-api-error'
 import {
   Save,
   Eye,
@@ -28,6 +33,11 @@ import {
 } from 'lucide-react'
 
 export default function NewChecklistPage() {
+  const router = useRouter()
+  const { showToast } = useToast()
+  const { handleApiError } = useApiError()
+  const createChecklistMutation = useCreateChecklist()
+
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [deadline, setDeadline] = useState('')
@@ -39,7 +49,6 @@ export default function NewChecklistPage() {
   const [sectionsExpanded, setSectionsExpanded] = useState(true)
   const [showNewComponentEditor, setShowNewComponentEditor] = useState(false)
   const [editingComponentId, setEditingComponentId] = useState<number | null>(null)
-
 
   const addSection = (type: 'briefing' | 'checklist') => {
     const newSection: Section = {
@@ -94,7 +103,7 @@ export default function NewChecklistPage() {
     setSections(reorderedSections)
   }
 
-  const handleComponentSave = (sectionId: number, component: any) => {
+  const handleComponentSave = (sectionId: number, component: CreateComponentRequest) => {
     setSections(prev => prev.map(section => {
       if (section.id === sectionId) {
         const components = section.components || []
@@ -159,16 +168,76 @@ export default function NewChecklistPage() {
     }))
   }
 
-  const handleSaveChecklist = () => {
-    const checklistData = {
-      title,
-      description,
-      deadline,
-      sections
+  const handleSaveChecklist = async () => {
+    if (!title.trim()) {
+      showToast({
+        type: 'error',
+        title: 'Erro de validação',
+        description: 'O título do checklist é obrigatório'
+      })
+      return
     }
-    
-    console.log('Salvando checklist:', checklistData)
-    // TODO: Implementar salvamento real
+
+    // Converter sections do estado local para o formato da API
+    const sectionsForAPI: CreateSectionRequest[] = sections.map(section => ({
+      title: section.title,
+      type: section.type,
+      order: section.order,
+      contentJson: section.contentJson,
+      contentHtml: section.contentHtml,
+      components: section.type === 'checklist' ? section.components?.map(component => {
+        // Remover propriedades que não existem na API e garantir que está no formato correto
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, ...componentWithoutId } = component
+
+        // Garantir que o componente está no formato correto
+        const cleanComponent = {
+          title: componentWithoutId.title,
+          description: componentWithoutId.description,
+          isRequired: componentWithoutId.isRequired,
+          order: componentWithoutId.order,
+          type: componentWithoutId.type,
+          // Propriedades específicas por tipo
+          ...(componentWithoutId.type === 'text' && {
+            placeholder: componentWithoutId.placeholder,
+            maxLength: componentWithoutId.maxLength
+          }),
+          ...(componentWithoutId.type === 'upload' && {
+            placeholder: componentWithoutId.placeholder,
+            maxSizeMB: componentWithoutId.maxSizeMB,
+            allowedFileTypeIds: componentWithoutId.allowedFileTypeIds
+          }),
+          ...(componentWithoutId.type === 'confirmation' && {
+            confirmationText: componentWithoutId.confirmationText
+          })
+        }
+
+        return cleanComponent as CreateComponentRequest
+      }) : undefined
+    }))
+
+    const checklistData: CreateChecklistRequest = {
+      title: title.trim(),
+      description: description.trim() || undefined,
+      deadline: deadline || undefined,
+      sections: sectionsForAPI
+    }
+
+    try {
+      const result = await createChecklistMutation.mutateAsync(checklistData)
+      
+      showToast({
+        type: 'success',
+        title: 'Checklist salvo!',
+        description: 'O checklist foi criado com sucesso'
+      })
+
+      // Redirecionar para a página de edição do checklist criado
+      router.push(`/checklists/${result.id}`)
+    } catch (error) {
+      // Usar o sistema de tratamento de erros
+      handleApiError(error, 'Erro ao salvar checklist')
+    }
   }
 
   const handlePublishChecklist = () => {
@@ -234,13 +303,13 @@ export default function NewChecklistPage() {
 
             <Button
               onClick={handleSaveChecklist}
-              disabled={!title.trim()}
+              disabled={!title.trim() || createChecklistMutation.isPending}
               variant="ghost"
               size="sm"
               className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-50"
               title="Salvar Rascunho"
             >
-              <Save className="h-4 w-4" />
+              <Save className={`h-4 w-4 ${createChecklistMutation.isPending ? 'animate-spin' : ''}`} />
             </Button>
 
             <Button
@@ -455,14 +524,18 @@ export default function NewChecklistPage() {
               {/* Section Header */}
               <div className="bg-white border-b border-gray-200 p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <input
-                      type="text"
-                      value={activeSecData.title}
-                      onChange={(e) => updateSection(activeSecData.id, { title: e.target.value })}
-                      className="text-xl font-bold text-gray-900 bg-transparent border-none outline-none focus:ring-0 p-0"
-                    />
-                    <p className="text-sm text-gray-500 mt-1">
+                  <div className="flex-1">
+                    <div className="group flex items-center space-x-2">
+                      <input
+                        type="text"
+                        value={activeSecData.title}
+                        onChange={(e) => updateSection(activeSecData.id, { title: e.target.value })}
+                        className="text-xl font-bold text-gray-900 bg-transparent border-none outline-none focus:ring-0 p-0 flex-1 hover:bg-gray-50 focus:bg-gray-50 rounded px-2 py-1 -mx-2 -my-1 transition-colors"
+                        placeholder="Digite o título da seção..."
+                      />
+                      <Edit3 className="h-4 w-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1 ml-2">
                       {activeSecData.type === 'briefing' ? 'Seção de Briefing' : 'Seção de Checklist'}
                     </p>
                   </div>

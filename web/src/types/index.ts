@@ -108,16 +108,34 @@ export interface Component {
   isRequired: boolean
   order: number
 
-  // Propriedades específicas por tipo (movidas de config)
-  allowedMimeTypes?: string
-  maxSizeMB?: number
+  // Propriedades específicas por tipo - seguindo padrão do domínio
+
+  // Para TextComponent
   placeholder?: string
   maxLength?: number
+
+  // Para UploadComponent
+  maxSizeMB?: number
+  allowedFileTypes?: FileType[]
+  componentFiles?: UploadComponentFile[]
+
+  // Para ConfirmationComponent
   confirmationText?: string
 
   status?: ComponentStatus
   createdAt: string
   updatedAt: string
+}
+
+export interface UploadComponentFile {
+  id: number
+  componentId: number
+  fileName: string
+  originalName: string
+  mimeType: string
+  size: number
+  url: string
+  createdAt: string
 }
 
 export interface ComponentStatus {
@@ -148,38 +166,69 @@ export interface UploadedFile {
 
 // Tipos para formulários
 export interface CreateChecklistRequest {
+  id?: number // ID para updates (0 ou undefined para criações)
   title: string
   description?: string
   deadline?: string
+  sections: CreateSectionRequest[]
 }
 
 export interface CreateSectionRequest {
-  checklistId: number
+  id?: number // ID para updates (0 ou undefined para criações)
   title: string
   type: 'briefing' | 'checklist'
   order: number
   contentJson?: string
   contentHtml?: string
+  components?: CreateComponentRequest[]
 }
+
+// Interfaces base para componentes
+export interface CreateComponentBaseRequest {
+  id?: number // ID para updates (0 ou undefined para criações)
+  title: string
+  description?: string
+  isRequired: boolean
+  order: number
+}
+
+export interface CreateCheckboxComponentRequest extends CreateComponentBaseRequest {
+  type: 'checkbox'
+}
+
+export interface CreateTextComponentRequest extends CreateComponentBaseRequest {
+  type: 'text'
+  placeholder?: string
+  maxLength?: number
+}
+
+export interface CreateUploadComponentRequest extends CreateComponentBaseRequest {
+  type: 'upload'
+  placeholder?: string
+  maxSizeMB?: number
+  allowedFileTypeIds: number[]
+  allowedFileTypes?: FileType[]
+}
+
+export interface CreateSignatureComponentRequest extends CreateComponentBaseRequest {
+  type: 'signature'
+}
+
+export interface CreateConfirmationComponentRequest extends CreateComponentBaseRequest {
+  type: 'confirmation'
+  confirmationText?: string
+}
+
+export type CreateComponentRequest =
+  | CreateCheckboxComponentRequest
+  | CreateTextComponentRequest
+  | CreateUploadComponentRequest
+  | CreateSignatureComponentRequest
+  | CreateConfirmationComponentRequest
 
 export interface FileTypeSizeConfig {
   fileTypeId: number
   maxSizeMB: number
-}
-
-export interface CreateComponentRequest {
-  sectionId: number
-  title: string
-  description?: string
-  type: 'checkbox' | 'upload' | 'text' | 'signature' | 'confirmation'
-  isRequired: boolean
-  order: number
-  allowedMimeTypes?: string
-  maxSizeMB?: number
-  placeholder?: string
-  maxLength?: number
-  confirmationText?: string
-  fileTypeSizeConfigs?: FileTypeSizeConfig[]
 }
 
 export interface UpdateComponentStatusRequest {
@@ -280,9 +329,11 @@ export interface PublicComponentView {
   isRequired: boolean
   order: number
   isCompleted: boolean
-  allowedMimeTypes?: string
-  maxSizeMB?: number
+
+  // Propriedades específicas por tipo - seguindo padrão do domínio
   placeholder?: string
   maxLength?: number
+  maxSizeMB?: number
+  allowedFileTypes?: FileType[]
   confirmationText?: string
 }

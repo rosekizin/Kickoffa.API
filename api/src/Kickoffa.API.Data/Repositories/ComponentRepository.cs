@@ -1,5 +1,6 @@
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.Repositories.Base;
+using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models.Components.Base;
 using Kickoffa.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace Kickoffa.API.Data.Repositories
 	/// <summary>
 	/// Implementação do repositório de Component
 	/// </summary>
-	public class ComponentRepository : BaseRepository<Component>, IComponentRepository
+	public class ComponentRepository : BaseRepository<IComponent, Component>, IComponentRepository
 	{
 		public ComponentRepository(KickoffaDbContext context) : base(context)
 		{
@@ -104,7 +105,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<Component?> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public override async Task<IComponent?> GetByIdAsync(long id, CancellationToken cancellationToken)
 		{
 			return await _context.Components
 				.Include(i => i.Section)
@@ -115,7 +116,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<IEnumerable<Component>> GetAllAsync(CancellationToken cancellationToken)
+		public override async Task<IEnumerable<IComponent>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			return await _context.Components
 				.Include(i => i.Section)

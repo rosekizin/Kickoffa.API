@@ -1,3 +1,4 @@
+using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models.Components;
 
 namespace Kickoffa.API.Domain.Repositories
@@ -5,7 +6,7 @@ namespace Kickoffa.API.Domain.Repositories
 	/// <summary>
 	/// Interface para repositório de CheckboxComponent
 	/// </summary>
-	public interface ICheckboxComponentRepository : IBaseRepository<CheckboxComponent>
+	public interface ICheckboxComponentRepository : IBaseRepository<ICheckboxComponent, CheckboxComponent>
 	{
 		/// <summary>
 		/// Busca itens de checkbox por seção
@@ -13,7 +14,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="sectionId">ID da seção</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de itens de checkbox da seção</returns>
-		Task<IEnumerable<CheckboxComponent>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
+		Task<IEnumerable<ICheckboxComponent>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca itens de checkbox ordenados por seção
@@ -21,7 +22,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="sectionId">ID da seção</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de itens de checkbox ordenados</returns>
-		Task<IEnumerable<CheckboxComponent>> GetBySectionIdOrderedAsync(long sectionId, CancellationToken cancellationToken);
+		Task<IEnumerable<ICheckboxComponent>> GetBySectionIdOrderedAsync(long sectionId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca itens de checkbox obrigatórios por seção
@@ -29,7 +30,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="sectionId">ID da seção</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de itens de checkbox obrigatórios</returns>
-		Task<IEnumerable<CheckboxComponent>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
+		Task<IEnumerable<ICheckboxComponent>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca itens de checkbox por checklist
@@ -37,7 +38,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="checklistId">ID do checklist</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de itens de checkbox do checklist</returns>
-		Task<IEnumerable<CheckboxComponent>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken);
+		Task<IEnumerable<ICheckboxComponent>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca itens de checkbox por múltiplas seções
@@ -45,7 +46,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="sectionIds">IDs das seções</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de itens de checkbox das seções</returns>
-		Task<IEnumerable<CheckboxComponent>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken);
+		Task<IEnumerable<ICheckboxComponent>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Conta itens de checkbox por seção
@@ -69,7 +70,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="isRequired">Se é obrigatório ou não</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de itens de checkbox com o status especificado</returns>
-		Task<IEnumerable<CheckboxComponent>> GetByRequiredStatusAsync(bool isRequired, CancellationToken cancellationToken);
+		Task<IEnumerable<ICheckboxComponent>> GetByRequiredStatusAsync(bool isRequired, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca itens de checkbox completados por seção
@@ -77,7 +78,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="sectionId">ID da seção</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de itens de checkbox completados</returns>
-		Task<IEnumerable<CheckboxComponent>> GetCompletedBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
+		Task<IEnumerable<ICheckboxComponent>> GetCompletedBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Conta itens de checkbox completados por seção

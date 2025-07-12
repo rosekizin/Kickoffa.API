@@ -1,3 +1,4 @@
+using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models.Components;
 
 namespace Kickoffa.API.Domain.Repositories
@@ -5,7 +6,7 @@ namespace Kickoffa.API.Domain.Repositories
 	/// <summary>
 	/// Interface para repositório de TextComponent
 	/// </summary>
-	public interface ITextComponentRepository
+	public interface ITextComponentRepository : IBaseRepository<ITextComponent, TextComponent>
 	{
 		/// <summary>
 		/// Busca componentes de texto por seção
@@ -13,7 +14,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="sectionId">ID da seção</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de componentes de texto da seção</returns>
-		Task<IEnumerable<TextComponent>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
+		Task<IEnumerable<ITextComponent>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca componentes de texto por placeholder
@@ -21,7 +22,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="placeholder">Texto do placeholder</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de componentes com o placeholder especificado</returns>
-		Task<IEnumerable<TextComponent>> GetByPlaceholderAsync(string placeholder, CancellationToken cancellationToken);
+		Task<IEnumerable<ITextComponent>> GetByPlaceholderAsync(string placeholder, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca componentes de texto por tamanho máximo
@@ -29,7 +30,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="maxLength">Tamanho máximo</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de componentes com o tamanho máximo especificado</returns>
-		Task<IEnumerable<TextComponent>> GetByMaxLengthAsync(int? maxLength, CancellationToken cancellationToken);
+		Task<IEnumerable<ITextComponent>> GetByMaxLengthAsync(int? maxLength, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca componentes de texto obrigatórios por seção
@@ -37,7 +38,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="sectionId">ID da seção</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de componentes de texto obrigatórios</returns>
-		Task<IEnumerable<TextComponent>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
+		Task<IEnumerable<ITextComponent>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca componentes de texto por checklist
@@ -45,7 +46,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="checklistId">ID do checklist</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de componentes de texto do checklist</returns>
-		Task<IEnumerable<TextComponent>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken);
+		Task<IEnumerable<ITextComponent>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Conta componentes de texto por seção
@@ -61,7 +62,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="sectionIds">IDs das seções</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de componentes de texto das seções</returns>
-		Task<IEnumerable<TextComponent>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken);
+		Task<IEnumerable<ITextComponent>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca componentes de texto que contêm o placeholder especificado
@@ -69,6 +70,6 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="searchText">Texto a buscar no placeholder</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de componentes que contêm o texto no placeholder</returns>
-		Task<IEnumerable<TextComponent>> SearchByPlaceholderAsync(string searchText, CancellationToken cancellationToken);
+		Task<IEnumerable<ITextComponent>> SearchByPlaceholderAsync(string searchText, CancellationToken cancellationToken);
 	}
 }

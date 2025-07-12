@@ -1,3 +1,4 @@
+using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models;
 
 namespace Kickoffa.API.Domain.Repositories
@@ -5,7 +6,7 @@ namespace Kickoffa.API.Domain.Repositories
 	/// <summary>
 	/// Interface para repositório de Section
 	/// </summary>
-	public interface ISectionRepository : IBaseRepository<Section>
+	public interface ISectionRepository : IBaseRepository<ISection, Section>
 	{
 		/// <summary>
 		/// Busca seções por checklist
@@ -13,7 +14,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="checklistId">ID do checklist</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de seções ordenadas</returns>
-		Task<IEnumerable<Section>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken);
+		Task<IEnumerable<ISection>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca seções por checklist ordenadas por Order
@@ -21,7 +22,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="checklistId">ID do checklist</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de seções ordenadas</returns>
-		Task<IEnumerable<Section>> GetByChecklistIdOrderedAsync(long checklistId, CancellationToken cancellationToken);
+		Task<IEnumerable<ISection>> GetByChecklistIdOrderedAsync(long checklistId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Obtém a próxima ordem disponível para uma nova seção

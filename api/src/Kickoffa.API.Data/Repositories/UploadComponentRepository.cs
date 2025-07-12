@@ -1,5 +1,6 @@
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.Repositories.Base;
+using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace Kickoffa.API.Data.Repositories
 	/// <summary>
 	/// Implementação do repositório de UploadComponent
 	/// </summary>
-	public class UploadComponentRepository : BaseRepository<UploadComponent>, IUploadComponentRepository
+	public class UploadComponentRepository : BaseRepository<IUploadComponent, UploadComponent>, IUploadComponentRepository
 	{
 		public UploadComponentRepository(KickoffaDbContext context) : base(context)
 		{
@@ -18,7 +19,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de upload por seção
 		/// </summary>
-		public async Task<IEnumerable<UploadComponent>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IUploadComponent>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponents
 				.Where(u => u.SectionId == sectionId)
@@ -29,7 +30,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de upload por tamanho máximo
 		/// </summary>
-		public async Task<IEnumerable<UploadComponent>> GetByMaxSizeAsync(int? maxSizeMB, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IUploadComponent>> GetByMaxSizeAsync(int? maxSizeMB, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponents
 				.Where(u => u.MaxSizeMB == maxSizeMB)
@@ -41,7 +42,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de upload por placeholder
 		/// </summary>
-		public async Task<IEnumerable<UploadComponent>> GetByPlaceholderAsync(string placeholder, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IUploadComponent>> GetByPlaceholderAsync(string placeholder, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponents
 				.Where(u => u.Placeholder == placeholder)
@@ -53,7 +54,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de upload obrigatórios por seção
 		/// </summary>
-		public async Task<IEnumerable<UploadComponent>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IUploadComponent>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponents
 				.Where(u => u.SectionId == sectionId && u.IsRequired)
@@ -64,7 +65,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de upload por checklist
 		/// </summary>
-		public async Task<IEnumerable<UploadComponent>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IUploadComponent>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponents
 				.Include(u => u.Section)
@@ -77,7 +78,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de upload por tipo de arquivo permitido
 		/// </summary>
-		public async Task<IEnumerable<UploadComponent>> GetByAllowedFileTypeAsync(long fileTypeId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IUploadComponent>> GetByAllowedFileTypeAsync(long fileTypeId, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponents
 				.Include(u => u.AllowedFileTypes)
@@ -90,7 +91,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de upload com arquivos enviados
 		/// </summary>
-		public async Task<IEnumerable<UploadComponent>> GetWithUploadedFilesAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IUploadComponent>> GetWithUploadedFilesAsync(long sectionId, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponents
 				.Include(u => u.ComponentFiles)
@@ -111,7 +112,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de upload por múltiplas seções
 		/// </summary>
-		public async Task<IEnumerable<UploadComponent>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IUploadComponent>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponents
 				.Where(u => sectionIds.Contains(u.SectionId))
@@ -123,7 +124,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca componentes de upload por faixa de tamanho
 		/// </summary>
-		public async Task<IEnumerable<UploadComponent>> GetBySizeRangeAsync(int? minSizeMB, int? maxSizeMB, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IUploadComponent>> GetBySizeRangeAsync(int? minSizeMB, int? maxSizeMB, CancellationToken cancellationToken)
 		{
 			var query = _context.UploadComponents.AsQueryable();
 
@@ -142,7 +143,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<UploadComponent?> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public override async Task<IUploadComponent?> GetByIdAsync(long id, CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponents
 				.Include(u => u.Section)
@@ -155,7 +156,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<IEnumerable<UploadComponent>> GetAllAsync(CancellationToken cancellationToken)
+		public override async Task<IEnumerable<IUploadComponent>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			return await _context.UploadComponents
 				.Include(u => u.Section)

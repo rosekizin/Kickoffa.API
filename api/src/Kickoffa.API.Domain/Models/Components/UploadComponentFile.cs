@@ -1,8 +1,9 @@
-﻿using Kickoffa.API.Domain.Models.Base;
+﻿using Kickoffa.API.Domain.Interfaces.Models.Components;
+using Kickoffa.API.Domain.Models.Base;
 
 namespace Kickoffa.API.Domain.Models.Components
 {
-	public class UploadComponentFile : BaseEntity
+	public class UploadComponentFile : BaseEntity, IUploadComponentFile
 	{
 		public UploadComponentFile(string fileName, string storagePath, long fileSize, string contentType, string sha256Hash)
 		{
@@ -24,5 +25,7 @@ namespace Kickoffa.API.Domain.Models.Components
 		/// Relacionamento com o UploadComponent
 		/// </summary>
 		public virtual UploadComponent UploadComponent { get; private set; } = null!;
+
+		IUploadComponent IUploadComponentFile.UploadComponent => UploadComponent;
 	}
 }

@@ -1,11 +1,9 @@
+using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models.Enums;
 
 namespace Kickoffa.API.Domain.Models
 {
-	/// <summary>
-	/// Seção do tipo Briefing - contém conteúdo rico e mídias
-	/// </summary>
-	public class BriefingSection : Section
+	public class BriefingSection : Section, IBriefingSection
 	{
 		/// <summary>
 		/// Construtor para criação de nova seção de briefing
@@ -28,36 +26,25 @@ namespace Kickoffa.API.Domain.Models
 		{
 			Media = [];
 		}
-		/// <summary>
-		/// Tipo da seção (sempre Briefing)
-		/// </summary>
+
+		/// <inheritdoc/>
 		public override SectionType Type => SectionType.Briefing;
 
-		/// <summary>
-		/// Conteúdo da seção serializado como JSON (formato TipTap)
-		/// </summary>
+		/// <inheritdoc/>
 		public string? ContentJson { get; private set; }
 
-		/// <summary>
-		/// Versão HTML do conteúdo para exibição
-		/// </summary>
+		/// <inheritdoc/>
 		public string? ContentHtml { get; private set; }
 
-		/// <summary>
-		/// Data da última atualização do conteúdo
-		/// </summary>
+		/// <inheritdoc/>
 		public DateTime? ContentLastUpdated { get; private set; }
 
-		/// <summary>
-		/// Mídias associadas à seção de briefing
-		/// </summary>
+		/// <inheritdoc/>
 		public virtual ICollection<BriefingMedia> Media { get; private set; }
 
-		/// <summary>
-		/// Atualiza o conteúdo da seção
-		/// </summary>
-		/// <param name="contentJson">Conteúdo em formato JSON</param>
-		/// <param name="contentHtml">Conteúdo em formato HTML</param>
+		IEnumerable<IBriefingMedia> IBriefingSection.Media => Media;
+
+		/// <inheritdoc/>
 		public void UpdateContent(string? contentJson, string? contentHtml)
 		{
 			ContentJson = contentJson;
@@ -66,43 +53,31 @@ namespace Kickoffa.API.Domain.Models
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Adiciona uma mídia à seção
-		/// </summary>
-		/// <param name="media">Mídia a ser adicionada</param>
-		public void AddMedia(BriefingMedia media)
+		/// <inheritdoc/>
+		public void AddMedia(IBriefingMedia media)
 		{
 			ArgumentNullException.ThrowIfNull(media);
 
-			Media.Add(media);
+			Media.Add((BriefingMedia)media);
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Remove uma mídia da seção
-		/// </summary>
-		/// <param name="media">Mídia a ser removida</param>
-		public void RemoveMedia(BriefingMedia media)
+		/// <inheritdoc/>
+		public void RemoveMedia(IBriefingMedia media)
 		{
 			ArgumentNullException.ThrowIfNull(media);
 
-			Media.Remove(media);
+			Media.Remove((BriefingMedia)media);
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Verifica se a seção tem conteúdo
-		/// </summary>
-		/// <returns>True se tem conteúdo, false caso contrário</returns>
+		/// <inheritdoc/>
 		public bool HasContent()
 		{
 			return !string.IsNullOrWhiteSpace(ContentJson) || !string.IsNullOrWhiteSpace(ContentHtml);
 		}
 
-		/// <summary>
-		/// Verifica se a seção tem mídias
-		/// </summary>
-		/// <returns>True se tem mídias, false caso contrário</returns>
+		/// <inheritdoc/>
 		public bool HasMedia()
 		{
 			return Media.Count != 0;

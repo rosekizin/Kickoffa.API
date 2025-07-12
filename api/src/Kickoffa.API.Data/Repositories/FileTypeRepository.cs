@@ -1,4 +1,6 @@
 using Kickoffa.API.Data.EntityFramework.Context;
+using Kickoffa.API.Data.Repositories.Base;
+using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Models.Enums;
 using Kickoffa.API.Domain.Repositories;
@@ -9,16 +11,13 @@ namespace Kickoffa.API.Data.Repositories
 	/// <summary>
 	/// Implementação do repositório para tipos de arquivo
 	/// </summary>
-	public class FileTypeRepository : IFileTypeRepository
+	public class FileTypeRepository : BaseRepository<IFileType, FileType>, IFileTypeRepository
 	{
-		private readonly IKickoffaDbContext _context;
-
-		public FileTypeRepository(IKickoffaDbContext context)
+		public FileTypeRepository(KickoffaDbContext context) : base(context)
 		{
-			_context = context;
 		}
 
-		public async Task<IEnumerable<FileType>> GetActiveFileTypesAsync(CancellationToken cancellationToken)
+		public async Task<IEnumerable<IFileType>> GetActiveFileTypesAsync(CancellationToken cancellationToken)
 		{
 			return await _context.FileTypes
 				.Where(ft => ft.IsActive)
@@ -27,7 +26,7 @@ namespace Kickoffa.API.Data.Repositories
 				.ToListAsync(cancellationToken);
 		}
 
-		public async Task<IEnumerable<FileType>> SearchFileTypesAsync(string searchTerm, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IFileType>> SearchFileTypesAsync(string searchTerm, CancellationToken cancellationToken)
 		{
 			if (string.IsNullOrWhiteSpace(searchTerm))
 			{
@@ -48,7 +47,7 @@ namespace Kickoffa.API.Data.Repositories
 				.ToListAsync(cancellationToken);
 		}
 
-		public async Task<IEnumerable<FileType>> GetFileTypesByCategoryAsync(FileTypeCategory category, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IFileType>> GetFileTypesByCategoryAsync(FileTypeCategory category, CancellationToken cancellationToken)
 		{
 			return await _context.FileTypes
 				.Where(ft => ft.IsActive && ft.Category == category)
@@ -57,13 +56,13 @@ namespace Kickoffa.API.Data.Repositories
 				.ToListAsync(cancellationToken);
 		}
 
-		public async Task<FileType?> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public new async Task<IFileType?> GetByIdAsync(long id, CancellationToken cancellationToken)
 		{
 			return await _context.FileTypes
 				.FirstOrDefaultAsync(ft => ft.Id == id, cancellationToken);
 		}
 
-		public async Task<IEnumerable<FileType>> GetByIdsAsync(IEnumerable<long> ids, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IFileType>> GetByIdsAsync(IEnumerable<long> ids, CancellationToken cancellationToken)
 		{
 			return await _context.FileTypes
 				.Where(ft => ids.Contains(ft.Id))

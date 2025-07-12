@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@/lib/api'
+import { AuthService } from '@/services/auth.service'
 import {
   Checklist,
   Section,
@@ -21,7 +22,7 @@ export const useChecklists = () => {
   return useQuery({
     queryKey: ['checklists'],
     queryFn: async () => {
-      const response = await api.get<Checklist[]>('/checklists')
+      const response = await api.get<Checklist[]>('/api/checklist')
       return response.data
     }
   })
@@ -31,10 +32,10 @@ export const useChecklist = (id: string) => {
   return useQuery({
     queryKey: ['checklist', id],
     queryFn: async () => {
-      const response = await api.get<Checklist>(`/checklists/${id}`)
+      const response = await api.get<Checklist>(`/api/checklist/${id}`)
       return response.data
     },
-    enabled: !!id
+    enabled: !!id && AuthService.isAuthenticated()
   })
 }
 
@@ -43,11 +44,26 @@ export const useCreateChecklist = () => {
 
   return useMutation({
     mutationFn: async (data: CreateChecklistRequest) => {
-      const response = await api.post<Checklist>('/checklists', data)
+      const response = await api.post<Checklist>('/api/checklist', data)
       return response.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['checklists'] })
+    }
+  })
+}
+
+export const useUpdateChecklist = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: CreateChecklistRequest }) => {
+      const response = await api.put<Checklist>(`/api/checklist/${id}`, data)
+      return response.data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['checklists'] })
+      queryClient.invalidateQueries({ queryKey: ['checklist', variables.id] })
     }
   })
 }
@@ -57,7 +73,7 @@ export const useCreateSection = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: CreateSectionRequest) => {
+    mutationFn: async (data: CreateSectionRequest & { checklistId: number }) => {
       const response = await api.post<Section>('/sections', data)
       return response.data
     },
@@ -159,7 +175,6 @@ export const useUploadFile = () => {
 
 // Customers - usando CustomerService para lógica de negócio
 import { CustomerService } from '@/services/customer.service'
-import { AuthService } from '@/services/auth.service'
 import { UserService, UpdateUserProfileRequest } from '@/services/user.service'
 
 export const useCustomers = () => {

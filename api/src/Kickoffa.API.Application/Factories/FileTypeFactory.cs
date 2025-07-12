@@ -1,17 +1,15 @@
-using Kickoffa.API.Domain.Models.Enums;
+using Kickoffa.API.Application.Interfaces.Factories;
+using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models.Components;
+using Kickoffa.API.Domain.Models.Enums;
 
-namespace Kickoffa.API.Domain.Factories
+namespace Kickoffa.API.Application.Factories
 {
-	/// <summary>
-	/// Factory para criação de tipos de arquivo
-	/// </summary>
-	public static class FileTypeFactory
+	///<inheritdoc/>
+	public class FileTypeFactory : IFileTypeFactory
 	{
-		/// <summary>
-		/// Cria um novo tipo de arquivo
-		/// </summary>
-		public static FileType CreateFileType(
+		///<inheritdoc/>
+		public IFileType CreateFileType(
 			string mimeType,
 			string extension,
 			string displayName,
@@ -33,12 +31,11 @@ namespace Kickoffa.API.Domain.Factories
 			);
 		}
 
-		/// <summary>
-		/// Cria tipos de arquivo padrão para imagens
-		/// </summary>
-		public static List<FileType> CreateImageFileTypes()
+
+		///<inheritdoc/>
+		public List<IFileType> CreateImageFileTypes()
 		{
-			return new List<FileType>
+			return new List<IFileType>
 			{
 				CreateFileType("image/jpeg", ".jpg", "Imagem JPEG", FileTypeCategory.Image, 
 					"Formato de imagem comprimida com boa qualidade", 10, 1),
@@ -55,12 +52,11 @@ namespace Kickoffa.API.Domain.Factories
 			};
 		}
 
-		/// <summary>
-		/// Cria tipos de arquivo padrão para documentos
-		/// </summary>
-		public static List<FileType> CreateDocumentFileTypes()
+
+		///<inheritdoc/>
+		public List<IFileType> CreateDocumentFileTypes()
 		{
-			return new List<FileType>
+			return new List<IFileType>
 			{
 				CreateFileType("application/pdf", ".pdf", "Documento PDF", FileTypeCategory.Document, 
 					"Formato de documento portátil", 25, 10),
@@ -75,12 +71,11 @@ namespace Kickoffa.API.Domain.Factories
 			};
 		}
 
-		/// <summary>
-		/// Cria tipos de arquivo padrão para design
-		/// </summary>
-		public static List<FileType> CreateDesignFileTypes()
+
+		///<inheritdoc/>
+		public List<IFileType> CreateDesignFileTypes()
 		{
-			return new List<FileType>
+			return new List<IFileType>
 			{
 				CreateFileType("application/x-photoshop", ".psd", "Arquivo Photoshop", FileTypeCategory.Design, 
 					"Arquivo nativo do Adobe Photoshop", 100, 20),
@@ -95,12 +90,10 @@ namespace Kickoffa.API.Domain.Factories
 			};
 		}
 
-		/// <summary>
-		/// Cria tipos de arquivo padrão para vídeo
-		/// </summary>
-		public static List<FileType> CreateVideoFileTypes()
+		///<inheritdoc/>
+		public List<IFileType> CreateVideoFileTypes()
 		{
-			return new List<FileType>
+			return new List<IFileType>
 			{
 				CreateFileType("video/mp4", ".mp4", "Vídeo MP4", FileTypeCategory.Video, 
 					"Formato de vídeo padrão", 200, 30),
@@ -113,12 +106,10 @@ namespace Kickoffa.API.Domain.Factories
 			};
 		}
 
-		/// <summary>
-		/// Cria tipos de arquivo padrão para áudio
-		/// </summary>
-		public static List<FileType> CreateAudioFileTypes()
+		///<inheritdoc/>
+		public List<IFileType> CreateAudioFileTypes()
 		{
-			return new List<FileType>
+			return new List<IFileType>
 			{
 				CreateFileType("audio/mpeg", ".mp3", "Áudio MP3", FileTypeCategory.Audio, 
 					"Formato de áudio comprimido", 50, 40),
@@ -131,12 +122,10 @@ namespace Kickoffa.API.Domain.Factories
 			};
 		}
 
-		/// <summary>
-		/// Cria tipos de arquivo padrão para compressão
-		/// </summary>
-		public static List<FileType> CreateArchiveFileTypes()
+		///<inheritdoc/>
+		public List<IFileType> CreateArchiveFileTypes()
 		{
-			return new List<FileType>
+			return new List<IFileType>
 			{
 				CreateFileType("application/zip", ".zip", "Arquivo ZIP", FileTypeCategory.Archive, 
 					"Arquivo comprimido ZIP", 500, 50),
@@ -147,12 +136,10 @@ namespace Kickoffa.API.Domain.Factories
 			};
 		}
 
-		/// <summary>
-		/// Cria todos os tipos de arquivo padrão
-		/// </summary>
-		public static List<FileType> CreateAllDefaultFileTypes()
+		///<inheritdoc/>
+		public List<IFileType> CreateAllDefaultFileTypes()
 		{
-			var allTypes = new List<FileType>();
+			var allTypes = new List<IFileType>();
 			
 			allTypes.AddRange(CreateImageFileTypes());
 			allTypes.AddRange(CreateDocumentFileTypes());
@@ -164,10 +151,8 @@ namespace Kickoffa.API.Domain.Factories
 			return allTypes;
 		}
 
-		/// <summary>
-		/// Verifica se uma extensão é válida
-		/// </summary>
-		public static bool IsValidExtension(string extension)
+		///<inheritdoc/>
+		public bool IsValidExtension(string extension)
 		{
 			if (string.IsNullOrWhiteSpace(extension))
 				return false;
@@ -175,10 +160,8 @@ namespace Kickoffa.API.Domain.Factories
 			return extension.StartsWith('.') && extension.Length > 1;
 		}
 
-		/// <summary>
-		/// Normaliza uma extensão de arquivo
-		/// </summary>
-		public static string NormalizeExtension(string extension)
+		///<inheritdoc/>
+		public string NormalizeExtension(string extension)
 		{
 			if (string.IsNullOrWhiteSpace(extension))
 				throw new ArgumentException("Extensão não pode ser vazia", nameof(extension));
@@ -191,10 +174,8 @@ namespace Kickoffa.API.Domain.Factories
 			return extension;
 		}
 
-		/// <summary>
-		/// Obtém a categoria sugerida baseada na extensão
-		/// </summary>
-		public static FileTypeCategory GetSuggestedCategory(string extension)
+		///<inheritdoc/>
+		public FileTypeCategory GetSuggestedCategory(string extension)
 		{
 			extension = NormalizeExtension(extension);
 

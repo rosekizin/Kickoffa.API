@@ -1,5 +1,6 @@
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.Repositories.Base;
+using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace Kickoffa.API.Data.Repositories
 	/// <summary>
 	/// Implementação do repositório de ComponentStatus
 	/// </summary>
-	public class ComponentStatusRepository : BaseRepository<ComponentStatus>, IComponentStatusRepository
+	public class ComponentStatusRepository : BaseRepository<IComponentStatus, ComponentStatus>, IComponentStatusRepository
 	{
 		public ComponentStatusRepository(KickoffaDbContext context) : base(context)
 		{
@@ -18,7 +19,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca status por componente
 		/// </summary>
-		public async Task<ComponentStatus?> GetByComponentIdAsync(long componentId, CancellationToken cancellationToken)
+		public async Task<IComponentStatus?> GetByComponentIdAsync(long componentId, CancellationToken cancellationToken)
 		{
 			return await _context.ComponentStatuses
 				.FirstOrDefaultAsync(s => s.ComponentId == componentId, cancellationToken);
@@ -27,7 +28,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca status por múltiplos componentes
 		/// </summary>
-		public async Task<IEnumerable<ComponentStatus>> GetByComponentIdsAsync(IEnumerable<long> componentIds, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IComponentStatus>> GetByComponentIdsAsync(IEnumerable<long> componentIds, CancellationToken cancellationToken)
 		{
 			return await _context.ComponentStatuses
 				.Where(s => componentIds.Contains(s.ComponentId))
@@ -37,7 +38,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca status completados por seção
 		/// </summary>
-		public async Task<IEnumerable<ComponentStatus>> GetCompletedBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IComponentStatus>> GetCompletedBySectionIdAsync(long sectionId, CancellationToken cancellationToken)
 		{
 			return await _context.ComponentStatuses
 				.Include(s => s.Component)
@@ -48,7 +49,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Busca status completados por checklist
 		/// </summary>
-		public async Task<IEnumerable<ComponentStatus>> GetCompletedByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<IComponentStatus>> GetCompletedByChecklistIdAsync(long checklistId, CancellationToken cancellationToken)
 		{
 			return await _context.ComponentStatuses
 				.Include(s => s.Component)
@@ -81,7 +82,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<ComponentStatus?> GetByIdAsync(long id, CancellationToken cancellationToken)
+		public override async Task<IComponentStatus?> GetByIdAsync(long id, CancellationToken cancellationToken)
 		{
 			return await _context.ComponentStatuses
 				.Include(s => s.Component)
@@ -91,7 +92,7 @@ namespace Kickoffa.API.Data.Repositories
 		/// <summary>
 		/// Override para incluir relacionamentos por padrão
 		/// </summary>
-		public override async Task<IEnumerable<ComponentStatus>> GetAllAsync(CancellationToken cancellationToken)
+		public override async Task<IEnumerable<IComponentStatus>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			return await _context.ComponentStatuses
 				.Include(s => s.Component)

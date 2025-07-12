@@ -1,125 +1,125 @@
-using Kickoffa.API.Application.Factories;
 using Kickoffa.API.Application.Interfaces;
 using Kickoffa.API.Contracts.Customer;
 using Kickoffa.API.Domain.Repositories;
 
-namespace Kickoffa.API.Application.Services;
-
-/// <summary>
-/// Serviço para operações relacionadas a Customer
-/// </summary>
-public sealed class CustomerService : ICustomerService
+namespace Kickoffa.API.Application.Services
 {
-    private readonly ICustomerRepository _customerRepository;
-    private readonly ICreateCustomerFactory _createCustomerFactory;
-
-    /// <summary>
-    /// Inicializa uma nova instância do CustomerService
-    /// </summary>
-    /// <param name="customerRepository">Repositório de customers</param>
-    /// <param name="createCustomerFactory">Factory para criação de customers</param>
-    public CustomerService(
-        ICustomerRepository customerRepository,
-        ICreateCustomerFactory createCustomerFactory)
-    {
-        _customerRepository = customerRepository ?? throw new ArgumentNullException(nameof(customerRepository));
-        _createCustomerFactory = createCustomerFactory ?? throw new ArgumentNullException(nameof(createCustomerFactory));
-    }
-
-	/// <inheritdoc />
-	public async Task<IEnumerable<CustomerResponse>> GetAllAsync(CancellationToken cancellationToken)
-	{
-		var customers = await _customerRepository.GetAllAsync(cancellationToken);
-
-		return customers.Select(customer => new CustomerResponse
-		{
-			Id = customer.Id,
-			FirstName = customer.FirstName,
-			LastName = customer.LastName,
-			Email = customer.Email,
-			Cpf = customer.Cpf,
-			Cnpj = customer.Cnpj,
-			PhoneNumber = customer.PhoneNumber,
-			Address = customer.Address,
-			CreatedDateUtc = customer.CreatedDateUtc,
-			LastUpdatedDateUtc = customer.LastUpdatedDateUtc
-		});
-	}
-
-	/// <inheritdoc />
-	public async Task<CustomerResponse?> GetByIdAsync(long id, CancellationToken cancellationToken)
-	{
-		var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
-
-		if (customer is null)
-			return null;
-
-		return new CustomerResponse
-		{
-			Id = customer.Id,
-			FirstName = customer.FirstName,
-			LastName = customer.LastName,
-			Email = customer.Email,
-			Cpf = customer.Cpf,
-			Cnpj = customer.Cnpj,
-			PhoneNumber = customer.PhoneNumber,
-			Address = customer.Address,
-			CreatedDateUtc = customer.CreatedDateUtc,
-			LastUpdatedDateUtc = customer.LastUpdatedDateUtc
-		};
-	}
-	
-    /// <summary>
-	/// Cria um novo customer
+	/// <summary>
+	/// Serviço para operações relacionadas a Customer
 	/// </summary>
-	/// <param name="request">Request com os dados do customer</param>
-	/// <param name="cancellationToken">Token de cancelamento</param>
-	/// <returns>Response com os dados do customer criado</returns>
-	/// <exception cref="ArgumentNullException">Quando request é null</exception>
-	public async Task<CustomerResponse> CreateAsync(CreateCustomerRequest request, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-
-        // Criar customer usando factory
-        var customer = _createCustomerFactory.Create(request);
-
-        // Adicionar customer ao repositório
-        await _customerRepository.AddAsync(customer, cancellationToken);
-        await _customerRepository.SaveChangesAsync(cancellationToken);
-
-        // Mapear para response
-        return new CustomerResponse
-        {
-            Id = customer.Id,
-            FirstName = customer.FirstName,
-            LastName = customer.LastName,
-            Email = customer.Email,
-            Cpf = customer.Cpf,
-            Cnpj = customer.Cnpj,
-            PhoneNumber = customer.PhoneNumber,
-            Address = customer.Address,
-            CreatedDateUtc = customer.CreatedDateUtc,
-            LastUpdatedDateUtc = customer.LastUpdatedDateUtc
-        };
-    }
-
-	/// <inheritdoc />
-	public async Task<CustomerResponse?> UpdateAsync(long id, CreateCustomerRequest request, CancellationToken cancellationToken)
+	public sealed class CustomerService : ICustomerService
 	{
-		// TODO: Implementar lógica de atualização quando a entidade Customer tiver métodos de update apropriados
-		throw new NotImplementedException("Método UpdateAsync ainda não implementado");
-	}
+		private readonly ICustomerRepository _customerRepository;
+		private readonly ICreateCustomerFactory _createCustomerFactory;
 
-	/// <inheritdoc />
-	public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken)
-	{
-		var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
-		if (customer is null)
-			return false;
+		/// <summary>
+		/// Inicializa uma nova instância do CustomerService
+		/// </summary>
+		/// <param name="customerRepository">Repositório de customers</param>
+		/// <param name="createCustomerFactory">Factory para criação de customers</param>
+		public CustomerService(
+			ICustomerRepository customerRepository,
+			ICreateCustomerFactory createCustomerFactory)
+		{
+			_customerRepository = customerRepository ?? throw new ArgumentNullException(nameof(customerRepository));
+			_createCustomerFactory = createCustomerFactory ?? throw new ArgumentNullException(nameof(createCustomerFactory));
+		}
 
-		_customerRepository.Remove(customer);
-		await _customerRepository.SaveChangesAsync(cancellationToken);
+		/// <inheritdoc />
+		public async Task<IEnumerable<CustomerResponse>> GetAllAsync(CancellationToken cancellationToken)
+		{
+			var customers = await _customerRepository.GetAllAsync(cancellationToken);
 
-		return true;
+			return customers.Select(customer => new CustomerResponse
+			{
+				Id = customer.Id,
+				FirstName = customer.FirstName,
+				LastName = customer.LastName,
+				Email = customer.Email,
+				Cpf = customer.Cpf,
+				Cnpj = customer.Cnpj,
+				PhoneNumber = customer.PhoneNumber,
+				Address = customer.Address,
+				CreatedDateUtc = customer.CreatedDateUtc,
+				LastUpdatedDateUtc = customer.LastUpdatedDateUtc
+			});
+		}
+
+		/// <inheritdoc />
+		public async Task<CustomerResponse?> GetByIdAsync(long id, CancellationToken cancellationToken)
+		{
+			var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
+
+			if (customer is null)
+				return null;
+
+			return new CustomerResponse
+			{
+				Id = customer.Id,
+				FirstName = customer.FirstName,
+				LastName = customer.LastName,
+				Email = customer.Email,
+				Cpf = customer.Cpf,
+				Cnpj = customer.Cnpj,
+				PhoneNumber = customer.PhoneNumber,
+				Address = customer.Address,
+				CreatedDateUtc = customer.CreatedDateUtc,
+				LastUpdatedDateUtc = customer.LastUpdatedDateUtc
+			};
+		}
+
+		/// <summary>
+		/// Cria um novo customer
+		/// </summary>
+		/// <param name="request">Request com os dados do customer</param>
+		/// <param name="cancellationToken">Token de cancelamento</param>
+		/// <returns>Response com os dados do customer criado</returns>
+		/// <exception cref="ArgumentNullException">Quando request é null</exception>
+		public async Task<CustomerResponse> CreateAsync(CreateCustomerRequest request, CancellationToken cancellationToken = default)
+		{
+			ArgumentNullException.ThrowIfNull(request);
+
+			// Criar customer usando factory
+			var customer = _createCustomerFactory.Create(request);
+
+			// Adicionar customer ao repositório
+			await _customerRepository.AddAsync(customer, cancellationToken);
+			await _customerRepository.SaveChangesAsync(cancellationToken);
+
+			// Mapear para response
+			return new CustomerResponse
+			{
+				Id = customer.Id,
+				FirstName = customer.FirstName,
+				LastName = customer.LastName,
+				Email = customer.Email,
+				Cpf = customer.Cpf,
+				Cnpj = customer.Cnpj,
+				PhoneNumber = customer.PhoneNumber,
+				Address = customer.Address,
+				CreatedDateUtc = customer.CreatedDateUtc,
+				LastUpdatedDateUtc = customer.LastUpdatedDateUtc
+			};
+		}
+
+		/// <inheritdoc />
+		public async Task<CustomerResponse?> UpdateAsync(long id, CreateCustomerRequest request, CancellationToken cancellationToken)
+		{
+			// TODO: Implementar lógica de atualização quando a entidade Customer tiver métodos de update apropriados
+			throw new NotImplementedException("Método UpdateAsync ainda não implementado");
+		}
+
+		/// <inheritdoc />
+		public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken)
+		{
+			var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
+			if (customer is null)
+				return false;
+
+			_customerRepository.Remove(customer);
+			await _customerRepository.SaveChangesAsync(cancellationToken);
+
+			return true;
+		}
 	}
 }

@@ -37,9 +37,10 @@ public class UserTests
 	[InlineData("")]
 	[InlineData(" ")]
 	[InlineData(null)]
-	public void Constructor_WithInvalidEmail_ShouldThrowArgumentNullException(string invalidEmail)
+	public void Constructor_WithInvalidEmail_ShouldThrowArgumentNullException(string? invalidEmail)
 	{
 		// Act & Assert
+#pragma warning disable CS8604 // Possible null reference argument.
 		Assert.Throws<ArgumentNullException>(() => new User(invalidEmail));
 	}
 
@@ -80,12 +81,14 @@ public class UserTests
 	[InlineData("")]
 	[InlineData(" ")]
 	[InlineData(null)]
-	public void UpdateEmail_WithInvalidEmail_ShouldThrowArgumentException(string invalidEmail)
+	public void UpdateEmail_WithInvalidEmail_ShouldThrowArgumentException(string? invalidEmail)
 	{
 		// Arrange
 		var user = new User("joao@example.com");
 
 		// Act & Assert
+#pragma warning disable CS8604 // Possible null reference argument.
 		Assert.Throws<ArgumentException>(() => user.UpdateEmail(invalidEmail));
+#pragma warning restore CS8604 // Possible null reference argument.
 	}
 }

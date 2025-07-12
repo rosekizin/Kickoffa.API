@@ -1,18 +1,19 @@
-using Microsoft.EntityFrameworkCore;
-using Kickoffa.API.Data.Repositories.Base;
 using Kickoffa.API.Data.EntityFramework.Context;
-using Kickoffa.API.Domain.Repositories;
+using Kickoffa.API.Data.Repositories.Base;
+using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models.FreelancerCustomer;
+using Kickoffa.API.Domain.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Kickoffa.API.Data.Repositories
 {
-    public class CustomerRepository : BaseRepository<Customer>, ICustomerRepository
+    public class CustomerRepository : BaseRepository<ICustomer, Customer>, ICustomerRepository
     {
         public CustomerRepository(KickoffaDbContext context) : base(context)
         {
         }
 
-        public async Task<Customer?> GetByCpfAsync(string cpf, CancellationToken cancellationToken = default)
+        public async Task<ICustomer?> GetByCpfAsync(string cpf, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(cpf))
                 return null;
@@ -24,7 +25,7 @@ namespace Kickoffa.API.Data.Repositories
                 .FirstOrDefaultAsync(c => c.Cpf == cleanCpf, cancellationToken);
         }
 
-        public async Task<Customer?> GetByCnpjAsync(string cnpj, CancellationToken cancellationToken = default)
+        public async Task<ICustomer?> GetByCnpjAsync(string cnpj, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(cnpj))
                 return null;
@@ -36,7 +37,7 @@ namespace Kickoffa.API.Data.Repositories
                 .FirstOrDefaultAsync(c => c.Cnpj == cleanCnpj, cancellationToken);
         }
 
-        public async Task<IEnumerable<Customer>> SearchByNameAsync(string name, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<ICustomer>> SearchByNameAsync(string name, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(name))
                 return [];
@@ -54,7 +55,7 @@ namespace Kickoffa.API.Data.Repositories
         }
 
         // Override do método GetPagedAsync para incluir ordenação específica de Customer
-        public override async Task<(IEnumerable<Customer> Items, int TotalCount)> GetPagedAsync(
+        public override async Task<(IEnumerable<ICustomer> Items, int TotalCount)> GetPagedAsync(
             int pageNumber, 
             int pageSize, 
             System.Linq.Expressions.Expression<Func<Customer, bool>>? predicate = null,

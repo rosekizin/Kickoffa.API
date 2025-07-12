@@ -1,13 +1,22 @@
+﻿using Kickoffa.API.Contracts.Checklist;
+using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models;
 using Kickoffa.API.Domain.Models.Enums;
 
-namespace Kickoffa.API.Domain.Factories
+namespace Kickoffa.API.Application.Interfaces.Factories
 {
 	/// <summary>
 	/// Factory para criação de seções
 	/// </summary>
-	public static class SectionFactory
+	public interface ISectionFactory
 	{
+		/// <summary>
+		/// Cria uma seção de briefing ou checklist
+		/// </summary>
+		/// <param name="sectionRequest">Request</param>
+		/// <returns>Instância de Section</returns>
+		Task<ISection> CreateSection(SectionRequest sectionRequest, CancellationToken cancellationToken);
+
 		/// <summary>
 		/// Cria uma seção de briefing
 		/// </summary>
@@ -17,15 +26,12 @@ namespace Kickoffa.API.Domain.Factories
 		/// <param name="contentJson">Conteúdo JSON inicial (opcional)</param>
 		/// <param name="contentHtml">Conteúdo HTML inicial (opcional)</param>
 		/// <returns>Instância de BriefingSection</returns>
-		public static BriefingSection CreateBriefingSection(
+		public IBriefingSection CreateBriefingSection(
 			long checklistId,
 			string title,
 			int order,
 			string? contentJson = null,
-			string? contentHtml = null)
-		{
-			return new BriefingSection(checklistId, title, order, contentJson, contentHtml);
-		}
+			string? contentHtml = null);
 
 		/// <summary>
 		/// Cria uma seção de checklist
@@ -34,28 +40,19 @@ namespace Kickoffa.API.Domain.Factories
 		/// <param name="title">Título da seção</param>
 		/// <param name="order">Ordem da seção</param>
 		/// <returns>Instância de ChecklistSection</returns>
-		public static ChecklistSection CreateChecklistSection(long checklistId, string title, int order)
-		{
-			return new ChecklistSection(checklistId, title, order);
-		}
+		public IChecklistSection CreateChecklistSection(long checklistId, string title, int order);
 
 		/// <summary>
 		/// Verifica se um tipo de seção é válido
 		/// </summary>
 		/// <param name="type">Tipo a ser verificado</param>
 		/// <returns>True se válido, false caso contrário</returns>
-		public static bool IsValidSectionType(SectionType type)
-		{
-			return Enum.IsDefined(type);
-		}
+		public bool IsValidSectionType(SectionType type);
 
 		/// <summary>
 		/// Obtém todos os tipos de seção disponíveis
 		/// </summary>
 		/// <returns>Array com todos os tipos</returns>
-		public static SectionType[] GetAvailableSectionTypes()
-		{
-			return Enum.GetValues<SectionType>();
-		}
+		public SectionType[] GetAvailableSectionTypes();
 	}
 }

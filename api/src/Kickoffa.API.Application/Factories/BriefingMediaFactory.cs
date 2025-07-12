@@ -1,16 +1,16 @@
+using Kickoffa.API.Application.Interfaces.Factories;
+using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models;
 
-namespace Kickoffa.API.Domain.Factories
+namespace Kickoffa.API.Application.Factories
 {
-	/// <summary>
-	/// Factory para criação de mídias de briefing
-	/// </summary>
-	public static class BriefingMediaFactory
+	/// <inheritdoc/>
+	public class BriefingMediaFactory : IBriefingMediaFactory
 	{
 		/// <summary>
 		/// Cria uma nova mídia de briefing
 		/// </summary>
-		public static BriefingMedia CreateBriefingMedia(
+		public IBriefingMedia CreateBriefingMedia(
 			long sectionId,
 			string fileName,
 			string storagePath,
@@ -37,7 +37,7 @@ namespace Kickoffa.API.Domain.Factories
 		/// <summary>
 		/// Cria uma mídia de imagem com dimensões
 		/// </summary>
-		public static BriefingMedia CreateImageMedia(
+		public IBriefingMedia CreateImageMedia(
 			long sectionId,
 			string fileName,
 			string storagePath,
@@ -64,7 +64,7 @@ namespace Kickoffa.API.Domain.Factories
 		/// <summary>
 		/// Cria uma mídia de documento (sem dimensões)
 		/// </summary>
-		public static BriefingMedia CreateDocumentMedia(
+		public IBriefingMedia CreateDocumentMedia(
 			long sectionId,
 			string fileName,
 			string storagePath,
@@ -85,7 +85,7 @@ namespace Kickoffa.API.Domain.Factories
 		/// <summary>
 		/// Cria uma mídia de vídeo com dimensões
 		/// </summary>
-		public static BriefingMedia CreateVideoMedia(
+		public IBriefingMedia CreateVideoMedia(
 			long sectionId,
 			string fileName,
 			string storagePath,
@@ -111,11 +111,11 @@ namespace Kickoffa.API.Domain.Factories
 		/// <summary>
 		/// Cria múltiplas mídias a partir de uma lista de arquivos
 		/// </summary>
-		public static List<BriefingMedia> CreateMultipleMedia(
+		public List<IBriefingMedia> CreateMultipleMedia(
 			long sectionId,
 			IEnumerable<(string fileName, string storagePath, string url, string contentType, long fileSize, int? width, int? height)> mediaData)
 		{
-			var mediaList = new List<BriefingMedia>();
+			var mediaList = new List<IBriefingMedia>();
 
 			foreach (var data in mediaData)
 			{
@@ -139,7 +139,7 @@ namespace Kickoffa.API.Domain.Factories
 		/// <summary>
 		/// Valida os dados de uma mídia antes da criação
 		/// </summary>
-		public static bool ValidateMediaData(
+		public bool ValidateMediaData(
 			string fileName,
 			string storagePath,
 			string url,
@@ -191,7 +191,7 @@ namespace Kickoffa.API.Domain.Factories
 		/// <summary>
 		/// Verifica se é um tipo de mídia de imagem
 		/// </summary>
-		public static bool IsImageContentType(string contentType)
+		public bool IsImageContentType(string contentType)
 		{
 			if (string.IsNullOrWhiteSpace(contentType))
 				return false;
@@ -202,7 +202,7 @@ namespace Kickoffa.API.Domain.Factories
 		/// <summary>
 		/// Verifica se é um tipo de mídia de vídeo
 		/// </summary>
-		public static bool IsVideoContentType(string contentType)
+		public bool IsVideoContentType(string contentType)
 		{
 			if (string.IsNullOrWhiteSpace(contentType))
 				return false;
@@ -213,7 +213,7 @@ namespace Kickoffa.API.Domain.Factories
 		/// <summary>
 		/// Verifica se é um tipo de mídia de áudio
 		/// </summary>
-		public static bool IsAudioContentType(string contentType)
+		public bool IsAudioContentType(string contentType)
 		{
 			if (string.IsNullOrWhiteSpace(contentType))
 				return false;
@@ -222,9 +222,38 @@ namespace Kickoffa.API.Domain.Factories
 		}
 
 		/// <summary>
+		/// Obtém a extensão do arquivo a partir do nome
+		/// </summary>
+		public string GetFileExtension(string fileName)
+		{
+			if (string.IsNullOrWhiteSpace(fileName))
+				return string.Empty;
+
+			return Path.GetExtension(fileName).ToLowerInvariant();
+		}
+
+		/// <summary>
+		/// Calcula o tamanho formatado do arquivo
+		/// </summary>
+		public string FormatFileSize(long fileSizeBytes)
+		{
+			string[] sizes = ["B", "KB", "MB", "GB", "TB"];
+			double len = fileSizeBytes;
+			int order = 0;
+
+			while (len >= 1024 && order < sizes.Length - 1)
+			{
+				order++;
+				len = len / 1024;
+			}
+
+			return $"{len:0.##} {sizes[order]}";
+		}
+
+		/// <summary>
 		/// Gera um texto alternativo padrão baseado no nome do arquivo
 		/// </summary>
-		private static string GenerateDefaultAltText(string fileName)
+		private string GenerateDefaultAltText(string fileName)
 		{
 			if (string.IsNullOrWhiteSpace(fileName))
 				return "Imagem";
@@ -250,35 +279,6 @@ namespace Kickoffa.API.Domain.Factories
 		{
 			return Uri.TryCreate(url, UriKind.Absolute, out var result) &&
 				   (result.Scheme == Uri.UriSchemeHttp || result.Scheme == Uri.UriSchemeHttps);
-		}
-
-		/// <summary>
-		/// Obtém a extensão do arquivo a partir do nome
-		/// </summary>
-		public static string GetFileExtension(string fileName)
-		{
-			if (string.IsNullOrWhiteSpace(fileName))
-				return string.Empty;
-
-			return Path.GetExtension(fileName).ToLowerInvariant();
-		}
-
-		/// <summary>
-		/// Calcula o tamanho formatado do arquivo
-		/// </summary>
-		public static string FormatFileSize(long fileSizeBytes)
-		{
-			string[] sizes = ["B", "KB", "MB", "GB", "TB"];
-			double len = fileSizeBytes;
-			int order = 0;
-
-			while (len >= 1024 && order < sizes.Length - 1)
-			{
-				order++;
-				len = len / 1024;
-			}
-
-			return $"{len:0.##} {sizes[order]}";
 		}
 	}
 }

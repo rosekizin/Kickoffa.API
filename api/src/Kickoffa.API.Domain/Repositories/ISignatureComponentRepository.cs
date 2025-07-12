@@ -1,3 +1,4 @@
+using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models.Components;
 
 namespace Kickoffa.API.Domain.Repositories
@@ -5,7 +6,7 @@ namespace Kickoffa.API.Domain.Repositories
 	/// <summary>
 	/// Interface para repositório de SignatureComponent
 	/// </summary>
-	public interface ISignatureComponentRepository : IBaseRepository<SignatureComponent>
+	public interface ISignatureComponentRepository : IBaseRepository<ISignatureComponent, SignatureComponent>
 	{
 		/// <summary>
 		/// Busca componentes de assinatura por seção
@@ -13,7 +14,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="sectionId">ID da seção</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de componentes de assinatura da seção</returns>
-		Task<IEnumerable<SignatureComponent>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
+		Task<IEnumerable<ISignatureComponent>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca componentes de assinatura ordenados por seção
@@ -21,7 +22,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="sectionId">ID da seção</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de componentes de assinatura ordenados</returns>
-		Task<IEnumerable<SignatureComponent>> GetBySectionIdOrderedAsync(long sectionId, CancellationToken cancellationToken);
+		Task<IEnumerable<ISignatureComponent>> GetBySectionIdOrderedAsync(long sectionId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca componentes de assinatura obrigatórios por seção
@@ -29,7 +30,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="sectionId">ID da seção</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de componentes de assinatura obrigatórios</returns>
-		Task<IEnumerable<SignatureComponent>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
+		Task<IEnumerable<ISignatureComponent>> GetRequiredBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca componentes de assinatura por checklist
@@ -37,7 +38,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="checklistId">ID do checklist</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de componentes de assinatura do checklist</returns>
-		Task<IEnumerable<SignatureComponent>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken);
+		Task<IEnumerable<ISignatureComponent>> GetByChecklistIdAsync(long checklistId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca componentes de assinatura por múltiplas seções
@@ -45,7 +46,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="sectionIds">IDs das seções</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de componentes de assinatura das seções</returns>
-		Task<IEnumerable<SignatureComponent>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken);
+		Task<IEnumerable<ISignatureComponent>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Conta componentes de assinatura por seção
@@ -69,7 +70,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="isRequired">Se é obrigatório ou não</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de componentes de assinatura com o status especificado</returns>
-		Task<IEnumerable<SignatureComponent>> GetByRequiredStatusAsync(bool isRequired, CancellationToken cancellationToken);
+		Task<IEnumerable<ISignatureComponent>> GetByRequiredStatusAsync(bool isRequired, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca componentes de assinatura completados por seção
@@ -77,7 +78,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="sectionId">ID da seção</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de componentes de assinatura completados</returns>
-		Task<IEnumerable<SignatureComponent>> GetCompletedBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
+		Task<IEnumerable<ISignatureComponent>> GetCompletedBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Conta componentes de assinatura completados por seção
@@ -93,6 +94,6 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="checklistId">ID do checklist</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de componentes de assinatura pendentes</returns>
-		Task<IEnumerable<SignatureComponent>> GetPendingByChecklistIdAsync(long checklistId, CancellationToken cancellationToken);
+		Task<IEnumerable<ISignatureComponent>> GetPendingByChecklistIdAsync(long checklistId, CancellationToken cancellationToken);
 	}
 }

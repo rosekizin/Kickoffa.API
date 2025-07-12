@@ -1,12 +1,11 @@
-﻿using Kickoffa.API.Domain.Models.Base;
+﻿using Kickoffa.API.Domain.Interfaces.Models;
+using Kickoffa.API.Domain.Models.Base;
 using Kickoffa.API.Domain.Models.Enums;
 
 namespace Kickoffa.API.Domain.Models
 {
-	/// <summary>
-	/// Classe base para seções de checklist
-	/// </summary>
-	public abstract class Section : BaseEntity
+	/// <inheritdoc/>
+	public abstract class Section : BaseEntity, ISection
 	{
 
 		/// <summary>
@@ -27,55 +26,40 @@ namespace Kickoffa.API.Domain.Models
 			Title = string.Empty;
 		}
 
-		/// <summary>
-		/// ID do checklist ao qual esta seção pertence
-		/// </summary>
+		/// <inheritdoc/>
 		public long ChecklistId { get; private set; }
 
-		/// <summary>
-		/// Ordem da seção dentro do checklist
-		/// </summary>
+		/// <inheritdoc/>
 		public int Order { get; private set; }
 
-		/// <summary>
-		/// Título da seção
-		/// </summary>
+		/// <inheritdoc/>
 		public string Title { get; private set; }
 
-		/// <summary>
-		/// Tipo da seção (usado para discriminação no EF)
-		/// </summary>
+		/// <inheritdoc/>
 		public abstract SectionType Type { get; }
 
-		/// <summary>
-		/// Relacionamento com o checklist
-		/// </summary>
+		/// <inheritdoc/>
 		public virtual Checklist Checklist { get; private set; } = null!;
+		IChecklist ISection.Checklist => Checklist;
 
-		/// <summary>
-		/// Atualiza o título da seção
-		/// </summary>
+		/// <inheritdoc/>
 		public void UpdateTitle(string title)
 		{
 			Title = title ?? throw new ArgumentNullException(nameof(title));
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Atualiza a ordem da seção
-		/// </summary>
+		/// <inheritdoc/>
 		public void UpdateOrder(int order)
 		{
 			Order = order;
 			UpdateLastUpdatedDate();
 		}
 
-		/// <summary>
-		/// Define o relacionamento com o checklist (usado pelo EF)
-		/// </summary>
-		internal void SetChecklist(Checklist checklist)
+		/// <inheritdoc/>
+		public void SetChecklist(IChecklist checklist)
 		{
-			Checklist = checklist;
+			Checklist = (Checklist)checklist;
 		}
 	}
 }

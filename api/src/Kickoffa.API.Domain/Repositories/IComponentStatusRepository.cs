@@ -1,3 +1,4 @@
+using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models.Components;
 
 namespace Kickoffa.API.Domain.Repositories
@@ -5,7 +6,7 @@ namespace Kickoffa.API.Domain.Repositories
 	/// <summary>
 	/// Interface para repositório de ComponentStatus
 	/// </summary>
-	public interface IComponentStatusRepository : IBaseRepository<ComponentStatus>
+	public interface IComponentStatusRepository : IBaseRepository<IComponentStatus, ComponentStatus>
 	{
 		/// <summary>
 		/// Busca status por component
@@ -13,7 +14,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="componentId">ID do component</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Status do component ou null</returns>
-		Task<ComponentStatus?> GetByComponentIdAsync(long componentId, CancellationToken cancellationToken);
+		Task<IComponentStatus?> GetByComponentIdAsync(long componentId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca status por múltiplos componentes
@@ -21,7 +22,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="componentIds">IDs dos componentes</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de status dos componentes</returns>
-		Task<IEnumerable<ComponentStatus>> GetByComponentIdsAsync(IEnumerable<long> componentIds, CancellationToken cancellationToken);
+		Task<IEnumerable<IComponentStatus>> GetByComponentIdsAsync(IEnumerable<long> componentIds, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca status completados por seção
@@ -29,7 +30,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="sectionId">ID da seção</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de status completados</returns>
-		Task<IEnumerable<ComponentStatus>> GetCompletedBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
+		Task<IEnumerable<IComponentStatus>> GetCompletedBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca status completados por checklist
@@ -37,7 +38,7 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="checklistId">ID do checklist</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de status completados</returns>
-		Task<IEnumerable<ComponentStatus>> GetCompletedByChecklistIdAsync(long checklistId, CancellationToken cancellationToken);
+		Task<IEnumerable<IComponentStatus>> GetCompletedByChecklistIdAsync(long checklistId, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Conta componentes completados por checklist

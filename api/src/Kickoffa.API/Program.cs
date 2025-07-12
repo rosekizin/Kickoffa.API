@@ -1,7 +1,8 @@
 using Kickoffa.API.AspNet.Infrastructure.Configuration.Data;
 using Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection;
 using Kickoffa.API.AspNet.Infrastructure.Wrappers;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,10 +11,11 @@ var configurationWrapper = new ConfigurationWrapper(builder.Configuration);
 // JWT removido - ASP.NET Core Identity gerencia autenticação
 
 builder.Services.AddControllers()
-	.AddJsonOptions(options =>
+	.AddNewtonsoftJson(options =>
 	{
-		options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: true));
-	}); ;
+		options.SerializerSettings.Converters.Add(new StringEnumConverter());
+		options.SerializerSettings.TypeNameHandling = TypeNameHandling.None; // ou Auto, se quiser polimorfismo com $type
+	});
 
 // Add Swagger (Swashbuckle)
 builder.Services.AddEndpointsApiExplorer();
@@ -22,13 +24,13 @@ builder.Services.AddSwaggerGen();
 // Add CORS - Configurado para HttpOnly cookies
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
-    {
-        policy.WithOrigins("http://localhost:3000") // Frontend URL
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials(); // Essencial para HttpOnly cookies
-    });
+	options.AddPolicy("AllowFrontend", policy =>
+	{
+		policy.WithOrigins("http://localhost:3000") // Frontend URL
+			  .AllowAnyHeader()
+			  .AllowAnyMethod()
+			  .AllowCredentials(); // Essencial para HttpOnly cookies
+	});
 });
 
 // Authentication & Authorization gerenciados pelo Identity
