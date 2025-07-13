@@ -49,7 +49,7 @@ export const ChecklistComponentEditor = ({
   const [description, setDescription] = useState(component?.description || '')
   const [type, setType] = useState<ComponentType>(component?.type || 'checkbox')
   const [isRequired, setIsRequired] = useState(component?.isRequired || false)
-  const [maxSizeMB, setMaxSizeMB] = useState(component?.maxSizeMB || 10)
+
   const [placeholder, setPlaceholder] = useState(component?.placeholder || '')
   const [maxLength, setMaxLength] = useState(component?.maxLength || 500)
   const [confirmationText, setConfirmationText] = useState(component?.confirmationText || '')
@@ -70,7 +70,7 @@ export const ChecklistComponentEditor = ({
       setDescription(component.description || '')
       setType(component.type || 'checkbox')
       setIsRequired(component.isRequired || false)
-      setMaxSizeMB(component.maxSizeMB || 10)
+
       setPlaceholder(component.placeholder || '')
       setMaxLength(component.maxLength || 500)
       setConfirmationText(component.confirmationText || '')
@@ -92,7 +92,7 @@ export const ChecklistComponentEditor = ({
           // Criar configurações padrão baseadas nos tipos de arquivo permitidos
           sizeConfigs = component.allowedFileTypes.map(fileType => ({
             fileTypeId: fileType.id,
-            maxSizeMB: fileType.recommendedMaxSizeMB || component.maxSizeMB || 10
+            maxSizeMB: fileType.recommendedMaxSizeMB || 10
           }))
         }
 
@@ -113,7 +113,7 @@ export const ChecklistComponentEditor = ({
       setDescription('')
       setType('checkbox')
       setIsRequired(false)
-      setMaxSizeMB(10)
+
       setPlaceholder('')
       setMaxLength(500)
       setConfirmationText('')
@@ -191,17 +191,11 @@ export const ChecklistComponentEditor = ({
         break
 
       case 'upload':
-        // Calcular tamanho máximo baseado nas configurações específicas ou usar o padrão
-        let calculatedMaxSize = maxSizeMB
-        if (fileTypeSizeConfigs.length > 0) {
-          calculatedMaxSize = Math.max(...fileTypeSizeConfigs.map(config => config.maxSizeMB))
-        }
-
         componentData = {
           ...baseData,
           type: 'upload',
           placeholder: placeholder || undefined,
-          maxSizeMB: calculatedMaxSize || undefined,
+
           allowedFileTypes: selectedFileTypes,
           allowedFileTypeIds: selectedFileTypes.map(ft => ft.id),
           fileTypeSizeConfigs: fileTypeSizeConfigs.length > 0 ? fileTypeSizeConfigs : undefined
@@ -257,7 +251,7 @@ export const ChecklistComponentEditor = ({
                   selectedFileTypes={selectedFileTypes}
                   sizeConfigs={fileTypeSizeConfigs}
                   onSizeConfigsChange={handleSizeConfigsChange}
-                  globalMaxSize={maxSizeMB}
+                  globalMaxSize={10}
                 />
               </div>
             )}
@@ -420,24 +414,21 @@ export const ChecklistComponentEditor = ({
                   <p className="text-sm text-gray-900">{component.placeholder}</p>
                 </div>
               )}
-              {component.maxSizeMB && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Tamanho máximo</label>
-                  <p className="text-sm text-gray-900">{component.maxSizeMB} MB</p>
-                </div>
-              )}
+
               {component.allowedFileTypes && component.allowedFileTypes.length > 0 && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Tipos de arquivo permitidos</label>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {component.allowedFileTypes.map((fileType) => (
-                      <span
-                        key={fileType.id}
-                        className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200"
-                      >
-                        {fileType.displayName}
-                      </span>
-                    ))}
+                  <div className="space-y-2 mt-1">
+                    {component.allowedFileTypes.map(fileType => {
+                      const sizeConfig = component.fileTypeSizeConfigs?.find(config => config.fileTypeId === fileType.id)
+                      const maxSize = sizeConfig?.maxSizeMB || fileType.recommendedMaxSizeMB || 10
+                      return (
+                        <div key={fileType.id} className="flex justify-between items-center bg-gray-50 px-3 py-2 rounded-md">
+                          <span className="text-sm font-medium text-gray-900">{fileType.displayName}</span>
+                          <span className="text-sm text-blue-600 font-medium">Máx: {maxSize}MB</span>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}

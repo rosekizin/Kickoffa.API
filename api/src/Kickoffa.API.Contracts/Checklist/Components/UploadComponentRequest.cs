@@ -15,11 +15,7 @@ namespace Kickoffa.API.Contracts.Checklist.Components
 		[JsonProperty(PropertyName = "placeholder", Required = Required.Default)]
 		public string? Placeholder { get; init; }
 
-		/// <summary>
-		/// Tamanho máximo por arquivo em MB
-		/// </summary>
-		[JsonProperty(PropertyName = "maxSizeMB", Required = Required.Default)]
-		public int? MaxSizeMB { get; init; }
+
 
 		/// <summary>
 		/// IDs dos tipos de arquivo permitidos para este componente
@@ -44,10 +40,7 @@ namespace Kickoffa.API.Contracts.Checklist.Components
 		{
 			var results = base.Validate(validationContext).ToList();
 
-			if (MaxSizeMB.HasValue && MaxSizeMB.Value <= 0)
-			{
-				results.Add(new ValidationResult("O tamanho máximo deve ser maior que zero", [nameof(MaxSizeMB)]));
-			}
+
 
 			if (!AllowedFileTypeIds.Any())
 			{

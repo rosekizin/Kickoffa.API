@@ -154,7 +154,6 @@ namespace Kickoffa.API.Application.Services.Checklists
 					IsRequired = uploadComponent.IsRequired,
 					Order = uploadComponent.Order,
 					Placeholder = uploadComponent.Placeholder,
-					MaxSizeMB = uploadComponent.MaxSizeMB,
 					AllowedFileTypes = uploadComponent.AllowedFileTypes?.Select(MapFileTypeToResponse).ToList(),
 					ComponentFiles = uploadComponent.ComponentFiles?.Select(MapUploadComponentFileToResponse).ToList(),
 					FileTypeSizeConfigs = uploadComponent.FileTypeSizeConfigs?.Select(MapFileTypeSizeToResponseToResponse).ToList(),

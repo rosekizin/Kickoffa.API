@@ -282,7 +282,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 
 		private async Task UpdateUploadComponent(UploadComponent uploadComponent, UploadComponentRequest updatedUploadComponent, CancellationToken cancellationToken)
 		{
-			uploadComponent.UpdateBasicProperties(updatedUploadComponent.MaxSizeMB, updatedUploadComponent.Placeholder);
+			uploadComponent.UpdateBasicProperties(updatedUploadComponent.Placeholder);
 
 			var existingAllowedFileTypes = uploadComponent.AllowedFileTypes;
 			var updatingAllowedFileTypes = updatedUploadComponent.AllowedFileTypeIds;

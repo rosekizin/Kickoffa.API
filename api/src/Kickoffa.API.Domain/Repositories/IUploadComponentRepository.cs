@@ -17,14 +17,6 @@ namespace Kickoffa.API.Domain.Repositories
 		Task<IEnumerable<IUploadComponent>> GetBySectionIdAsync(long sectionId, CancellationToken cancellationToken);
 
 		/// <summary>
-		/// Busca componentes de upload por tamanho máximo
-		/// </summary>
-		/// <param name="maxSizeMB">Tamanho máximo em MB</param>
-		/// <param name="cancellationToken">Token de cancelamento</param>
-		/// <returns>Lista de componentes com o tamanho máximo especificado</returns>
-		Task<IEnumerable<IUploadComponent>> GetByMaxSizeAsync(int? maxSizeMB, CancellationToken cancellationToken);
-
-		/// <summary>
 		/// Busca componentes de upload por placeholder
 		/// </summary>
 		/// <param name="placeholder">Texto do placeholder</param>
@@ -79,14 +71,5 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de componentes de upload das seções</returns>
 		Task<IEnumerable<IUploadComponent>> GetBySectionIdsAsync(IEnumerable<long> sectionIds, CancellationToken cancellationToken);
-
-		/// <summary>
-		/// Busca componentes de upload por faixa de tamanho
-		/// </summary>
-		/// <param name="minSizeMB">Tamanho mínimo em MB</param>
-		/// <param name="maxSizeMB">Tamanho máximo em MB</param>
-		/// <param name="cancellationToken">Token de cancelamento</param>
-		/// <returns>Lista de componentes na faixa de tamanho especificada</returns>
-		Task<IEnumerable<IUploadComponent>> GetBySizeRangeAsync(int? minSizeMB, int? maxSizeMB, CancellationToken cancellationToken);
 	}
 }

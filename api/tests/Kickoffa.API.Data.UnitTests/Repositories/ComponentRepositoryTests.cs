@@ -258,7 +258,7 @@ public class ComponentRepositoryTests : IClassFixture<KickoffaDbContextFixture>,
 		// Criar itens de diferentes tipos
 		var components = new List<Component>
 		{
-			new UploadComponent(section.Id, "Logo da Empresa",  1, "Upload do logo", true, "Selecione o arquivo do logo", 5),
+			new UploadComponent(section.Id, "Logo da Empresa",  1, "Upload do logo", true, "Selecione o arquivo do logo"),
 			new TextComponent(section.Id, "Cores Principais", 2, "Informe as cores", true, "Ex: #FF0000, #00FF00", 200),
 			new ConfirmationComponent(section.Id, "Confirmação Final", 3, "Confirme os dados", false, "Confirmo que todas as informações estão corretas")
 		};

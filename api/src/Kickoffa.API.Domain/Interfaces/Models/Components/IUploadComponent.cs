@@ -3,11 +3,6 @@
 	public interface IUploadComponent : IComponent
 	{
 		/// <summary>
-		/// Tamanho máximo por arquivo em MB
-		/// </summary>
-		int? MaxSizeMB { get; }
-
-		/// <summary>
 		/// Texto de placeholder para a área de upload
 		/// </summary>
 		string? Placeholder { get; }
@@ -32,7 +27,7 @@
 
 		void AddAllowedFileType(IFileType fileType);
 
-		void UpdateBasicProperties(int? maxSizeMB, string? placeholder);
+		void UpdateBasicProperties(string? placeholder);
 
 		void AddFileTypeSizeConfig(IUploadComponentFileTypeSize config);
 

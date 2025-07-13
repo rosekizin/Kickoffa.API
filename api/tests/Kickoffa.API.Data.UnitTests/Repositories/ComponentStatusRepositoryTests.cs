@@ -223,7 +223,7 @@ public class ComponentStatusRepositoryTests : IClassFixture<KickoffaDbContextFix
 		var components = new List<Component>
 		{
 			new TextComponent(section.Id, "Component 1", 1, "Descrição 1", true, "Placeholder 1", 100),
-			new UploadComponent(section.Id, "Component 2", 2, "Descrição 2", true, "Placeholder 2", 5),
+			new UploadComponent(section.Id, "Component 2", 2, "Descrição 2", true, "Placeholder 2"),
 			new ConfirmationComponent(section.Id, "Component 3", 3, "Descrição 3", false, "Texto de confirmação")
 		};
 

@@ -3,6 +3,7 @@ using System;
 using Kickoffa.API.Data.EntityFramework.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kickoffa.API.Data.Migrations
 {
     [DbContext(typeof(KickoffaDbContext))]
-    partial class KickoffaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250713181458_RemoveMaxSizeMbPropertyFromUploadComponentEntity")]
+    partial class RemoveMaxSizeMbPropertyFromUploadComponentEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

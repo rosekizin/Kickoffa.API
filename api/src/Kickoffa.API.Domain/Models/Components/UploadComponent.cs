@@ -16,11 +16,9 @@ namespace Kickoffa.API.Domain.Models.Components
 			int order,
 			string? description,
 			bool isRequired,
-			string? placeholder,
-			int? maxSizeMB)
+			string? placeholder)
 			: base(sectionId, title, order, description, isRequired)
 		{
-			MaxSizeMB = maxSizeMB;
 			ComponentFiles = [];
 			AllowedFileTypes = [];
 			FileTypeSizeConfigs = [];
@@ -28,11 +26,6 @@ namespace Kickoffa.API.Domain.Models.Components
 		}
 
 		public override ComponentType Type => ComponentType.Upload;
-
-		/// <summary>
-		/// Tamanho máximo por arquivo em MB
-		/// </summary>
-		public int? MaxSizeMB { get; private set; }
 
 		/// <summary>
 		/// Texto de placeholder para a área de upload
@@ -63,9 +56,8 @@ namespace Kickoffa.API.Domain.Models.Components
 			ComponentFiles.Add((UploadComponentFile)file);
 		}
 
-		public void UpdateBasicProperties(int? maxSizeMB, string? placeholder)
+		public void UpdateBasicProperties(string? placeholder)
 		{
-			MaxSizeMB = maxSizeMB;
 			Placeholder = placeholder;
 		}
 

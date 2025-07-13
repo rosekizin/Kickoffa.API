@@ -332,9 +332,8 @@ export default function EditChecklistPage() {
           }),
           ...(component.type === 'upload' && {
             placeholder: component.placeholder,
-            maxSizeMB: component.maxSizeMB,
             // Construir allowedFileTypeIds a partir de allowedFileTypes
-            allowedFileTypeIds: component.allowedFileTypes?.map((fileType: any) => fileType.id) || [],
+            allowedFileTypeIds: component.allowedFileTypes?.map((fileType: import('@/types').FileType) => fileType.id) || [],
             fileTypeSizeConfigs: component.fileTypeSizeConfigs
           }),
           ...(component.type === 'confirmation' && {

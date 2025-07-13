@@ -75,9 +75,6 @@ public sealed record UploadComponentResponse : ComponentResponse
     [JsonProperty(PropertyName = "placeholder", Required = Required.Default)]
 	public string? Placeholder { get; init; }
 
-	[JsonProperty(PropertyName = "maxSizeMB", Required = Required.Default)]
-	public int? MaxSizeMB { get; init; }
-
 	[JsonProperty(PropertyName = "allowedFileTypes", Required = Required.Always)]
 	public ICollection<FileTypeResponse>? AllowedFileTypes { get; init; }
 

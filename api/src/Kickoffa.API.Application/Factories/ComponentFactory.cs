@@ -65,8 +65,7 @@ namespace Kickoffa.API.Application.Factories
 				request.Order,
 				request.Description,
 				request.IsRequired,
-				request.Placeholder,
-				request.MaxSizeMB);
+				request.Placeholder);
 
 			var allowedFileTypesToAdd = await _fileTypeRepository.GetByIdsAsync(request.AllowedFileTypeIds, cancellationToken);
 

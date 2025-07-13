@@ -24,8 +24,6 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			entity.ToTable("UploadComponents");
 
 			// Configuração das propriedades específicas
-			entity.Property(u => u.MaxSizeMB);
-
 			entity.Property(u => u.Placeholder)
 				.HasMaxLength(200);
 
@@ -59,11 +57,7 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			entity.HasIndex(u => new { u.SectionId, u.Order });
 
 			// Índices específicos para UploadComponent
-			entity.HasIndex(u => u.MaxSizeMB);
-
 			entity.HasIndex(u => u.Placeholder);
-
-			entity.HasIndex(u => new { u.SectionId, u.MaxSizeMB });
 		}
 	}
 }
