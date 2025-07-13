@@ -36,7 +36,18 @@ namespace Kickoffa.API.Domain.Models
 			ArgumentNullException.ThrowIfNull(component);
 
 			component.UpdateSectionId(Id);
-			component.UpdateOrder(Components.Count + 1);
+			if(component.Order == default)
+			{
+				// Se a ordem não foi definida, atribui a próxima ordem disponível
+				// Isso é útil para componentes criados sem ordem específica
+				component.UpdateOrder(Components.Count + 1);
+			}
+			//else if (Components.Any(i => i.Order == component.Order))
+			//{
+			//	// Se a ordem já existe, ajusta para a próxima ordem disponível
+			//	int newOrder = Components.Max(i => i.Order) + 1;
+			//	component.UpdateOrder(newOrder);
+			//}
 			Components.Add((Component)component);
 			UpdateLastUpdatedDate();
 		}

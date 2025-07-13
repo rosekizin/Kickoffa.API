@@ -65,6 +65,19 @@ export const ChecklistComponentEditor = ({
   // Inicializar dados do componente quando ele for passado para edição
   useEffect(() => {
     if (component) {
+      // Resetar todos os estados primeiro
+      setTitle(component.title || '')
+      setDescription(component.description || '')
+      setType(component.type || 'checkbox')
+      setIsRequired(component.isRequired || false)
+      setMaxSizeMB(component.maxSizeMB || 10)
+      setPlaceholder(component.placeholder || '')
+      setMaxLength(component.maxLength || 500)
+      setConfirmationText(component.confirmationText || '')
+      setSelectedFileTypes([])
+      setFileTypeSizeConfigs([])
+      setShowAdvanced(false)
+
       // Inicializar tipos de arquivo permitidos se for um componente de upload
       if (component.type === 'upload' && component.allowedFileTypes) {
         setSelectedFileTypes(component.allowedFileTypes)
@@ -94,8 +107,21 @@ export const ChecklistComponentEditor = ({
       } else if (component.type === 'confirmation' && component.confirmationText) {
         setShowAdvanced(true)
       }
+    } else {
+      // Resetar para valores padrão quando não há componente
+      setTitle('')
+      setDescription('')
+      setType('checkbox')
+      setIsRequired(false)
+      setMaxSizeMB(10)
+      setPlaceholder('')
+      setMaxLength(500)
+      setConfirmationText('')
+      setSelectedFileTypes([])
+      setFileTypeSizeConfigs([])
+      setShowAdvanced(false)
     }
-  }, [component])
+  }, [component?.id, component])
 
   const componentTypes = [
     {
