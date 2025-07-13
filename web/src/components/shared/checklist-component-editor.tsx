@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   CheckSquare,
@@ -57,6 +57,11 @@ export const ChecklistComponentEditor = ({
   const [fileTypeSizeConfigs, setFileTypeSizeConfigs] = useState<FileTypeSizeConfig[]>([])
   const [showAdvanced, setShowAdvanced] = useState(false)
 
+  // Memoizar a função para evitar re-renders desnecessários
+  const handleSizeConfigsChange = useCallback((configs: FileTypeSizeConfig[]) => {
+    setFileTypeSizeConfigs(configs)
+  }, [])
+
   // Inicializar dados do componente quando ele for passado para edição
   useEffect(() => {
     if (component) {
@@ -65,10 +70,19 @@ export const ChecklistComponentEditor = ({
         setSelectedFileTypes(component.allowedFileTypes)
 
         // Inicializar configurações de tamanho se existirem
-        const sizeConfigs: FileTypeSizeConfig[] = component.allowedFileTypes.map(fileType => ({
-          fileTypeId: fileType.id,
-          maxSizeMB: fileType.recommendedMaxSizeMB || component.maxSizeMB || 10
-        }))
+        let sizeConfigs: FileTypeSizeConfig[]
+
+        if (component.fileTypeSizeConfigs && component.fileTypeSizeConfigs.length > 0) {
+          // Usar configurações salvas se disponíveis
+          sizeConfigs = component.fileTypeSizeConfigs
+        } else {
+          // Criar configurações padrão baseadas nos tipos de arquivo permitidos
+          sizeConfigs = component.allowedFileTypes.map(fileType => ({
+            fileTypeId: fileType.id,
+            maxSizeMB: fileType.recommendedMaxSizeMB || component.maxSizeMB || 10
+          }))
+        }
+
         setFileTypeSizeConfigs(sizeConfigs)
       }
 
@@ -81,15 +95,7 @@ export const ChecklistComponentEditor = ({
         setShowAdvanced(true)
       }
     }
-  }, [
-    component?.id,
-    component?.type,
-    component?.allowedFileTypes,
-    component?.placeholder,
-    component?.maxLength,
-    component?.maxSizeMB,
-    component?.confirmationText
-  ])
+  }, [component])
 
   const componentTypes = [
     {
@@ -171,7 +177,8 @@ export const ChecklistComponentEditor = ({
           placeholder: placeholder || undefined,
           maxSizeMB: calculatedMaxSize || undefined,
           allowedFileTypes: selectedFileTypes,
-          allowedFileTypeIds: selectedFileTypes.map(ft => ft.id)
+          allowedFileTypeIds: selectedFileTypes.map(ft => ft.id),
+          fileTypeSizeConfigs: fileTypeSizeConfigs.length > 0 ? fileTypeSizeConfigs : undefined
         } as CreateComponentRequest
         break
 
@@ -223,7 +230,7 @@ export const ChecklistComponentEditor = ({
                 <FileTypeSizeConfigComponent
                   selectedFileTypes={selectedFileTypes}
                   sizeConfigs={fileTypeSizeConfigs}
-                  onSizeConfigsChange={setFileTypeSizeConfigs}
+                  onSizeConfigsChange={handleSizeConfigsChange}
                   globalMaxSize={maxSizeMB}
                 />
               </div>

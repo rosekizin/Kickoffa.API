@@ -1,9 +1,12 @@
 ﻿using Kickoffa.API.Application.Interfaces.Checkilists;
 using Kickoffa.API.Contracts.Checklist;
+using Kickoffa.API.Contracts.Checklist.Components;
+using Kickoffa.API.Contracts.Checklist.Sections;
 using Kickoffa.API.Contracts.FileType;
 using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models;
+using Kickoffa.API.Domain.Models.Components;
 
 namespace Kickoffa.API.Application.Services.Checklists
 {
@@ -37,7 +40,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 		{
 			return section switch
 			{
-				BriefingSection briefingSection => new SectionResponse
+				BriefingSection briefingSection => new BriefingSectionResponse
 				{
 					Id = briefingSection.Id,
 					ChecklistId = briefingSection.ChecklistId,
@@ -47,20 +50,16 @@ namespace Kickoffa.API.Application.Services.Checklists
 					ContentJson = briefingSection.ContentJson,
 					ContentHtml = briefingSection.ContentHtml,
 					ContentLastUpdated = briefingSection.ContentLastUpdated,
-					Components = null,
 					CreatedDateUtc = briefingSection.CreatedDateUtc,
 					LastUpdatedDateUtc = briefingSection.LastUpdatedDateUtc
 				},
-				ChecklistSection checklistSection => new SectionResponse
+				ChecklistSection checklistSection => new ChecklistSectionResponse
 				{
 					Id = checklistSection.Id,
 					ChecklistId = checklistSection.ChecklistId,
 					Title = checklistSection.Title,
 					Type = "checklist",
 					Order = checklistSection.Order,
-					ContentJson = null,
-					ContentHtml = null,
-					ContentLastUpdated = null,
 					Components = checklistSection.Components.OrderBy(c => c.Order).Select(MapComponentToResponse).ToList(),
 					CreatedDateUtc = checklistSection.CreatedDateUtc,
 					LastUpdatedDateUtc = checklistSection.LastUpdatedDateUtc
@@ -74,6 +73,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 		/// </summary>
 		private static ComponentResponse MapComponentToResponse(IComponent component)
 		{
+			/*
 			return new ComponentResponse
 			{
 				Id = component.Id,
@@ -99,6 +99,84 @@ namespace Kickoffa.API.Application.Services.Checklists
 				Status = component.Status != null ? MapComponentStatusToResponse(component.Status) : null,
 				CreatedDateUtc = component.CreatedDateUtc,
 				LastUpdatedDateUtc = component.LastUpdatedDateUtc
+			};*/
+
+			return component switch
+			{
+				ICheckboxComponent checkboxComponent => new CheckboxComponentResponse
+				{
+					Id = checkboxComponent.Id,
+					SectionId = checkboxComponent.SectionId,
+					Title = checkboxComponent.Title,
+					Description = checkboxComponent.Description,
+					Type = "checkbox",
+					IsRequired = checkboxComponent.IsRequired,
+					Order = checkboxComponent.Order,
+					Status = MapComponentStatusToResponse(checkboxComponent.Status),
+					CreatedDateUtc = checkboxComponent.CreatedDateUtc,
+					LastUpdatedDateUtc = checkboxComponent.LastUpdatedDateUtc
+				},
+				ISignatureComponent signatureComponent => new SignatureComponentResponse
+				{
+					Id = signatureComponent.Id,
+					SectionId = signatureComponent.SectionId,
+					Title = signatureComponent.Title,
+					Description = signatureComponent.Description,
+					Type = "signature",
+					IsRequired = signatureComponent.IsRequired,
+					Order = signatureComponent.Order,
+					Status = MapComponentStatusToResponse(signatureComponent.Status),
+					CreatedDateUtc = signatureComponent.CreatedDateUtc,
+					LastUpdatedDateUtc = signatureComponent.LastUpdatedDateUtc
+				},
+				ITextComponent textComponent => new TextComponentResponse
+				{
+					Id = textComponent.Id,
+					SectionId = textComponent.SectionId,
+					Title = textComponent.Title,
+					Description = textComponent.Description,
+					Type = "text",
+					IsRequired = textComponent.IsRequired,
+					Order = textComponent.Order,
+					Placeholder = textComponent.Placeholder,
+					MaxLength = textComponent.MaxLength,
+					Status = MapComponentStatusToResponse(textComponent.Status),
+					CreatedDateUtc = textComponent.CreatedDateUtc,
+					LastUpdatedDateUtc = textComponent.LastUpdatedDateUtc
+				},
+				IUploadComponent uploadComponent => new UploadComponentResponse
+				{
+					Id = uploadComponent.Id,
+					SectionId = uploadComponent.SectionId,
+					Title = uploadComponent.Title,
+					Description = uploadComponent.Description,
+					Type = "upload",
+					IsRequired = uploadComponent.IsRequired,
+					Order = uploadComponent.Order,
+					Placeholder = uploadComponent.Placeholder,
+					MaxSizeMB = uploadComponent.MaxSizeMB,
+					AllowedFileTypes = uploadComponent.AllowedFileTypes?.Select(MapFileTypeToResponse).ToList(),
+					ComponentFiles = uploadComponent.ComponentFiles?.Select(MapUploadComponentFileToResponse).ToList(),
+					FileTypeSizeConfigs = uploadComponent.FileTypeSizeConfigs?.Select(MapFileTypeSizeToResponseToResponse).ToList(),
+					Status = MapComponentStatusToResponse(uploadComponent.Status),
+					CreatedDateUtc = uploadComponent.CreatedDateUtc,
+					LastUpdatedDateUtc = uploadComponent.LastUpdatedDateUtc
+				},
+				IConfirmationComponent confirmationComponent => new ConfirmationComponentResponse
+				{
+					Id = confirmationComponent.Id,
+					SectionId = confirmationComponent.SectionId,
+					Title = confirmationComponent.Title,
+					Description = confirmationComponent.Description,
+					Type = "confirmation",
+					IsRequired = confirmationComponent.IsRequired,
+					Order = confirmationComponent.Order,
+					ConfirmationText = confirmationComponent.ConfirmationText,
+					Status = MapComponentStatusToResponse(confirmationComponent.Status),
+					CreatedDateUtc = confirmationComponent.CreatedDateUtc,
+					LastUpdatedDateUtc = confirmationComponent.LastUpdatedDateUtc
+				},
+				_ => throw new ArgumentException($"Tipo de componente não suportado: {component.GetType().Name}")
 			};
 		}
 
@@ -107,15 +185,32 @@ namespace Kickoffa.API.Application.Services.Checklists
 		/// </summary>
 		private static FileTypeResponse MapFileTypeToResponse(IFileType fileType)
 		{
-			return new FileTypeResponse(
-				fileType.Id,
-				fileType.MimeType,
-				fileType.Extension,
-				fileType.DisplayName,
-				fileType.Description,
-				fileType.Category.ToString(),
-				fileType.RecommendedMaxSizeMB
-			);
+			return new FileTypeResponse
+			{
+				Id = fileType.Id,
+				MimeType = fileType.MimeType,
+				Extension = fileType.Extension,
+				DisplayName = fileType.DisplayName,
+				Description = fileType.Description,
+				Category = fileType.Category.ToString(),
+				RecommendedMaxSizeMB = fileType.RecommendedMaxSizeMB
+			};
+		}
+
+		/// <summary>
+		/// Mapeia uma entidade FileType para FileTypeResponse
+		/// </summary>
+		private static FileTypeSizeConfigResponse MapFileTypeSizeToResponseToResponse(IUploadComponentFileTypeSize fileTypeSize)
+		{
+			return new FileTypeSizeConfigResponse
+			{
+				Id = fileTypeSize.Id,
+				FileTypeId = fileTypeSize.FileTypeId,
+				MaxSizeMB = fileTypeSize.MaxSizeMB,
+				UploadComponentId = fileTypeSize.UploadComponentId,
+				CreatedDateUtc = fileTypeSize.CreatedDateUtc,
+				LastUpdatedDateUtc = fileTypeSize.LastUpdatedDateUtc
+			};
 		}
 
 		/// <summary>
@@ -139,8 +234,11 @@ namespace Kickoffa.API.Application.Services.Checklists
 		/// <summary>
 		/// Mapeia uma entidade ComponentStatus para ComponentStatusResponse
 		/// </summary>
-		private static ComponentStatusResponse MapComponentStatusToResponse(IComponentStatus status)
+		private static ComponentStatusResponse? MapComponentStatusToResponse(IComponentStatus? status)
 		{
+			if(status is null)
+				return default;
+
 			return new ComponentStatusResponse
 			{
 				Id = status.Id,

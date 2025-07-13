@@ -117,6 +117,7 @@ export interface Component {
   // Para UploadComponent
   maxSizeMB?: number
   allowedFileTypes?: FileType[]
+  fileTypeSizeConfigs?: FileTypeSizeConfig[]
   componentFiles?: UploadComponentFile[]
 
   // Para ConfirmationComponent
@@ -208,6 +209,7 @@ export interface CreateUploadComponentRequest extends CreateComponentBaseRequest
   maxSizeMB?: number
   allowedFileTypeIds: number[]
   allowedFileTypes?: FileType[]
+  fileTypeSizeConfigs?: FileTypeSizeConfig[]
 }
 
 export interface CreateSignatureComponentRequest extends CreateComponentBaseRequest {

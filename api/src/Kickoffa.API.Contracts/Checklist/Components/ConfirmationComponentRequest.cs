@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace Kickoffa.API.Contracts.Checklist.Components
 {
@@ -7,6 +8,7 @@ namespace Kickoffa.API.Contracts.Checklist.Components
 	/// </summary>
 	public sealed record ConfirmationComponentRequest : ComponentRequest
 	{
+		[JsonProperty(PropertyName = "confirmationText", Required = Required.Always)]
 		public required string ConfirmationText { get; init; }
 
 		public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

@@ -47,15 +47,16 @@ namespace Kickoffa.API.Application.Services
 
 		private static FileTypeResponse MapToResponse(IFileType fileType)
 		{
-			return new FileTypeResponse(
-				fileType.Id,
-				fileType.MimeType,
-				fileType.Extension,
-				fileType.DisplayName,
-				fileType.Description,
-				Enum.GetName(fileType.Category),
-				fileType.RecommendedMaxSizeMB
-			);
+			return new FileTypeResponse
+			{
+				Id = fileType.Id,
+				MimeType = fileType.MimeType,
+				Extension = fileType.Extension,
+				DisplayName = fileType.DisplayName,
+				Description = fileType.Description,
+				Category = Enum.GetName(fileType.Category),
+				RecommendedMaxSizeMB = fileType.RecommendedMaxSizeMB
+			};
 		}
 	}
 }

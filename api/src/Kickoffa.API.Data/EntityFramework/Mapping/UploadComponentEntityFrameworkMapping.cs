@@ -35,6 +35,12 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 				.HasForeignKey("UploadComponentId")
 				.OnDelete(DeleteBehavior.Cascade);
 
+			// Relacionamento com UploadComponentFileTypeSize (1:N)
+			entity.HasMany(u => u.FileTypeSizeConfigs)
+				.WithOne(s => s.UploadComponent)
+				.HasForeignKey(s => s.UploadComponentId)
+				.OnDelete(DeleteBehavior.Cascade);
+
 			// Relacionamento N:N unidirecional (UploadComponent → FileType)
 			// FileType é autônomo e não conhece UploadComponents
 			entity.HasMany(u => u.AllowedFileTypes)

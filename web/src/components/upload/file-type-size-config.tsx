@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { FileType } from '@/types'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -28,26 +28,45 @@ export const FileTypeSizeConfigComponent = ({
 }: FileTypeSizeConfigProps) => {
   const [localConfigs, setLocalConfigs] = useState<FileTypeSizeConfig[]>(sizeConfigs)
 
-  // Sincronizar quando selectedFileTypes mudar
+  // Inicializar com sizeConfigs quando disponível
   useEffect(() => {
-    const newConfigs = selectedFileTypes.map(fileType => {
-      // Verificar se já existe configuração para este tipo
-      const existingConfig = localConfigs.find(config => config.fileTypeId === fileType.id)
-      
-      if (existingConfig) {
-        return existingConfig
+    if (sizeConfigs.length > 0) {
+      setLocalConfigs(sizeConfigs)
+    }
+  }, [sizeConfigs])
+
+  // Calcular configurações baseadas nos tipos selecionados
+  const calculatedConfigs = useMemo(() => {
+    return selectedFileTypes.map(fileType => {
+      // Primeiro, verificar se existe configuração nos props (dados salvos)
+      const savedConfig = sizeConfigs.find(config => config.fileTypeId === fileType.id)
+      if (savedConfig) {
+        return savedConfig
       }
-      
-      // Usar tamanho recomendado ou global como padrão
+
+      // Verificar se já existe configuração local
+      const localConfig = localConfigs.find(config => config.fileTypeId === fileType.id)
+      if (localConfig) {
+        return localConfig
+      }
+
+      // Por último, usar tamanho recomendado ou global como padrão
       return {
         fileTypeId: fileType.id,
         maxSizeMB: fileType.recommendedMaxSizeMB || globalMaxSize
       }
     })
-    
-    setLocalConfigs(newConfigs)
-    onSizeConfigsChange(newConfigs)
-  }, [selectedFileTypes, globalMaxSize])
+  }, [selectedFileTypes, sizeConfigs, localConfigs, globalMaxSize])
+
+  // Sincronizar quando calculatedConfigs mudar
+  useEffect(() => {
+    // Só atualizar se realmente mudou
+    const hasChanged = JSON.stringify(calculatedConfigs) !== JSON.stringify(localConfigs)
+    if (hasChanged) {
+      setLocalConfigs(calculatedConfigs)
+      onSizeConfigsChange(calculatedConfigs)
+    }
+  }, [calculatedConfigs, localConfigs, onSizeConfigsChange])
 
   const handleSizeChange = (fileTypeId: number, newSize: number) => {
     const updatedConfigs = localConfigs.map(config =>

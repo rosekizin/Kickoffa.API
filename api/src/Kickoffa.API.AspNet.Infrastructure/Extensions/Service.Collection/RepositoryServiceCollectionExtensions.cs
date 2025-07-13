@@ -30,6 +30,7 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 			services.AddScoped<IConfirmationComponentEntityFrameworkMapping, ConfirmationComponentEntityFrameworkMapping>();
 			services.AddScoped<ICheckboxComponentEntityFrameworkMapping, CheckboxComponentEntityFrameworkMapping>();
 			services.AddScoped<ISignatureComponentEntityFrameworkMapping, SignatureComponentEntityFrameworkMapping>();
+			services.AddScoped<IUploadComponentFileTypeSizeEntityFrameworkMapping, UploadComponentFileTypeSizeEntityFrameworkMapping>();
 
 			// Registrar repositório base genérico
 			services.AddScoped(typeof(IBaseRepository<,>), typeof(BaseRepository<,>));
@@ -51,6 +52,7 @@ namespace Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection
 			services.AddScoped<IConfirmationComponentRepository, ConfirmationComponentRepository>();
 			services.AddScoped<ICheckboxComponentRepository, CheckboxComponentRepository>();
 			services.AddScoped<ISignatureComponentRepository, SignatureComponentRepository>();
+			services.AddScoped<IUploadComponentFileTypeSizeRepository, UploadComponentFileTypeSizeRepository>();
 
 			// Registrar Unit of Work
 			services.AddScoped<IUnitOfWork, UnitOfWork>();

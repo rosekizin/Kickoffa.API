@@ -10,10 +10,14 @@ namespace Kickoffa.API.Application.Factories
 	public class ComponentFactory : IComponentFactory
 	{
 		private readonly IFileTypeRepository _fileTypeRepository;
+		private readonly IUploadComponentFileTypeSizeFactory _uploadComponentFileTypeSizeFactory;
 
-		public ComponentFactory(IFileTypeRepository fileTypeRepository)
+		public ComponentFactory(
+			IFileTypeRepository fileTypeRepository,
+			IUploadComponentFileTypeSizeFactory uploadComponentFileTypeSizeFactory)
 		{
 			_fileTypeRepository = fileTypeRepository;
+			_uploadComponentFileTypeSizeFactory = uploadComponentFileTypeSizeFactory;
 		}
 
 		public async Task<IComponent> CreateComponent(ComponentRequest componentRequest, CancellationToken cancellationToken)
@@ -69,6 +73,12 @@ namespace Kickoffa.API.Application.Factories
 			foreach (var fileType in allowedFileTypesToAdd)
 			{
 				uploadComponent.AddAllowedFileType(fileType);
+			}
+
+			foreach (var fileTypeSizeConfig in request.FileTypeSizeConfigs!)
+			{
+				var fileTypeSize = _uploadComponentFileTypeSizeFactory.CreateFileTypeSize(0, fileTypeSizeConfig);
+				uploadComponent.AddFileTypeSizeConfig(fileTypeSize);
 			}
 
 			return uploadComponent;

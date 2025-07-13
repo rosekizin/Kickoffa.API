@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace Kickoffa.API.Contracts.Checklist.Components
 {
@@ -7,11 +8,22 @@ namespace Kickoffa.API.Contracts.Checklist.Components
 	/// </summary>
 	public abstract record ComponentRequest : IValidatableObject
 	{
+		[JsonProperty(PropertyName = "id", Required = Required.Default)]
 		public required long Id { get; init; }
+
+		[JsonProperty(PropertyName = "title", Required = Required.Always)]
 		public required string Title { get; init; }
+
+		[JsonProperty(PropertyName = "description", Required = Required.Default)]
 		public string? Description { get; init; }
+
+		[JsonProperty(PropertyName = "isRequired", Required = Required.Always)]
 		public required bool IsRequired { get; init; }
+
+		[JsonProperty(PropertyName = "order", Required = Required.Always)]
 		public required int Order { get; init; }
+
+		[JsonProperty(PropertyName = "type", Required = Required.Always)]
 		public ComponentTypeRequest Type { get; init; }
 
 		/// <summary>

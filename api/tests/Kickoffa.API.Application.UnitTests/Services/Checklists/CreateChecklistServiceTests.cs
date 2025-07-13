@@ -3,6 +3,7 @@ using Kickoffa.API.Application.Interfaces.Checkilists;
 using Kickoffa.API.Application.Interfaces.Factories;
 using Kickoffa.API.Application.Services.Checklists;
 using Kickoffa.API.Contracts.Checklist;
+using Kickoffa.API.Contracts.Checklist.Sections;
 using Kickoffa.API.Domain.Models;
 using Kickoffa.API.Domain.Repositories;
 using NSubstitute;
@@ -128,7 +129,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 				Deadline = DateTime.UtcNow.AddDays(7),
 				Sections =
 				[
-					new SectionRequest
+					new BriefingSectionRequest
 					{
 						Id = 1,
 						Title = "Test Section",

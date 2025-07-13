@@ -23,10 +23,21 @@
 		/// </summary>
 		IEnumerable<IFileType> AllowedFileTypes { get; }
 
+		/// <summary>
+		/// Configurações de tamanho máximo por tipo de arquivo
+		/// </summary>
+		IEnumerable<IUploadComponentFileTypeSize> FileTypeSizeConfigs { get; }
+
 		void AddFiles(IUploadComponentFile file);
 
 		void AddAllowedFileType(IFileType fileType);
 
 		void UpdateBasicProperties(int? maxSizeMB, string? placeholder);
+
+		void AddFileTypeSizeConfig(IUploadComponentFileTypeSize config);
+
+		void UpdateFileTypeSizeConfig(long fileTypeId, int maxSizeMB);
+
+		void RemoveFileTypeSizeConfig(long fileTypeId);
 	}
 }

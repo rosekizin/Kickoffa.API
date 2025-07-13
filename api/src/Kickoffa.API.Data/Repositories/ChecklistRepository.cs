@@ -127,6 +127,9 @@ namespace Kickoffa.API.Data.Repositories
 						.ThenInclude(comp => ((UploadComponent)comp).AllowedFileTypes)
 				.Include(c => c.Sections)
 					.ThenInclude(s => ((ChecklistSection)s).Components)
+						.ThenInclude(comp => ((UploadComponent)comp).FileTypeSizeConfigs)
+				.Include(c => c.Sections)
+					.ThenInclude(s => ((ChecklistSection)s).Components)
 						.ThenInclude(comp => ((UploadComponent)comp).ComponentFiles)
 				.FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
 

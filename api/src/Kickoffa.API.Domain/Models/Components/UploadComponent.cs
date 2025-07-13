@@ -23,6 +23,7 @@ namespace Kickoffa.API.Domain.Models.Components
 			MaxSizeMB = maxSizeMB;
 			ComponentFiles = [];
 			AllowedFileTypes = [];
+			FileTypeSizeConfigs = [];
 			Placeholder = placeholder;
 		}
 
@@ -51,6 +52,12 @@ namespace Kickoffa.API.Domain.Models.Components
 		public virtual ICollection<FileType> AllowedFileTypes { get; private set; }
 		IEnumerable<IFileType> IUploadComponent.AllowedFileTypes => AllowedFileTypes;
 
+		/// <summary>
+		/// Configurações de tamanho máximo por tipo de arquivo
+		/// </summary>
+		public virtual ICollection<UploadComponentFileTypeSize> FileTypeSizeConfigs { get; private set; }
+		IEnumerable<IUploadComponentFileTypeSize> IUploadComponent.FileTypeSizeConfigs => FileTypeSizeConfigs;
+
 		public void AddFiles(IUploadComponentFile file)
 		{
 			ComponentFiles.Add((UploadComponentFile)file);
@@ -65,6 +72,34 @@ namespace Kickoffa.API.Domain.Models.Components
 		public void AddAllowedFileType(IFileType fileType)
 		{
 			AllowedFileTypes.Add((FileType)fileType);
+		}
+
+		public void AddFileTypeSizeConfig(IUploadComponentFileTypeSize config)
+		{
+			FileTypeSizeConfigs.Add((UploadComponentFileTypeSize)config);
+		}
+
+		public void UpdateFileTypeSizeConfig(long fileTypeId, int maxSizeMB)
+		{
+			var existingConfig = FileTypeSizeConfigs.FirstOrDefault(c => c.FileTypeId == fileTypeId);
+			if (existingConfig != null)
+			{
+				existingConfig.UpdateMaxSize(maxSizeMB);
+			}
+			else
+			{
+				var newConfig = new UploadComponentFileTypeSize(Id, fileTypeId, maxSizeMB);
+				FileTypeSizeConfigs.Add(newConfig);
+			}
+		}
+
+		public void RemoveFileTypeSizeConfig(long fileTypeId)
+		{
+			var config = FileTypeSizeConfigs.FirstOrDefault(c => c.FileTypeId == fileTypeId);
+			if (config != null)
+			{
+				FileTypeSizeConfigs.Remove(config);
+			}
 		}
 	}
 }

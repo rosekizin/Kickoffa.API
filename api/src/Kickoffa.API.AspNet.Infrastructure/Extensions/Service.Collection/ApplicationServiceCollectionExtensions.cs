@@ -35,6 +35,7 @@ public static class ApplicationServiceCollectionExtensions
 		services.AddScoped<IChecklistFactory, ChecklistFactory>();
 		services.AddScoped<IBriefingMediaFactory, BriefingMediaFactory>();
 		services.AddScoped<ICreateCustomerFactory, CreateCustomerFactory>();
+		services.AddScoped<IUploadComponentFileTypeSizeFactory, UploadComponentFileTypeSizeFactory>();
 
 		// Registrar services
 		services.AddScoped<ICustomerService, CustomerService>();

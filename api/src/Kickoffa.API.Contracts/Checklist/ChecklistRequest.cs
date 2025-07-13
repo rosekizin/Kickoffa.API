@@ -1,3 +1,6 @@
+using Kickoffa.API.Contracts.Checklist.Sections;
+using Kickoffa.API.Contracts.Newtonsoft;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
 namespace Kickoffa.API.Contracts.Checklist;
@@ -5,13 +8,23 @@ namespace Kickoffa.API.Contracts.Checklist;
 /// <summary>
 /// Request para criação de um novo checklist
 /// </summary>
-public sealed record ChecklistRequest : IValidatableObject
+public record ChecklistRequest : IValidatableObject
 {
+	[JsonProperty(PropertyName = "id", Required = Required.Default)]
 	public required long Id { get; init; }
+
+	[JsonProperty(PropertyName = "title", Required = Required.Always)]
 	public required string Title { get; init; }
-    public string? Description { get; init; }
-    public DateTime? Deadline { get; init; }
-    public required ICollection<SectionRequest> Sections { get; init; } = [];
+
+	[JsonProperty(PropertyName = "description", Required = Required.Default)]
+	public string? Description { get; init; }
+
+	[JsonProperty(PropertyName = "deadline", Required = Required.Default)]
+	public DateTime? Deadline { get; init; }
+
+    [JsonConverter(typeof(SectionRequestCollectionConverter))]
+	[JsonProperty(PropertyName = "sections", Required = Required.Always)]
+	public required ICollection<SectionRequest> Sections { get; init; } = [];
 
     /// <summary>
     /// Valida as propriedades do request

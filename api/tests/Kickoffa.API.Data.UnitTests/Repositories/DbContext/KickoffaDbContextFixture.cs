@@ -24,6 +24,7 @@ namespace Kickoffa.API.Data.UnitTests.Repositories.DbContext
 		private readonly IConfirmationComponentEntityFrameworkMapping _confirmationComponentEntityFrameworkMapping;
 		private readonly ICheckboxComponentEntityFrameworkMapping _checkboxComponentEntityFrameworkMapping;
 		private readonly ISignatureComponentEntityFrameworkMapping _signatureComponentEntityFrameworkMapping;
+		private readonly IUploadComponentFileTypeSizeEntityFrameworkMapping _uploadComponentFileTypeSizeEntityFrameworkMapping;
 
 		public KickoffaDbContextFixture()
 		{
@@ -42,6 +43,7 @@ namespace Kickoffa.API.Data.UnitTests.Repositories.DbContext
 			_confirmationComponentEntityFrameworkMapping = Substitute.For<IConfirmationComponentEntityFrameworkMapping>();
 			_checkboxComponentEntityFrameworkMapping = Substitute.For<ICheckboxComponentEntityFrameworkMapping>();
 			_signatureComponentEntityFrameworkMapping = Substitute.For<ISignatureComponentEntityFrameworkMapping>();
+			_uploadComponentFileTypeSizeEntityFrameworkMapping = Substitute.For<IUploadComponentFileTypeSizeEntityFrameworkMapping>();
 
 			_dbContext = GetNewDbContext();
 		}
@@ -66,6 +68,7 @@ namespace Kickoffa.API.Data.UnitTests.Repositories.DbContext
 				_briefingMediaEntityFrameworkMapping,
 				_fileTypeEntityFrameworkMapping,
 				_uploadComponentFileEntityFrameworkMapping,
+				_uploadComponentFileTypeSizeEntityFrameworkMapping,
 				_textComponentEntityFrameworkMapping,
 				_uploadComponentEntityFrameworkMapping,
 				_confirmationComponentEntityFrameworkMapping,

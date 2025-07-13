@@ -45,6 +45,7 @@ export type ChecklistComponent = {
   maxLength?: number
   maxSizeMB?: number
   allowedFileTypes?: import('@/types').FileType[]
+  fileTypeSizeConfigs?: import('@/types').FileTypeSizeConfig[]
   confirmationText?: string
 }
 
