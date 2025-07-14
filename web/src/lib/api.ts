@@ -67,7 +67,7 @@ export const parseApiError = (error: any): ApiErrorDetails => {
 export const formatValidationErrors = (validationErrors: Record<string, string[]>): string => {
   const messages: string[] = []
 
-  Object.entries(validationErrors).forEach(([field, errors]) => {
+  Object.entries(validationErrors).forEach(([, errors]) => {
     errors.forEach(error => {
       messages.push(error)
     })
@@ -85,7 +85,40 @@ const api = axios.create({
   withCredentials: true // Sempre enviar cookies HttpOnly
 })
 
+// Interceptor de requisição para logging e garantir configurações
+// Esse codigo intercepta todo e qualquer requisição antes de ser enviada
+// Pode ser usada para logar dados ou modificar o request, etc
+api.interceptors.request.use(
+  (config) => {
+    // Log da requisição para debug
+    console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`)
+
+    // Garantir que withCredentials está sempre true
+    config.withCredentials = true
+
+    // Log dos dados da requisição (sem dados sensíveis)
+    if (config.data && config.method?.toLowerCase() === 'post') {
+      const logData = { ...config.data }
+      // Mascarar dados sensíveis
+      if (logData.password) logData.password = '***'
+      if (logData.email && config.url?.includes('/login')) {
+        console.log(`📤 Request data: ${JSON.stringify({ email: logData.email, password: '***' })}`)
+      } else {
+        console.log(`📤 Request data: ${JSON.stringify(logData)}`)
+      }
+    }
+
+    return config
+  },
+  (error) => {
+    console.error('❌ Request Error:', error)
+    return Promise.reject(error)
+  }
+)
+
 // Interceptor de resposta para melhor tratamento de erros
+// Esse codigo intercepta todo e qualquer response antes de ser recebido
+// Pode ser usada para logar dados ou modificar o response, etc
 api.interceptors.response.use(
   (response) => {
     // Log de sucesso para debug
@@ -110,23 +143,7 @@ api.interceptors.response.use(
       console.error(`🔗 Trace ID: ${errorDetails.traceId}`)
     }
 
-    // Detectar expiração de sessão (401 Unauthorized)
-    if (errorDetails.status === 401) {
-      // Verificar se não é a página de login para evitar loop
-      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-        console.warn('🔒 Sessão expirada detectada - disparando evento')
 
-        // Disparar evento customizado para notificar componentes
-        const sessionExpiredEvent = new CustomEvent('session-expired', {
-          detail: {
-            status: 401,
-            message: 'Sessão expirada',
-            timestamp: new Date().toISOString()
-          }
-        })
-        window.dispatchEvent(sessionExpiredEvent)
-      }
-    }
 
     // Anexar detalhes processados ao erro para uso posterior
     error.apiErrorDetails = errorDetails
