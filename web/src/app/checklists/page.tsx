@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,9 +20,14 @@ import {
 } from 'lucide-react'
 
 export default function ChecklistsPage() {
+  const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [sortBy, setSortBy] = useState('recent')
+
+  const handleNewChecklist = () => {
+    router.push('/checklists/new')
+  }
 
   // Mock data - será substituído por dados reais da API
   const checklists = [
@@ -118,7 +124,10 @@ export default function ChecklistsPage() {
                   <p className="text-gray-600">Gerencie todos os seus checklists de onboarding</p>
                 </div>
               </div>
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button
+                className="bg-blue-600 hover:bg-blue-700"
+                onClick={handleNewChecklist}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Checklist
               </Button>
