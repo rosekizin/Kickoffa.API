@@ -1,5 +1,6 @@
 using Kickoffa.API.Application.Interfaces.Checkilists;
 using Kickoffa.API.Contracts.Checklist;
+using Kickoffa.API.Contracts.Checklist.Sections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -327,7 +328,7 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 				Deadline = DateTime.UtcNow.AddDays(7),
 				Sections =
 				[
-					new SectionRequest
+					new BriefingSectionRequest
 					{
 						Id = 1,
 						Title = "Test Section",

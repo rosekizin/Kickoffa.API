@@ -1,4 +1,5 @@
 ﻿using Kickoffa.API.Contracts.Checklist;
+using Kickoffa.API.Contracts.Checklist.Sections;
 using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models;
 using Kickoffa.API.Domain.Models.Enums;
@@ -16,6 +17,16 @@ namespace Kickoffa.API.Application.Interfaces.Factories
 		/// <param name="sectionRequest">Request</param>
 		/// <returns>Instância de Section</returns>
 		Task<ISection> CreateSection(SectionRequest sectionRequest, CancellationToken cancellationToken);
+
+		/// <summary>
+		/// Cria uma seção de briefing
+		/// </summary>
+		/// <param name="checklistId">ID do checklist</param>
+		/// <param name="sectionRequest">Section request</param>
+		/// <returns>Instância de BriefingSection</returns>
+		public IBriefingSection CreateBriefingSection(
+			long checklistId,
+			SectionRequest sectionRequest);
 
 		/// <summary>
 		/// Cria uma seção de briefing

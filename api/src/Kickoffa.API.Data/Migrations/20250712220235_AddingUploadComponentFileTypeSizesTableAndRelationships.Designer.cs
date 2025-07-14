@@ -3,6 +3,7 @@ using System;
 using Kickoffa.API.Data.EntityFramework.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kickoffa.API.Data.Migrations
 {
     [DbContext(typeof(KickoffaDbContext))]
-    partial class KickoffaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250712220235_AddingUploadComponentFileTypeSizesTableAndRelationships")]
+    partial class AddingUploadComponentFileTypeSizesTableAndRelationships
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -831,11 +834,18 @@ namespace Kickoffa.API.Data.Migrations
                 {
                     b.HasBaseType("Kickoffa.API.Domain.Models.Components.Base.Component");
 
+                    b.Property<int?>("MaxSizeMB")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Placeholder")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.HasIndex("MaxSizeMB");
+
                     b.HasIndex("Placeholder");
+
+                    b.HasIndex("SectionId", "MaxSizeMB");
 
                     b.HasIndex("SectionId", "Order");
 

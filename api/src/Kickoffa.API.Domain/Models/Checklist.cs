@@ -60,7 +60,7 @@ namespace Kickoffa.API.Domain.Models
 		/// <inheritdoc/>
 		public void UpdateDueDate(DateTime? dueDate)
 		{
-			DueDate = dueDate;
+			DueDate = DateTime.SpecifyKind(dueDate ?? DateTime.Now.AddDays(7), DateTimeKind.Utc);
 			UpdateLastUpdatedDate();
 		}
 

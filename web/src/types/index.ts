@@ -115,8 +115,8 @@ export interface Component {
   maxLength?: number
 
   // Para UploadComponent
-  maxSizeMB?: number
   allowedFileTypes?: FileType[]
+  fileTypeSizeConfigs?: FileTypeSizeConfig[]
   componentFiles?: UploadComponentFile[]
 
   // Para ConfirmationComponent
@@ -205,9 +205,9 @@ export interface CreateTextComponentRequest extends CreateComponentBaseRequest {
 export interface CreateUploadComponentRequest extends CreateComponentBaseRequest {
   type: 'upload'
   placeholder?: string
-  maxSizeMB?: number
   allowedFileTypeIds: number[]
   allowedFileTypes?: FileType[]
+  fileTypeSizeConfigs?: FileTypeSizeConfig[]
 }
 
 export interface CreateSignatureComponentRequest extends CreateComponentBaseRequest {
@@ -333,7 +333,6 @@ export interface PublicComponentView {
   // Propriedades específicas por tipo - seguindo padrão do domínio
   placeholder?: string
   maxLength?: number
-  maxSizeMB?: number
   allowedFileTypes?: FileType[]
   confirmationText?: string
 }

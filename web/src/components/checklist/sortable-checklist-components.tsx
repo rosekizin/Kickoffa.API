@@ -43,8 +43,8 @@ export type ChecklistComponent = {
   // Propriedades específicas por tipo - seguindo padrão do domínio
   placeholder?: string
   maxLength?: number
-  maxSizeMB?: number
   allowedFileTypes?: import('@/types').FileType[]
+  fileTypeSizeConfigs?: import('@/types').FileTypeSizeConfig[]
   confirmationText?: string
 }
 

@@ -28,18 +28,6 @@ namespace Kickoffa.API.Data.Repositories
 		}
 
 		/// <summary>
-		/// Busca componentes de upload por tamanho máximo
-		/// </summary>
-		public async Task<IEnumerable<IUploadComponent>> GetByMaxSizeAsync(int? maxSizeMB, CancellationToken cancellationToken)
-		{
-			return await _context.UploadComponents
-				.Where(u => u.MaxSizeMB == maxSizeMB)
-				.OrderBy(u => u.SectionId)
-				.ThenBy(u => u.Order)
-				.ToListAsync(cancellationToken);
-		}
-
-		/// <summary>
 		/// Busca componentes de upload por placeholder
 		/// </summary>
 		public async Task<IEnumerable<IUploadComponent>> GetByPlaceholderAsync(string placeholder, CancellationToken cancellationToken)
@@ -116,25 +104,6 @@ namespace Kickoffa.API.Data.Repositories
 		{
 			return await _context.UploadComponents
 				.Where(u => sectionIds.Contains(u.SectionId))
-				.OrderBy(u => u.SectionId)
-				.ThenBy(u => u.Order)
-				.ToListAsync(cancellationToken);
-		}
-
-		/// <summary>
-		/// Busca componentes de upload por faixa de tamanho
-		/// </summary>
-		public async Task<IEnumerable<IUploadComponent>> GetBySizeRangeAsync(int? minSizeMB, int? maxSizeMB, CancellationToken cancellationToken)
-		{
-			var query = _context.UploadComponents.AsQueryable();
-
-			if (minSizeMB.HasValue)
-				query = query.Where(u => u.MaxSizeMB >= minSizeMB.Value);
-
-			if (maxSizeMB.HasValue)
-				query = query.Where(u => u.MaxSizeMB <= maxSizeMB.Value);
-
-			return await query
 				.OrderBy(u => u.SectionId)
 				.ThenBy(u => u.Order)
 				.ToListAsync(cancellationToken);

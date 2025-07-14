@@ -1,5 +1,6 @@
 using Kickoffa.API.Application.Interfaces.Factories;
 using Kickoffa.API.Contracts.Checklist;
+using Kickoffa.API.Contracts.Checklist.Sections;
 using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models;
 using Kickoffa.API.Domain.Models.Enums;
@@ -21,16 +22,19 @@ namespace Kickoffa.API.Application.Factories
 		{
 			return sectionRequest.Type switch
 			{
-				SectionTypeRequest.Briefing => CreateBriefingSection(
-					checklistId: 0, // Será definido quando adicionado ao checklist
-					title: sectionRequest.Title,
-					order: sectionRequest.Order,
-					contentJson: sectionRequest.ContentJson,
-					contentHtml: sectionRequest.ContentHtml
-				),
+				SectionTypeRequest.Briefing => CreateBriefingSection(0, sectionRequest),
 				SectionTypeRequest.Checklist => await CreateChecklistSection(sectionRequest, cancellationToken),
 				_ => throw new ArgumentException($"Tipo de seção inválido: {sectionRequest.Type}")
 			};
+		}
+
+		///<inheritdoc/>
+		public IBriefingSection CreateBriefingSection(
+			long checklistId,
+			SectionRequest sectionRequest)
+		{
+			var briefingSection = ((BriefingSectionRequest)sectionRequest);
+			return new BriefingSection(checklistId, briefingSection.Title, briefingSection.Order, briefingSection.ContentJson, briefingSection.ContentHtml);
 		}
 
 		///<inheritdoc/>
@@ -74,9 +78,9 @@ namespace Kickoffa.API.Application.Factories
 			);
 
 			// Adicionar componentes se existirem
-			if (sectionRequest.Components is not null)
+			if (sectionRequest is ChecklistSectionRequest checklistSection && checklistSection.Components is not null)
 			{
-				foreach (var componentRequest in sectionRequest.Components.OrderBy(c => c.Order))
+				foreach (var componentRequest in checklistSection.Components.OrderBy(c => c.Order))
 				{
 					var component = await _componentFactory.CreateComponent(componentRequest, cancellationToken);
 					section.AddComponent(component);

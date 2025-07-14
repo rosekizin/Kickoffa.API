@@ -24,8 +24,6 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			entity.ToTable("UploadComponents");
 
 			// Configuração das propriedades específicas
-			entity.Property(u => u.MaxSizeMB);
-
 			entity.Property(u => u.Placeholder)
 				.HasMaxLength(200);
 
@@ -33,6 +31,12 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			entity.HasMany(u => u.ComponentFiles)
 				.WithOne(f => f.UploadComponent)
 				.HasForeignKey("UploadComponentId")
+				.OnDelete(DeleteBehavior.Cascade);
+
+			// Relacionamento com UploadComponentFileTypeSize (1:N)
+			entity.HasMany(u => u.FileTypeSizeConfigs)
+				.WithOne(s => s.UploadComponent)
+				.HasForeignKey(s => s.UploadComponentId)
 				.OnDelete(DeleteBehavior.Cascade);
 
 			// Relacionamento N:N unidirecional (UploadComponent → FileType)
@@ -53,11 +57,7 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			entity.HasIndex(u => new { u.SectionId, u.Order });
 
 			// Índices específicos para UploadComponent
-			entity.HasIndex(u => u.MaxSizeMB);
-
 			entity.HasIndex(u => u.Placeholder);
-
-			entity.HasIndex(u => new { u.SectionId, u.MaxSizeMB });
 		}
 	}
 }

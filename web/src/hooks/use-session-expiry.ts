@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/providers/toast-provider'
 import { AuthService } from '@/services/auth.service'
@@ -24,14 +24,14 @@ export const useSessionExpiry = (options: UseSessionExpiryOptions = {}) => {
   const router = useRouter()
   const { showSessionExpiredToast } = useToast()
 
-  const handleSessionExpired = () => {
+  const handleSessionExpired = useCallback(() => {
     // Callback customizado
     onSessionExpired?.()
 
     if (showToast && !showModal) {
       // Se não vai mostrar modal, mostra toast
       showSessionExpiredToast()
-      
+
       // Redireciona após o toast
       setTimeout(() => {
         router.push(redirectTo)
@@ -43,7 +43,7 @@ export const useSessionExpiry = (options: UseSessionExpiryOptions = {}) => {
       // Redireciona imediatamente
       router.push(redirectTo)
     }
-  }
+  }, [onSessionExpired, showToast, showModal, showSessionExpiredToast, router, redirectTo, setIsModalOpen])
 
   const handleModalRedirect = () => {
     setIsModalOpen(false)
@@ -64,7 +64,7 @@ export const useSessionExpiry = (options: UseSessionExpiryOptions = {}) => {
     return () => {
       window.removeEventListener('session-expired', handleUnauthorized as EventListener)
     }
-  }, [])
+  }, [handleSessionExpired])
 
   return {
     isModalOpen,

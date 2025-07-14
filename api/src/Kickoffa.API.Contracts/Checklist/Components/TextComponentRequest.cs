@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace Kickoffa.API.Contracts.Checklist.Components
 {
@@ -7,7 +8,10 @@ namespace Kickoffa.API.Contracts.Checklist.Components
 	/// </summary>
 	public sealed record TextComponentRequest : ComponentRequest
 	{
+		[JsonProperty(PropertyName = "placeholder", Required = Required.Default)]
 		public string? Placeholder { get; init; }
+
+		[JsonProperty(PropertyName = "maxLength", Required = Required.Default)]
 		public int? MaxLength { get; init; }
 
 		public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

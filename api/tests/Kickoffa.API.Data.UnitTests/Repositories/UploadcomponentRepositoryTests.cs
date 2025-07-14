@@ -53,22 +53,6 @@ public class UploadComponentRepositoryTests : IClassFixture<KickoffaDbContextFix
 		Assert.Empty(result);
 	}
 
-	[Theory]
-	[InlineData(5, 1)] // Logo da Empresa
-	[InlineData(10, 1)] // Documentos
-	[InlineData(50, 1)] // Vídeo Promocional
-	[InlineData(25, 0)] // Nenhum component com esse tamanho
-	public async Task GetByMaxSizeAsync_ShouldReturnCorrectResults(int? maxSizeMB, int expectedCount)
-	{
-		// Act
-		var result = await _repository.GetByMaxSizeAsync(maxSizeMB, _cancellationToken);
-
-		// Assert
-		var components = result.ToList();
-		Assert.Equal(expectedCount, components.Count);
-		Assert.All(components, i => Assert.Equal(maxSizeMB, i.MaxSizeMB));
-	}
-
 	[Fact]
 	public async Task GetByPlaceholderAsync_ShouldReturnCorrectComponents()
 	{
@@ -166,26 +150,6 @@ public class UploadComponentRepositoryTests : IClassFixture<KickoffaDbContextFix
 		Assert.All(components, i => Assert.Contains(i.SectionId, sectionIds));
 	}
 
-	[Theory]
-	[InlineData(1, 10, 2)] // Logo (5MB) e Documentos (10MB)
-	[InlineData(6, 50, 2)] // Apenas Vídeo (50MB)
-	[InlineData(1, 4, 0)] // Nenhum nessa faixa
-	public async Task GetBySizeRangeAsync_ShouldReturnCorrectResults(int? minSizeMB, int? maxSizeMB, int expectedCount)
-	{
-		// Act
-		var result = await _repository.GetBySizeRangeAsync(minSizeMB, maxSizeMB, _cancellationToken);
-
-		// Assert
-		var components = result.ToList();
-		Assert.Equal(expectedCount, components.Count);
-		
-		if (minSizeMB.HasValue)
-			Assert.All(components, i => Assert.True(i.MaxSizeMB >= minSizeMB.Value));
-		
-		if (maxSizeMB.HasValue)
-			Assert.All(components, i => Assert.True(i.MaxSizeMB <= maxSizeMB.Value));
-	}
-
 	[Fact]
 	public async Task GetByIdAsync_ShouldIncludeSectionAndRelationships()
 	{
@@ -244,9 +208,9 @@ public class UploadComponentRepositoryTests : IClassFixture<KickoffaDbContextFix
 		// Criar itens de upload com diferentes configurações
 		var uploadComponents = new List<UploadComponent>
 		{
-			new(section.Id, "Logo da Empresa", 1, "Upload do logo da empresa", true, "Selecione o arquivo do logo", 5),
-			new(section.Id, "Documentos", 2, "Upload de documentos", true, "Selecione os documentos", 10),
-			new(section.Id, "Vídeo Promocional", 3, "Upload do vídeo promocional", false, "Selecione o vídeo", 50)
+			new(section.Id, "Logo da Empresa", 1, "Upload do logo da empresa", true, "Selecione o arquivo do logo"),
+			new(section.Id, "Documentos", 2, "Upload de documentos", true, "Selecione os documentos"),
+			new(section.Id, "Vídeo Promocional", 3, "Upload do vídeo promocional", false, "Selecione o vídeo")
 		};
 
 		_dbContext.UploadComponents.AddRange(uploadComponents);

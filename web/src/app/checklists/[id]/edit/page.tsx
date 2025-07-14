@@ -55,8 +55,7 @@ export default function EditChecklistPage() {
   const [showPreview, setShowPreview] = useState(false)
   const [sectionEditingStates, setSectionEditingStates] = useState<Record<number, boolean>>({})
   const [showNewComponentEditor, setShowNewComponentEditor] = useState(false)
-  const [editingComponentId, setEditingComponentId] = useState<number | null>(null)
-  const [viewingComponentId, setViewingComponentId] = useState<number | null>(null)
+  const [activeComponentId, setActiveComponentId] = useState<number | null>(null)
   const [isViewMode, setIsViewMode] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
   const [componentToDelete, setComponentToDelete] = useState<{ sectionId: number, componentId: number } | null>(null)
@@ -136,7 +135,7 @@ export default function EditChecklistPage() {
 
   const addSection = (type: 'briefing' | 'checklist') => {
     const newSection: Section = {
-      id: Date.now(), // Usar timestamp como ID temporário
+      id: 0, // zero para indicar nova seção
       title: type === 'briefing' ? 'Nova Seção de Briefing' : 'Nova Seção de Checklist',
       type,
       order: sections.length + 1,
@@ -201,13 +200,13 @@ export default function EditChecklistPage() {
       if (section.id === sectionId) {
         const components = section.components || []
 
-        if (editingComponentId) {
+        if (activeComponentId) {
           // Editando componente existente
           return {
             ...section,
             components: components.map(existingComponent =>
-              existingComponent.id === editingComponentId
-                ? { ...component, id: editingComponentId }
+              existingComponent.id === activeComponentId
+                ? { ...component, id: activeComponentId }
                 : existingComponent
             )
           }
@@ -224,21 +223,18 @@ export default function EditChecklistPage() {
 
     // Esconder editor e resetar estados
     setShowNewComponentEditor(false)
-    setEditingComponentId(null)
-    setViewingComponentId(null)
+    setActiveComponentId(null)
     setIsViewMode(false)
   }
 
   const handleViewComponent = (sectionId: number, componentId: number) => {
-    setViewingComponentId(componentId)
-    setEditingComponentId(componentId)
+    setActiveComponentId(componentId)
     setIsViewMode(true)
     setShowNewComponentEditor(true)
   }
 
   const handleEditComponent = (sectionId: number, componentId: number) => {
-    setViewingComponentId(componentId)
-    setEditingComponentId(componentId)
+    setActiveComponentId(componentId)
     setIsViewMode(false)
     setShowNewComponentEditor(true)
   }
@@ -262,10 +258,9 @@ export default function EditChecklistPage() {
       }))
 
       // Se estava editando/visualizando o componente deletado, fechar o editor
-      if (editingComponentId === componentId || viewingComponentId === componentId) {
+      if (activeComponentId === componentId) {
         setShowNewComponentEditor(false)
-        setEditingComponentId(null)
-        setViewingComponentId(null)
+        setActiveComponentId(null)
         setIsViewMode(false)
       }
 
@@ -279,8 +274,7 @@ export default function EditChecklistPage() {
 
   const handleCancelComponentEdit = () => {
     setShowNewComponentEditor(false)
-    setEditingComponentId(null)
-    setViewingComponentId(null)
+    setActiveComponentId(null)
     setIsViewMode(false)
   }
 
@@ -338,9 +332,9 @@ export default function EditChecklistPage() {
           }),
           ...(component.type === 'upload' && {
             placeholder: component.placeholder,
-            maxSizeMB: component.maxSizeMB,
             // Construir allowedFileTypeIds a partir de allowedFileTypes
-            allowedFileTypeIds: component.allowedFileTypes?.map((fileType: any) => fileType.id) || []
+            allowedFileTypeIds: component.allowedFileTypes?.map((fileType: import('@/types').FileType) => fileType.id) || [],
+            fileTypeSizeConfigs: component.fileTypeSizeConfigs
           }),
           ...(component.type === 'confirmation' && {
             confirmationText: component.confirmationText
@@ -360,6 +354,7 @@ export default function EditChecklistPage() {
     }
 
     try {
+      console.log(JSON.stringify(checklistData, null, 2))
       const result = await updateChecklistMutation.mutateAsync({
         id: checklistId,
         data: checklistData
@@ -712,8 +707,8 @@ export default function EditChecklistPage() {
                               onViewComponent={(componentId) => handleViewComponent(activeSecData.id, componentId)}
                               onEditComponent={(componentId) => handleEditComponent(activeSecData.id, componentId)}
                               onDeleteComponent={(componentId) => handleDeleteComponent(activeSecData.id, componentId)}
-                              activeComponentId={editingComponentId || viewingComponentId}
-                              isEditMode={!isViewMode && (editingComponentId !== null)}
+                              activeComponentId={activeComponentId}
+                              isEditMode={!isViewMode && (activeComponentId !== null)}
                             />
                           )}
 
@@ -721,9 +716,12 @@ export default function EditChecklistPage() {
                           {showNewComponentEditor && (
                             <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-6">
                               <ChecklistComponentEditor
-                                component={editingComponentId ? activeSecData.components?.find(component => component.id === editingComponentId) : undefined}
+                                component={activeComponentId ? activeSecData.components?.find(component => component.id === activeComponentId) : undefined}
                                 sectionId={activeSecData.id}
-                                order={(activeSecData.components?.length || 0) + 1}
+                                order={activeComponentId
+                                  ? activeSecData.components?.find(component => component.id === activeComponentId)?.order || 1
+                                  : (activeSecData.components?.length || 0) + 1
+                                }
                                 onSave={(component) => handleComponentSave(activeSecData.id, component)}
                                 onCancel={handleCancelComponentEdit}
                                 onEdit={handleSwitchToEdit}

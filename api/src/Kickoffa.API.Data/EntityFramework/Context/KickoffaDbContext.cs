@@ -26,6 +26,7 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 		DbSet<BriefingMedia> BriefingMedias { get; }
 		DbSet<FileType> FileTypes { get; }
 		DbSet<UploadComponentFile> UploadComponentFiles { get; }
+		DbSet<UploadComponentFileTypeSize> UploadComponentFileTypeSizes { get; }
 		// Users é gerenciado pelo Identity, não precisamos expor aqui
 		IDbContextTransaction BeginTransaction();
 		Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
@@ -44,6 +45,7 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 		private readonly IBriefingMediaEntityFrameworkMapping _briefingMediaEntityFrameworkMapping;
 		private readonly IFileTypeEntityFrameworkMapping _fileTypeEntityFrameworkMapping;
 		private readonly IUploadComponentFileEntityFrameworkMapping _uploadComponentFileEntityFrameworkMapping;
+		private readonly IUploadComponentFileTypeSizeEntityFrameworkMapping _uploadComponentFileTypeSizeEntityFrameworkMapping;
 		private readonly ITextComponentEntityFrameworkMapping _textComponentEntityFrameworkMapping;
 		private readonly IUploadComponentEntityFrameworkMapping _uploadComponentEntityFrameworkMapping;
 		private readonly IConfirmationComponentEntityFrameworkMapping _confirmationComponentEntityFrameworkMapping;
@@ -63,6 +65,7 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 			IBriefingMediaEntityFrameworkMapping briefingMediaEntityFrameworkMapping,
 			IFileTypeEntityFrameworkMapping fileTypeEntityFrameworkMapping,
 			IUploadComponentFileEntityFrameworkMapping uploadComponentFileEntityFrameworkMapping,
+			IUploadComponentFileTypeSizeEntityFrameworkMapping uploadComponentFileTypeSizeEntityFrameworkMapping,
 			ITextComponentEntityFrameworkMapping textComponentEntityFrameworkMapping,
 			IUploadComponentEntityFrameworkMapping uploadComponentEntityFrameworkMapping,
 			IConfirmationComponentEntityFrameworkMapping confirmationComponentEntityFrameworkMapping,
@@ -79,6 +82,7 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 			_briefingMediaEntityFrameworkMapping = briefingMediaEntityFrameworkMapping;
 			_fileTypeEntityFrameworkMapping = fileTypeEntityFrameworkMapping;
 			_uploadComponentFileEntityFrameworkMapping = uploadComponentFileEntityFrameworkMapping;
+			_uploadComponentFileTypeSizeEntityFrameworkMapping = uploadComponentFileTypeSizeEntityFrameworkMapping;
 			_textComponentEntityFrameworkMapping = textComponentEntityFrameworkMapping;
 			_uploadComponentEntityFrameworkMapping = uploadComponentEntityFrameworkMapping;
 			_confirmationComponentEntityFrameworkMapping = confirmationComponentEntityFrameworkMapping;
@@ -99,6 +103,7 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 		public DbSet<BriefingMedia> BriefingMedias { get; private set; }
 		public DbSet<FileType> FileTypes { get; private set; }
 		public DbSet<UploadComponentFile> UploadComponentFiles { get; private set; }
+		public DbSet<UploadComponentFileTypeSize> UploadComponentFileTypeSizes { get; private set; }
 
 		public IDbContextTransaction BeginTransaction()
 		{
@@ -115,6 +120,7 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 			_fileTypeEntityFrameworkMapping.Map(modelBuilder);
 			_briefingMediaEntityFrameworkMapping.Map(modelBuilder);
 			_uploadComponentFileEntityFrameworkMapping.Map(modelBuilder);
+			_uploadComponentFileTypeSizeEntityFrameworkMapping.Map(modelBuilder);
 
 			// Mapeamentos com filtro de usuário (exceto Component base)
 			_checklistEntityFrameworkMapping.Map(modelBuilder, _currentUserService);

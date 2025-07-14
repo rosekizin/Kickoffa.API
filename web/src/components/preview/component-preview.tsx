@@ -14,8 +14,8 @@ interface ComponentPreviewProps {
     // Propriedades específicas por tipo - seguindo padrão do domínio
     placeholder?: string
     maxLength?: number
-    maxSizeMB?: number
     allowedFileTypes?: import('@/types').FileType[]
+    fileTypeSizeConfigs?: import('@/types').FileTypeSizeConfig[]
     confirmationText?: string
   }
 }
@@ -101,15 +101,22 @@ export const ComponentPreview = ({ component }: ComponentPreviewProps) => {
               <p className="text-sm text-gray-600 mb-1">
                 {component.placeholder || 'Arraste arquivos aqui ou clique para selecionar'}
               </p>
-              {component.allowedMimeTypes && (
-                <p className="text-xs text-gray-500">
-                  Tipos permitidos: {component.allowedMimeTypes}
-                </p>
-              )}
-              {component.maxSizeMB && (
-                <p className="text-xs text-gray-500">
-                  Tamanho máximo: {component.maxSizeMB}MB por arquivo
-                </p>
+              {component.allowedFileTypes && component.allowedFileTypes.length > 0 && (
+                <div className="text-xs text-gray-500 space-y-1">
+                  <p>Tipos de arquivo permitidos:</p>
+                  <div className="space-y-1">
+                    {component.allowedFileTypes.map(fileType => {
+                      const sizeConfig = component.fileTypeSizeConfigs?.find(config => config.fileTypeId === fileType.id)
+                      const maxSize = sizeConfig?.maxSizeMB || fileType.recommendedMaxSizeMB || 10
+                      return (
+                        <div key={fileType.id} className="flex justify-between items-center bg-gray-100 px-2 py-1 rounded">
+                          <span>{fileType.displayName}</span>
+                          <span className="text-blue-600 font-medium">Máx: {maxSize}MB</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
               )}
             </div>
             

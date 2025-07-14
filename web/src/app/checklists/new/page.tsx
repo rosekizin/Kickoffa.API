@@ -204,8 +204,8 @@ export default function NewChecklistPage() {
           }),
           ...(componentWithoutId.type === 'upload' && {
             placeholder: componentWithoutId.placeholder,
-            maxSizeMB: componentWithoutId.maxSizeMB,
-            allowedFileTypeIds: componentWithoutId.allowedFileTypeIds
+            allowedFileTypeIds: componentWithoutId.allowedFileTypeIds,
+            fileTypeSizeConfigs: componentWithoutId.fileTypeSizeConfigs
           }),
           ...(componentWithoutId.type === 'confirmation' && {
             confirmationText: componentWithoutId.confirmationText

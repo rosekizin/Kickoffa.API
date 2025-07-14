@@ -32,8 +32,26 @@ public class FileTypeControllerTests
 		// Arrange
 		var expectedResponse = new FileTypesSearchResponse(
 			[
-				new(1, "image/jpeg", ".jpg", "Imagem JPEG", "Formato de imagem comprimida", "Image", 10),
-				new(2, "application/pdf", ".pdf", "Documento PDF", "Documento portátil", "Document", 25)
+				new FileTypeResponse
+				{ 
+					Id = 1,
+					MimeType = "image/jpeg",
+					Extension = ".jpg",
+					DisplayName = "Imagem JPEG",
+					Description = "Formato de imagem comprimida",
+					Category = "Image",
+					RecommendedMaxSizeMB = 10
+				},
+				new FileTypeResponse
+				{ 
+					Id = 2,
+					MimeType = "application/pdf",
+					Extension = ".pdf",
+					DisplayName = "Documento PDF",
+					Description = "Documento portátil",
+					Category = "Document",
+					RecommendedMaxSizeMB = 25
+				}
 			],
 			2
 		);
@@ -97,7 +115,16 @@ public class FileTypeControllerTests
 		// Arrange
 		var expectedResponse = new FileTypesSearchResponse(
 			[
-				new(1, "image/jpeg", ".jpg", "Imagem JPEG", "Formato de imagem comprimida", "Image", 10)
+				new FileTypeResponse
+				{
+					Id = 1,
+					MimeType = "image/jpeg",
+					Extension = ".jpg",
+					DisplayName = "Imagem JPEG",
+					Description = "Formato de imagem comprimida",
+					Category = "Image",
+					RecommendedMaxSizeMB = 10
+				}
 			],
 			1
 		);
@@ -140,7 +167,16 @@ public class FileTypeControllerTests
 		// Arrange
 		var expectedResponse = new FileTypesSearchResponse(
 			[
-				new(1, "image/jpeg", ".jpg", "Imagem JPEG", "Formato de imagem comprimida", category.ToString(), 10)
+				new FileTypeResponse
+				{
+					Id = 1,
+					MimeType = "image/jpeg",
+					Extension = ".jpg",
+					DisplayName = "Imagem JPEG",
+					Description = "Formato de imagem comprimida",
+					Category = category.ToString(),
+					RecommendedMaxSizeMB = 10
+				}
 			],
 			1
 		);

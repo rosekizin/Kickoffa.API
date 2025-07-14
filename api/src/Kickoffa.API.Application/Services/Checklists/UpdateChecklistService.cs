@@ -2,6 +2,7 @@ using Kickoffa.API.Application.Interfaces.Checkilists;
 using Kickoffa.API.Application.Interfaces.Factories;
 using Kickoffa.API.Contracts.Checklist;
 using Kickoffa.API.Contracts.Checklist.Components;
+using Kickoffa.API.Contracts.Checklist.Sections;
 using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models;
 using Kickoffa.API.Domain.Models.Components;
@@ -24,6 +25,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 		private readonly IComponentFactory _componentFactory;
 		private readonly IMapChecklistToResponse _mapChecklistToResponse;
 		private readonly IFileTypeRepository _fileTypeRepository;
+		private readonly IUploadComponentFileTypeSizeRepository _uploadComponentFileTypeSizeRepository;
 
 		public UpdateChecklistService(
 			IUnitOfWork unitOfWork,
@@ -34,7 +36,8 @@ namespace Kickoffa.API.Application.Services.Checklists
 			IComponentFactory componentFactory,
 			IMapChecklistToResponse mapChecklistToResponse,
 			IBriefingMediaRepository briefingMediaRepository,
-			IFileTypeRepository fileTypeRepository)
+			IFileTypeRepository fileTypeRepository,
+			IUploadComponentFileTypeSizeRepository uploadComponentFileTypeSizeRepository)
 		{
 			_unitOfWork = unitOfWork;
 			_checklistRepository = checklistRepository;
@@ -45,6 +48,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 			_mapChecklistToResponse = mapChecklistToResponse;
 			_briefingMediaRepository = briefingMediaRepository;
 			_fileTypeRepository = fileTypeRepository;
+			_uploadComponentFileTypeSizeRepository = uploadComponentFileTypeSizeRepository;
 		}
 
 		/// <inheritdoc />
@@ -131,10 +135,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 			{
 				newSection = _sectionFactory.CreateBriefingSection(
 					checklistId,
-					sectionRequest.Title,
-					sectionRequest.Order,
-					sectionRequest.ContentJson,
-					sectionRequest.ContentHtml);
+					sectionRequest);
 			}
 			else
 			{
@@ -143,10 +144,11 @@ namespace Kickoffa.API.Application.Services.Checklists
 					sectionRequest.Title,
 					sectionRequest.Order);
 
-				// Se for seção de checklist, criar componentes
-				if (sectionRequest.Components != null)
+				var checklistSectionRequest = (ChecklistSectionRequest)sectionRequest;
+
+				if (checklistSectionRequest.Components != null)
 				{
-					foreach (var componentRequest in sectionRequest.Components.OrderBy(c => c.Order))
+					foreach (var componentRequest in checklistSectionRequest.Components.OrderBy(c => c.Order))
 					{
 						var component = await _componentFactory.CreateComponent(componentRequest, cancellationToken);
 						((ChecklistSection)newSection).AddComponent(component);
@@ -194,12 +196,14 @@ namespace Kickoffa.API.Application.Services.Checklists
 			// Se for seção de briefing, atualizar conteúdo
 			if (existingSection is BriefingSection briefingSection && updatedSectionRequest.Type == SectionTypeRequest.Briefing)
 			{
-				briefingSection.UpdateContent(updatedSectionRequest.ContentJson, updatedSectionRequest.ContentHtml);
+				var updatedBriefingSectionRequest = (BriefingSectionRequest)updatedSectionRequest;
+				briefingSection.UpdateContent(updatedBriefingSectionRequest.ContentJson, updatedBriefingSectionRequest.ContentHtml);
 			}
 			// Se for seção de checklist, atualizar componentes
 			else if (existingSection is ChecklistSection checklistSection && updatedSectionRequest.Type == SectionTypeRequest.Checklist)
 			{
-				await UpdateSectionComponentsAsync(checklistSection, updatedSectionRequest.Components ?? [], cancellationToken);
+				var updatedChecklistSectionRequest = (ChecklistSectionRequest)updatedSectionRequest;
+				await UpdateSectionComponentsAsync(checklistSection, updatedChecklistSectionRequest.Components ?? [], cancellationToken);
 			}
 		}
 
@@ -278,7 +282,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 
 		private async Task UpdateUploadComponent(UploadComponent uploadComponent, UploadComponentRequest updatedUploadComponent, CancellationToken cancellationToken)
 		{
-			uploadComponent.UpdateBasicProperties(updatedUploadComponent.MaxSizeMB, updatedUploadComponent.Placeholder);
+			uploadComponent.UpdateBasicProperties(updatedUploadComponent.Placeholder);
 
 			var existingAllowedFileTypes = uploadComponent.AllowedFileTypes;
 			var updatingAllowedFileTypes = updatedUploadComponent.AllowedFileTypeIds;
@@ -293,6 +297,50 @@ namespace Kickoffa.API.Application.Services.Checklists
 
 			foreach (var fileType in allowedFileTypesToAdd)
 				uploadComponent.AllowedFileTypes.Add((FileType)fileType);
+
+			// Atualizar configurações de tamanho por tipo de arquivo
+			if (updatedUploadComponent.FileTypeSizeConfigs != null && updatedUploadComponent.FileTypeSizeConfigs.Any())
+			{
+				await UpdateFileTypeSizeConfigs(uploadComponent, updatedUploadComponent.FileTypeSizeConfigs, cancellationToken);
+			}
+		}
+
+		private async Task UpdateFileTypeSizeConfigs(UploadComponent uploadComponent, IEnumerable<FileTypeSizeConfigRequest> fileTypeSizeConfigs, CancellationToken cancellationToken)
+		{
+			// Buscar configurações existentes
+			var existingConfigs = await _uploadComponentFileTypeSizeRepository.GetByUploadComponentIdAsync(uploadComponent.Id, cancellationToken);
+			var existingConfigsDict = existingConfigs.ToDictionary(c => c.FileTypeId, c => c);
+
+			// Processar cada configuração recebida
+			foreach (var configRequest in fileTypeSizeConfigs)
+			{
+				if (existingConfigsDict.TryGetValue(configRequest.FileTypeId, out var existingConfig))
+				{
+					// Atualizar configuração existente se o valor mudou
+					if (existingConfig.MaxSizeMB != configRequest.MaxSizeMB)
+					{
+						uploadComponent.UpdateFileTypeSizeConfig(configRequest.FileTypeId, configRequest.MaxSizeMB);
+					}
+				}
+				else
+				{
+					// Criar nova configuração
+					uploadComponent.UpdateFileTypeSizeConfig(configRequest.FileTypeId, configRequest.MaxSizeMB);
+				}
+			}
+
+			// Remover configurações que não estão mais na lista (tipos de arquivo removidos)
+			var requestedFileTypeIds = fileTypeSizeConfigs.Select(c => c.FileTypeId).ToHashSet();
+			var allowedFileTypeIds = uploadComponent.AllowedFileTypes.Select(ft => ft.Id).ToHashSet();
+
+			foreach (var existingConfig in existingConfigs)
+			{
+				// Remove configuração se o tipo de arquivo não está mais permitido
+				if (!allowedFileTypeIds.Contains(existingConfig.FileTypeId))
+				{
+					uploadComponent.RemoveFileTypeSizeConfig(existingConfig.FileTypeId);
+				}
+			}
 		}
 	}
 }

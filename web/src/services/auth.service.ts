@@ -137,52 +137,22 @@ export class AuthService {
 
   /**
    * Configura interceptors para trabalhar com HttpOnly cookies
+   * REMOVIDO: Interceptors duplicados que causavam conflitos
    */
   static setupInterceptors(): void {
-    // Request interceptor - configurar withCredentials para enviar cookies
-    api.interceptors.request.use(
-      (config) => {
-        // Sempre enviar cookies HttpOnly
-        config.withCredentials = true
-        return config
-      },
-      (error) => Promise.reject(error)
-    )
-
-    // Response interceptor - tratar erros de autenticação
-    api.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (error.response?.status === 401) {
-          // Token expirado ou inválido - cookies serão limpos pelo servidor
-          this.clearAuthData()
-
-          // Disparar evento de sessão expirada para notificar componentes
-          if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/login')) {
-            console.warn('🔒 AuthService: Sessão expirada detectada - disparando evento')
-
-            const sessionExpiredEvent = new CustomEvent('session-expired', {
-              detail: {
-                status: 401,
-                message: 'Sessão expirada',
-                timestamp: new Date().toISOString(),
-                source: 'AuthService'
-              }
-            })
-            window.dispatchEvent(sessionExpiredEvent)
-          }
-        }
-        return Promise.reject(error)
-      }
-    )
+    // Interceptors já configurados no api.ts
+    // Removendo duplicação para evitar conflitos
+    console.log('🔧 AuthService: Interceptors já configurados no api.ts')
   }
 
   /**
    * Formata mensagens de erro de autenticação
    */
-  static getErrorMessage(error: any): string {
+  static getErrorMessage(error: unknown): string {
     return ErrorUtils.extractErrorMessage(error)
   }
+
+
 
   /**
    * Obtém informações do usuário atual
