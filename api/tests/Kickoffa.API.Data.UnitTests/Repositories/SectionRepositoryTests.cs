@@ -183,8 +183,8 @@ public class SectionRepositoryTests : IClassFixture<KickoffaDbContextFixture>, I
 		// Criar checklists primeiro
 		var checklists = new List<Checklist>
 		{
-			new(1, "Checklist 1", "checklist-1", "Descrição 1", null),
-			new(2, "Checklist 2", "checklist-2", "Descrição 2", null)
+			new(1, 1, "Checklist 1", "checklist-1", "Descrição 1", null),
+			new(2, 1, "Checklist 2", "checklist-2", "Descrição 2", null)
 		};
 
 		_dbContext.Checklists.AddRange(checklists);

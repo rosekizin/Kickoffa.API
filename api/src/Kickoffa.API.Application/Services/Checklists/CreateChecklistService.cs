@@ -44,6 +44,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 			// Criar checklist
 			var checklist = _checklistFactory.CreateChecklist(
 				ownerId: ownerId,
+				customerId: request.CustomerId,
 				title: request.Title,
 				customSlug: slug,
 				description: request.Description,

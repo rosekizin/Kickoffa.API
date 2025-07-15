@@ -38,13 +38,13 @@ namespace Kickoffa.API.Data.Repositories
 		}
 
 		/// <summary>
-		/// Busca checklists por proprietário
+		/// Busca todas as checklists
 		/// </summary>
-		public async Task<IEnumerable<IChecklist>> GetByOwnerIdAsync(long ownerId, CancellationToken cancellationToken)
+		public override async Task<IEnumerable<IChecklist>> GetAllAsync(CancellationToken cancellationToken)
 		{
 			return await _context.Checklists
 				.Include(c => c.Sections)
-				.Where(c => c.OwnerId == ownerId)
+				.Include(c => c.Customer)
 				.OrderByDescending(c => c.CreatedDateUtc)
 				.ToListAsync(cancellationToken);
 		}
@@ -87,17 +87,6 @@ namespace Kickoffa.API.Data.Repositories
 		}
 
 		/// <summary>
-		/// Override para incluir seções por padrão
-		/// </summary>
-		public override async Task<IEnumerable<IChecklist>> GetAllAsync(CancellationToken cancellationToken)
-		{
-			return await _context.Checklists
-				.Include(c => c.Sections)
-				.OrderByDescending(c => c.CreatedDateUtc)
-				.ToListAsync(cancellationToken);
-		}
-
-		/// <summary>
 		/// Busca checklist por ID incluindo toda a hierarquia: Sections -> Components -> Status
 		/// </summary>
 		public async Task<IChecklist?> GetByIdWithFullHierarchyAsync(long id, CancellationToken cancellationToken)
@@ -119,6 +108,7 @@ namespace Kickoffa.API.Data.Repositories
 			// Estratégia otimizada: Split Queries para evitar JOINs complexos
 			var checklist = await _context.Checklists
 				//.AsSplitQuery() // Divide em múltiplas queries menores e mais eficientes
+				.Include(c => c.Customer)
 				.Include(c => c.Sections)
 					.ThenInclude(s => ((ChecklistSection)s).Components)
 						.ThenInclude(comp => comp.Status)

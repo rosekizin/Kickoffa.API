@@ -2,11 +2,13 @@
 using Kickoffa.API.Contracts.Checklist;
 using Kickoffa.API.Contracts.Checklist.Components;
 using Kickoffa.API.Contracts.Checklist.Sections;
+using Kickoffa.API.Contracts.Customer;
 using Kickoffa.API.Contracts.FileType;
 using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models;
 using Kickoffa.API.Domain.Models.Components;
+using Kickoffa.API.Domain.Models.FreelancerCustomer;
 
 namespace Kickoffa.API.Application.Services.Checklists
 {
@@ -21,6 +23,8 @@ namespace Kickoffa.API.Application.Services.Checklists
 			{
 				Id = checklist.Id,
 				OwnerId = checklist.OwnerId,
+				CustomerId = checklist.CustomerId,
+				Customer = MapCustomerToResponse(checklist),
 				Title = checklist.Title,
 				Slug = checklist.Slug,
 				Description = checklist.Description,
@@ -30,6 +34,41 @@ namespace Kickoffa.API.Application.Services.Checklists
 				Sections = checklist.Sections.OrderBy(s => s.Order).Select(MapSectionToResponse).ToList(),
 				CreatedDateUtc = checklist.CreatedDateUtc,
 				LastUpdatedDateUtc = checklist.LastUpdatedDateUtc
+			};
+		}
+
+		/// <summary>
+		/// Mapeia as informações do customer do checklist para CustomerResponse
+		/// </summary>
+		private static CustomerResponse? MapCustomerToResponse(IChecklist checklist)
+		{
+			return checklist.Customer switch
+			{
+				NaturalPerson naturalPerson => new CustomerResponse
+				{
+					Id = naturalPerson.Id,
+					FirstName = naturalPerson.FirstName,
+					LastName = naturalPerson.LastName,
+					Email = naturalPerson.Email,
+					PhoneNumber = naturalPerson.PhoneNumber,
+					Address = naturalPerson.Address,
+					Cpf = naturalPerson.Cpf,
+					Type = (CustomerType)naturalPerson.Type,
+					CreatedDateUtc = naturalPerson.CreatedDateUtc,
+					LastUpdatedDateUtc = naturalPerson.LastUpdatedDateUtc
+				},
+				LegalPerson legalPerson => new CustomerResponse
+				{
+					Id = legalPerson.Id,
+					Company = legalPerson.Company,
+					Email = legalPerson.Email,
+					PhoneNumber = legalPerson.PhoneNumber,
+					Cnpj = legalPerson.Cnpj,
+					Type = (CustomerType)legalPerson.Type,
+					CreatedDateUtc = legalPerson.CreatedDateUtc,
+					LastUpdatedDateUtc = legalPerson.LastUpdatedDateUtc
+				},
+				_ => null // Caso não seja um tipo suportado, retorna null
 			};
 		}
 

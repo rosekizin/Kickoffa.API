@@ -36,6 +36,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 		{
 			// Arrange
 			var ownerId = 1L;
+			var customerId = 1L;
 			var request = CreateValidChecklistRequest();
 
 			_checklistRepository
@@ -43,9 +44,9 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 				.Returns(false);
 
 			var expectedSlug = "test-acao-checklist";
-			var newChecklist = new Checklist(ownerId, request.Title, expectedSlug, request.Description, request.Deadline);
+			var newChecklist = new Checklist(ownerId, customerId, request.Title, expectedSlug, request.Description, request.Deadline);
 			_checklistFactory
-				.CreateChecklist(ownerId, request.Title, request.Description, request.Deadline, expectedSlug)
+				.CreateChecklist(ownerId, customerId, request.Title, request.Description, request.Deadline, expectedSlug)
 				.Returns(newChecklist);
 
 			foreach (var sectionRequest in request.Sections)
@@ -76,6 +77,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 		{
 			// Arrange
 			var ownerId = 1L;
+			var customerId = 1L;
 			var request = CreateValidChecklistRequest();
 
 			// Simular que o primeiro slug já existe, mas o segundo não
@@ -85,9 +87,9 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 				.Returns(false);
 
 			var expectedSlug = "test-acao-checklist-1";
-			var newChecklist = new Checklist(ownerId, request.Title, expectedSlug, request.Description, request.Deadline);
+			var newChecklist = new Checklist(ownerId, customerId, request.Title, expectedSlug, request.Description, request.Deadline);
 			_checklistFactory
-				.CreateChecklist(ownerId, request.Title, request.Description, request.Deadline, expectedSlug)
+				.CreateChecklist(ownerId, customerId, request.Title, request.Description, request.Deadline, expectedSlug)
 				.Returns(newChecklist);
 
 			foreach (var sectionRequest in request.Sections)
@@ -124,6 +126,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			return new ChecklistRequest
 			{
 				Id = 1,
+				CustomerId = 1,
 				Title = "Test Ação - Checklist $",
 				Description = "Test description",
 				Deadline = DateTime.UtcNow.AddDays(7),

@@ -10,10 +10,12 @@ import { SortableChecklistComponents } from '@/components/checklist/sortable-che
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Button } from '@/components/ui/button'
 import { ComponentPreview } from '@/components/preview/component-preview'
-import { CreateComponentRequest, CreateChecklistRequest, CreateSectionRequest } from '@/types'
+import { CreateComponentRequest, CreateChecklistRequest, CreateSectionRequest, Customer } from '@/types'
 import { useCreateChecklist } from '@/hooks/use-api'
 import { useToast } from '@/components/providers/toast-provider'
 import { useApiError } from '@/hooks/use-api-error'
+import { CustomerModal } from '@/components/customers/customer-modal'
+import { CustomerSelector } from '@/components/customers/customer-selector'
 import {
   Save,
   Eye,
@@ -41,6 +43,8 @@ export default function NewChecklistPage() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [deadline, setDeadline] = useState('')
+  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null)
+  const [showCustomerModal, setShowCustomerModal] = useState(false)
   const [sections, setSections] = useState<Section[]>([])
   const [activeSection, setActiveSection] = useState<number | null>(null)
   const [showPreview, setShowPreview] = useState(false)
@@ -216,7 +220,18 @@ export default function NewChecklistPage() {
       }) : undefined
     }))
 
+    // Validar se customer foi selecionado
+    if (!selectedCustomerId) {
+      showToast({
+        type: 'error',
+        title: 'Cliente obrigatório',
+        description: 'Por favor, selecione um cliente para o checklist'
+      })
+      return
+    }
+
     const checklistData: CreateChecklistRequest = {
+      customerId: selectedCustomerId,
       title: title.trim(),
       description: description.trim() || undefined,
       deadline: deadline || undefined,
@@ -244,6 +259,22 @@ export default function NewChecklistPage() {
     // TODO: Implementar publicação
     console.log('Publicando checklist...')
   }
+
+  const handleCustomerSave = (customer: Customer) => {
+    setSelectedCustomerId(customer.id)
+    setShowCustomerModal(false)
+    showToast({
+      type: 'success',
+      title: 'Cliente selecionado',
+      description: `Cliente ${customer.firstName} ${customer.lastName} foi selecionado`
+    })
+  }
+
+  const handleNewCustomer = () => {
+    setShowCustomerModal(true)
+  }
+
+
 
   const activeSecData = sections.find(s => s.id === activeSection)
 
@@ -303,7 +334,7 @@ export default function NewChecklistPage() {
 
             <Button
               onClick={handleSaveChecklist}
-              disabled={!title.trim() || createChecklistMutation.isPending}
+              disabled={!title.trim() || !selectedCustomerId || createChecklistMutation.isPending}
               variant="ghost"
               size="sm"
               className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 disabled:opacity-50"
@@ -314,7 +345,7 @@ export default function NewChecklistPage() {
 
             <Button
               onClick={handlePublishChecklist}
-              disabled={!title.trim() || sections.length === 0}
+              disabled={!title.trim() || !selectedCustomerId || sections.length === 0}
               size="sm"
               className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm disabled:opacity-50"
               title="Publicar Checklist"
@@ -377,7 +408,19 @@ export default function NewChecklistPage() {
                     onChange={(e) => setDeadline(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                    </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Cliente *
+                  </label>
+                  <CustomerSelector
+                    selectedCustomerId={selectedCustomerId}
+                    onSelectionChange={setSelectedCustomerId}
+                    onNewCustomer={handleNewCustomer}
+                    placeholder="Selecione um cliente..."
+                  />
+                </div>
                   </div>
                   </CollapsibleSection>
 
@@ -614,6 +657,15 @@ export default function NewChecklistPage() {
           </div>
         </div>
       </div>
+
+      {/* Customer Modal */}
+      {showCustomerModal && (
+        <CustomerModal
+          isOpen={showCustomerModal}
+          onClose={() => setShowCustomerModal(false)}
+          onSave={handleCustomerSave}
+        />
+      )}
     </DashboardLayout>
   )
 }

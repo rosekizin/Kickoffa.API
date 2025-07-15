@@ -12,6 +12,7 @@ namespace Kickoffa.API.Application.Interfaces.Factories
 		/// </summary>
 		public IChecklist CreateChecklist(
 			long ownerId,
+			long customerId,
 			string title,
 			string? description = null,
 			DateTime? dueDate = null,
@@ -22,6 +23,7 @@ namespace Kickoffa.API.Application.Interfaces.Factories
 		/// </summary>
 		public IChecklist CreateChecklistWithSections(
 			long ownerId,
+			long customerId,
 			string title,
 			string? description = null,
 			DateTime? dueDate = null,
@@ -31,17 +33,17 @@ namespace Kickoffa.API.Application.Interfaces.Factories
 		/// <summary>
 		/// Cria um checklist padrão para onboarding
 		/// </summary>
-		public IChecklist CreateOnboardingChecklist(long ownerId, string clientName);
+		public IChecklist CreateOnboardingChecklist(long ownerId, long customerId, string clientName);
 
 		/// <summary>
 		/// Cria um checklist padrão para desenvolvimento web
 		/// </summary>
-		public IChecklist CreateWebDevelopmentChecklist(long ownerId, string projectName);
+		public IChecklist CreateWebDevelopmentChecklist(long ownerId, long customerId, string projectName);
 
 		/// <summary>
 		/// Cria um checklist padrão para design
 		/// </summary>
-		public IChecklist CreateDesignChecklist(long ownerId, string projectName);
+		public IChecklist CreateDesignChecklist(long ownerId, long customerId, string projectName);
 
 		/// <summary>
 		/// Valida os dados de um checklist antes da criação
@@ -74,11 +76,11 @@ namespace Kickoffa.API.Application.Interfaces.Factories
 		/// <summary>
 		/// Obtém templates de checklist disponíveis
 		/// </summary>
-		public Dictionary<string, Func<long, string, IChecklist>> GetAvailableTemplates();
+		public Dictionary<string, Func<long, long, string, IChecklist>> GetAvailableTemplates();
 
 		/// <summary>
 		/// Cria um checklist a partir de um template
 		/// </summary>
-		public IChecklist? CreateFromTemplate(string templateName, long ownerId, string projectName);
+		public IChecklist? CreateFromTemplate(string templateName, long ownerId, long customerId, string projectName);
 	}
 }

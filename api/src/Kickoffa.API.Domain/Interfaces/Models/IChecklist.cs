@@ -3,6 +3,7 @@
 	public interface IChecklist : IBaseEntity
 	{
 		long OwnerId { get;} // ID do usuário que criou o checklist
+		long CustomerId { get; } // ID do cliente associado ao checklist
 		string Title { get; }
 		string Slug { get; } // url amigável para o checklist
 		string? Description { get; }
@@ -11,6 +12,7 @@
 		bool IsPublished { get; }
 
 		// Relacionamentos
+		ICustomer Customer { get; }
 		IEnumerable<ISection> Sections { get; }
 
 		/// <summary>
@@ -52,5 +54,10 @@
 		/// Remove uma seção do checklist
 		/// </summary>
 		void RemoveSection(ISection section);
+
+		/// <summary>
+		/// Atualiza o cliente associado ao checklist
+		/// </summary>
+		void UpdateCustomer(long customerId);
 	}
 }

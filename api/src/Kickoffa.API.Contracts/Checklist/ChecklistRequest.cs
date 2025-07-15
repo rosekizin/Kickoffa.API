@@ -13,6 +13,9 @@ public record ChecklistRequest : IValidatableObject
 	[JsonProperty(PropertyName = "id", Required = Required.Default)]
 	public required long Id { get; init; }
 
+	[JsonProperty(PropertyName = "customerId", Required = Required.Always)]
+	public required long CustomerId { get; init; }
+
 	[JsonProperty(PropertyName = "title", Required = Required.Always)]
 	public required string Title { get; init; }
 
@@ -34,6 +37,12 @@ public record ChecklistRequest : IValidatableObject
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var results = new List<ValidationResult>();
+
+        // Validação do CustomerId
+        if (CustomerId <= 0)
+        {
+            results.Add(new ValidationResult("O cliente é obrigatório", [nameof(CustomerId)]));
+        }
 
         // Validação do Title
         if (string.IsNullOrWhiteSpace(Title))

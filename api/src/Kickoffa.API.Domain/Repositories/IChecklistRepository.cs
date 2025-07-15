@@ -25,12 +25,12 @@ namespace Kickoffa.API.Domain.Repositories
 		Task<IChecklist?> GetByAccessTokenAsync(string accessToken, CancellationToken cancellationToken);
 
 		/// <summary>
-		/// Busca checklists por proprietário
+		/// Busca todos checklists
 		/// </summary>
 		/// <param name="ownerId">ID do proprietário</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de checklists do proprietário</returns>
-		Task<IEnumerable<IChecklist>> GetByOwnerIdAsync(long ownerId, CancellationToken cancellationToken);
+		new Task<IEnumerable<IChecklist>> GetAllAsync(CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca checklists publicados por proprietário

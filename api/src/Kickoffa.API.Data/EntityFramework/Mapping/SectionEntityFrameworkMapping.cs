@@ -6,15 +6,29 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 {
 	public interface ISectionEntityFrameworkMapping
 	{
-		void Map(ModelBuilder modelBuilder, ICurrentUserService currentUserService);
+		void Map(ModelBuilder modelBuilder);
 	}
 
 	public class SectionEntityFrameworkMapping : ISectionEntityFrameworkMapping
 	{
-		public void Map(ModelBuilder modelBuilder, ICurrentUserService currentUserService)
+		private readonly ICurrentUserService _currentUserService;
+
+		public SectionEntityFrameworkMapping(ICurrentUserService currentUserService)
+		{
+			_currentUserService = currentUserService;
+		}
+
+		public void Map(ModelBuilder modelBuilder)
 		{
 			// Configuração da hierarquia usando Table-Per-Hierarchy (TPH)
 			var entity = modelBuilder.Entity<Section>();
+
+			// Query Filter através do relacionamento com Checklist
+			if (_currentUserService.IsAuthenticated)
+			{
+				var currentUserId = _currentUserService.UserId!.Value;
+				entity.HasQueryFilter(s => s.Checklist.OwnerId == currentUserId);
+			}
 
 			// Configuração da tabela
 			entity.ToTable("Sections");
@@ -47,13 +61,6 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 
 			entity.Property(s => s.LastUpdatedDateUtc)
 				.IsRequired();
-
-			// Query Filter através do relacionamento com Checklist
-			if (currentUserService.IsAuthenticated)
-			{
-				var currentUserId = currentUserService.UserId!.Value;
-				entity.HasQueryFilter(s => s.Checklist.OwnerId == currentUserId);
-			}
 
 			// Relacionamento com Checklist
 			entity.HasOne(s => s.Checklist)

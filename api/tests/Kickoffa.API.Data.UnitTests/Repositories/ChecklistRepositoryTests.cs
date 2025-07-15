@@ -2,12 +2,15 @@ using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.Repositories;
 using Kickoffa.API.Data.UnitTests.Repositories.DbContext;
 using Kickoffa.API.Domain.Models;
+using Kickoffa.API.Domain.Models.FreelancerCustomer;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kickoffa.API.Data.UnitTests.Repositories;
 
 public class ChecklistRepositoryTests : IClassFixture<KickoffaDbContextFixture>
 {
+	private const long AUTHENTICATED_USER_ID = 1L;
+
 	private readonly KickoffaDbContext _dbContext;
 	private readonly ChecklistRepository _repository;
 	private readonly CancellationToken _cancellationToken;
@@ -74,29 +77,18 @@ public class ChecklistRepositoryTests : IClassFixture<KickoffaDbContextFixture>
 	}
 
 	[Fact]
-	public async Task GetByOwnerIdAsync_ShouldReturnChecklists_WhenExists()
+	public async Task GetAllAsync_ShouldReturnChecklists_WhenExists()
 	{
 		// Act
-		var result = await _repository.GetByOwnerIdAsync(1, _cancellationToken);
+		var result = await _repository.GetAllAsync(_cancellationToken);
 
 		// Assert
 		var checklists = result.ToList();
 		Assert.Equal(2, checklists.Count);
-		Assert.All(checklists, c => Assert.Equal(1, c.OwnerId));
 		Assert.All(checklists, c => Assert.NotEmpty(c.Sections));
 
 		// Verificar ordenação por data de criação (mais recente primeiro)
 		Assert.True(checklists[0].CreatedDateUtc >= checklists[1].CreatedDateUtc);
-	}
-
-	[Fact]
-	public async Task GetByOwnerIdAsync_ShouldReturnEmpty_WhenNoChecklists()
-	{
-		// Act
-		var result = await _repository.GetByOwnerIdAsync(999, _cancellationToken);
-
-		// Assert
-		Assert.Empty(result);
 	}
 
 	[Fact]
@@ -160,18 +152,21 @@ public class ChecklistRepositoryTests : IClassFixture<KickoffaDbContextFixture>
 
 	private void SeedTestData()
 	{
+		var company = new LegalPerson(AUTHENTICATED_USER_ID, "Company", "60006057000120", null, null, null);
+		_dbContext.Customers.AddRange(company);
+
 		var checklists = new List<Checklist>
 		{
-			new(1, "Onboarding Website", "onboarding-website", "Checklist para onboarding de website", DateTime.UtcNow.AddDays(30)),
-			new(1, "App Mobile", "app-mobile", "Checklist para desenvolvimento de app", DateTime.UtcNow.AddDays(15)),
-			new(2, "Branding Project", "branding-project", "Checklist para projeto de branding", DateTime.UtcNow.AddDays(45))
+			new(1,AUTHENTICATED_USER_ID, "Onboarding Website", "onboarding-website", "Checklist para onboarding de website", DateTime.UtcNow.AddDays(30)),
+			new(1,AUTHENTICATED_USER_ID, "App Mobile", "app-mobile", "Checklist para desenvolvimento de app", DateTime.UtcNow.AddDays(15)),
+			new(1,2, "Branding Project", "branding-project", "Checklist para projeto de branding", DateTime.UtcNow.AddDays(45))
 		};
 
 		// Publicar apenas o primeiro
 		checklists[0].Publish();
 
 		// Adicionar slug existente para teste de duplicação
-		var duplicateSlugChecklist = new Checklist(3, "Existing Slug Test", "existing-slug", "Teste de slug duplicado", null);
+		var duplicateSlugChecklist = new Checklist(1, 3, "Existing Slug Test", "existing-slug", "Teste de slug duplicado", null);
 		checklists.Add(duplicateSlugChecklist);
 
 		_dbContext.Checklists.AddRange(checklists);

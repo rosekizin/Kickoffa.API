@@ -1,27 +1,27 @@
 ﻿using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models.Base;
+using Kickoffa.API.Domain.Models.Enums;
 
 namespace Kickoffa.API.Domain.Models.FreelancerCustomer
 {
-	public class Customer : BaseEntity, ICustomer
+	/// <summary>
+	/// Classe base abstrata para Customer usando Table-Per-Hierarchy (TPH)
+	/// </summary>
+	public abstract class Customer : BaseEntity, ICustomer
 	{
-		public string FirstName { get; private set; }
-		public string LastName { get; private set; }
-		public string? Email { get; private set; }
-		public string? Cpf { get; private set; }
-		public string? Cnpj { get; private set; }
+		public long OwnerId { get; private set; } // ID do freelancer que criou o customer
 		public string? PhoneNumber { get; private set; }
 		public string? Address { get; private set; }
+		public string? Email { get; private set; }
+		public CustomerType Type { get; private set; }
 
-		public Customer(string firstName, string lastName, string? email, string? cpf, string? cnpj, string? phoneNumber, string? address)
+		protected Customer(long ownerId, string? phoneNumber, string? address, string? email, CustomerType type)
 		{
-			FirstName = firstName;
-			LastName = lastName;
-			Email = email;
-			Cpf = cpf;
-			Cnpj = cnpj;
+			OwnerId = ownerId;
 			PhoneNumber = phoneNumber;
 			Address = address;
+			Email = email;
+			Type = type;
 		}
 	}
 }

@@ -197,7 +197,7 @@ public class UploadComponentRepositoryTests : IClassFixture<KickoffaDbContextFix
 	private void SeedTestData()
 	{
 		// Criar checklist e seção primeiro
-		var checklist = new Checklist(1, "Test Checklist", "test-checklist", "Descrição", null);
+		var checklist = new Checklist(1, 1, "Test Checklist", "test-checklist", "Descrição", null);
 		_dbContext.Checklists.Add(checklist);
 		_dbContext.SaveChanges();
 

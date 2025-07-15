@@ -146,7 +146,7 @@ public class ComponentRepositoryTests : IClassFixture<KickoffaDbContextFixture>,
 	public async Task GetRequiredBySectionIdAsync_ShouldReturnEmpty_WhenNoRequiredComponents()
 	{
 		// Arrange - Criar seção sem itens obrigatórios
-		var checklist = new Checklist(1, "Test", "test", null, null);
+		var checklist = new Checklist(1, 1, "Test", "test", null, null);
 		_dbContext.Checklists.Add(checklist);
 		await _dbContext.SaveChangesAsync(_cancellationToken);
 
@@ -247,7 +247,7 @@ public class ComponentRepositoryTests : IClassFixture<KickoffaDbContextFixture>,
 	private void SeedTestData()
 	{
 		// Criar checklist e seção primeiro
-		var checklist = new Checklist(1, "Test Checklist", "test-checklist", "Descrição", null);
+		var checklist = new Checklist(1, 1, "Test Checklist", "test-checklist", "Descrição", null);
 		_dbContext.Checklists.Add(checklist);
 		_dbContext.SaveChanges();
 

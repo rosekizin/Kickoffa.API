@@ -8,28 +8,66 @@ export interface User {
   updatedAt: string
 }
 
+// Enum para tipos de Customer (como string para compatibilidade com backend)
+export enum CustomerType {
+  NaturalPerson = "NaturalPerson",
+  LegalCompany = "LegalCompany"
+}
+
+// Interface base para Customer
 export interface Customer {
   id: number
-  firstName: string
-  lastName: string
-  email?: string
-  cpf?: string
-  cnpj?: string
   phoneNumber?: string
   address?: string
+  email?: string
+  type: CustomerType
   createdAt: string
   updatedAt: string
 }
 
-export interface CreateCustomerRequest {
+// Interface para pessoa física
+export interface NaturalPerson extends Customer {
+  type: CustomerType.NaturalPerson
   firstName: string
   lastName: string
-  email?: string
   cpf?: string
+}
+
+// Interface para pessoa jurídica
+export interface LegalPerson extends Customer {
+  type: CustomerType.LegalCompany
+  company: string // Razão Social
   cnpj?: string
+}
+
+// Union type para Customer
+export type CustomerUnion = NaturalPerson | LegalPerson
+
+// Interface base para CreateCustomerRequest
+export interface CreateCustomerRequest {
+  email?: string
   phoneNumber?: string
   address?: string
+  type: CustomerType
 }
+
+// Interface para criação de pessoa física
+export interface CreateNaturalPersonRequest extends CreateCustomerRequest {
+  type: CustomerType.NaturalPerson
+  firstName: string
+  lastName: string
+  cpf?: string
+}
+
+// Interface para criação de pessoa jurídica
+export interface CreateLegalPersonRequest extends CreateCustomerRequest {
+  type: CustomerType.LegalCompany
+  company: string
+  cnpj?: string
+}
+
+// Union type para CreateCustomerRequest
+export type CreateCustomerRequestUnion = CreateNaturalPersonRequest | CreateLegalPersonRequest
 
 // Authentication types
 export interface LoginRequest {
@@ -64,6 +102,8 @@ export interface Checklist {
   accessToken: string
   isPublished: boolean
   ownerId: number
+  customerId: number
+  customer?: CustomerUnion
   sections: Section[]
   createdAt: string
   updatedAt: string
@@ -167,6 +207,7 @@ export interface UploadedFile {
 // Tipos para formulários
 export interface CreateChecklistRequest {
   id?: number // ID para updates (0 ou undefined para criações)
+  customerId: number
   title: string
   description?: string
   deadline?: string

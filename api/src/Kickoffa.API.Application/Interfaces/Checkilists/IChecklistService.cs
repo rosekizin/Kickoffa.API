@@ -8,12 +8,11 @@ namespace Kickoffa.API.Application.Interfaces.Checkilists
 	public interface IChecklistService
 	{
 		/// <summary>
-		/// Busca todos os checklists de um proprietário
+		/// Busca todos os checklists do usuário autenticado (query filter no EF mapping)
 		/// </summary>
-		/// <param name="ownerId">ID do proprietário</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de checklists</returns>
-		Task<IEnumerable<ChecklistResponse>> GetByOwnerIdAsync(long ownerId, CancellationToken cancellationToken);
+		Task<IEnumerable<ChecklistResponse>> GetAllAsync(CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Busca um checklist por ID

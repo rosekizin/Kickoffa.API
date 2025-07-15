@@ -13,12 +13,14 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 	{
 		private readonly IUnitOfWork _unitOfWork;
 		private readonly ChecklistService _checklistService;
+		private readonly CancellationToken _cancellationToken;
 		private readonly IChecklistRepository _checklistRepository;
 		private readonly IUpdateChecklistService _updateChecklistService;
 		private readonly IMapChecklistToResponse _mapChecklistToResponse;
 
 		public ChecklistServiceTests()
 		{
+			_cancellationToken = new();
 			_unitOfWork = Substitute.For<IUnitOfWork>();
 			_checklistRepository = Substitute.For<IChecklistRepository>();
 			_updateChecklistService = Substitute.For<IUpdateChecklistService>();
@@ -27,17 +29,16 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 		}
 
 		[Fact]
-		public async Task GetByOwnerIdAsync_ShouldReturnMappedResponse_WhenRepositoryReturnsData()
+		public async Task GetAllAsync_ShouldReturnMappedResponse_WhenRepositoryReturnsData()
 		{
 			// Arrange
-			var ownerId = 1L;
 			var checklist1 = Substitute.For<IChecklist>();
 			var checklist2 = Substitute.For<IChecklist>();
 
 			var checklists = new List<IChecklist> { checklist1, checklist2 };
 
 			_checklistRepository
-				.GetByOwnerIdAsync(ownerId, Arg.Any<CancellationToken>())
+				.GetAllAsync(Arg.Any<CancellationToken>())
 				.Returns(checklists);
 
 			var checklistResponse = new Faker<ChecklistResponse>().Generate();
@@ -46,13 +47,13 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 				.Returns(checklistResponse);
 
 			// Act
-			var result = await _checklistService.GetByOwnerIdAsync(ownerId, CancellationToken.None);
+			var result = await _checklistService.GetAllAsync(_cancellationToken);
 
 			// Assert
 			Assert.NotNull(result);
 			Assert.Equal(2, result.Count());
 
-			await _checklistRepository.Received(1).GetByOwnerIdAsync(ownerId, Arg.Any<CancellationToken>());
+			await _checklistRepository.Received(1).GetAllAsync(Arg.Any<CancellationToken>());
 		}
 
 		[Fact]
@@ -72,7 +73,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 				.Returns(checklistResponse);
 
 			// Act
-			var result = await _checklistService.GetByIdAsync(checklistId, CancellationToken.None);
+			var result = await _checklistService.GetByIdAsync(checklistId, _cancellationToken);
 
 			// Assert
 			Assert.NotNull(result);
@@ -93,7 +94,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 				.Returns((Checklist?)null);
 
 			// Act
-			var result = await _checklistService.GetByIdAsync(checklistId, CancellationToken.None);
+			var result = await _checklistService.GetByIdAsync(checklistId, _cancellationToken);
 
 			// Assert
 			Assert.Null(result);
@@ -115,7 +116,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 				.Returns(checklist);
 
 			// Act
-			var result = await _checklistService.DeleteAsync(checklistId, ownerId, CancellationToken.None);
+			var result = await _checklistService.DeleteAsync(checklistId, ownerId, _cancellationToken);
 
 			// Assert
 			Assert.True(result);
@@ -136,7 +137,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 				.Returns((Checklist?)null);
 
 			// Act
-			var result = await _checklistService.DeleteAsync(checklistId, ownerId, CancellationToken.None);
+			var result = await _checklistService.DeleteAsync(checklistId, ownerId, _cancellationToken);
 
 			// Assert
 			Assert.False(result);
@@ -159,7 +160,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 				.Returns(checklist);
 
 			// Act
-			var result = await _checklistService.DeleteAsync(checklistId, ownerId, CancellationToken.None);
+			var result = await _checklistService.DeleteAsync(checklistId, ownerId, _cancellationToken);
 
 			// Assert
 			Assert.False(result);
@@ -181,7 +182,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 				.Returns(checklist);
 
 			// Act
-			var result = await _checklistService.PublishAsync(checklistId, ownerId, CancellationToken.None);
+			var result = await _checklistService.PublishAsync(checklistId, ownerId, _cancellationToken);
 
 			// Assert
 			Assert.True(result);
@@ -202,7 +203,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 				.Returns(checklist);
 
 			// Act
-			var result = await _checklistService.RegenerateAccessTokenAsync(checklistId, ownerId, CancellationToken.None);
+			var result = await _checklistService.RegenerateAccessTokenAsync(checklistId, ownerId, _cancellationToken);
 
 			// Assert
 			Assert.NotNull(result);
@@ -216,7 +217,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 
 		private static Checklist CreateChecklist(long id, long ownerId, string title, string slug)
 		{
-			var checklist = new Checklist(ownerId, title, slug, "Test description", DateTime.UtcNow.AddDays(7));
+			var checklist = new Checklist(ownerId, 1, title, slug, "Test description", DateTime.UtcNow.AddDays(7));
 
 			// Usar reflexão para definir o ID (propriedade privada)
 			var idProperty = typeof(Checklist).BaseType?.GetProperty("Id");

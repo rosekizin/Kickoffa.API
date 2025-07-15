@@ -18,10 +18,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ComponentPreview } from '@/components/preview/component-preview'
-import { CreateComponentRequest, CreateChecklistRequest, CreateSectionRequest } from '@/types'
+import { CreateComponentRequest, CreateChecklistRequest, CreateSectionRequest, CustomerUnion } from '@/types'
 import { useChecklist, useUpdateChecklist } from '@/hooks/use-api'
 import { useToast } from '@/components/providers/toast-provider'
 import { useApiError } from '@/hooks/use-api-error'
+import { CustomerService } from '@/services/customer.service'
+import { CustomerSelector } from '@/components/customers/customer-selector'
+import { CustomerModal } from '@/components/customers/customer-modal'
 import {
   Save,
   Eye,
@@ -50,6 +53,7 @@ export default function EditChecklistPage() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [deadline, setDeadline] = useState('')
+  const [customerId, setCustomerId] = useState<number | null>(null)
   const [sections, setSections] = useState<Section[]>([])
   const [activeSection, setActiveSection] = useState<number | null>(null)
   const [showPreview, setShowPreview] = useState(false)
@@ -60,6 +64,7 @@ export default function EditChecklistPage() {
   const [isInitialized, setIsInitialized] = useState(false)
   const [componentToDelete, setComponentToDelete] = useState<{ sectionId: number, componentId: number } | null>(null)
   const [sectionToDelete, setSectionToDelete] = useState<number | null>(null)
+  const [showCustomerModal, setShowCustomerModal] = useState(false)
 
 
 
@@ -69,6 +74,7 @@ export default function EditChecklistPage() {
       setTitle(checklist.title)
       setDescription(checklist.description || '')
       setDeadline(checklist.deadline ? checklist.deadline.split('T')[0] : '')
+      setCustomerId(checklist.customerId)
       
       // Converter seções do checklist para o formato do editor
       const convertedSections: Section[] = checklist.sections.map(section => ({
@@ -347,6 +353,7 @@ export default function EditChecklistPage() {
 
     const checklistData: CreateChecklistRequest = {
       id: Number(checklistId), // ID do checklist sendo atualizado
+      customerId: customerId!, // Usar o customerId carregado do checklist
       title: title.trim(),
       description: description.trim() || undefined,
       deadline: deadline || undefined,
@@ -381,6 +388,20 @@ export default function EditChecklistPage() {
       title: 'Funcionalidade em desenvolvimento',
       description: 'A publicação será implementada em breve.'
     })
+  }
+
+  const handleCustomerSave = (customer: CustomerUnion) => {
+    setCustomerId(customer.id)
+    setShowCustomerModal(false)
+    showToast({
+      type: 'success',
+      title: 'Cliente atualizado',
+      description: `Cliente ${CustomerService.getDisplayName(customer)} foi selecionado`
+    })
+  }
+
+  const handleNewCustomer = () => {
+    setShowCustomerModal(true)
   }
 
   const activeSecData = sections.find(s => s.id === activeSection)
@@ -522,6 +543,18 @@ export default function EditChecklistPage() {
                           value={deadline}
                           onChange={(e) => setDeadline(e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Cliente *
+                        </label>
+                        <CustomerSelector
+                          selectedCustomerId={customerId}
+                          onSelectionChange={setCustomerId}
+                          onNewCustomer={handleNewCustomer}
+                          placeholder="Selecione um cliente..."
                         />
                       </div>
                     </div>
@@ -805,6 +838,15 @@ export default function EditChecklistPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Customer Modal */}
+      {showCustomerModal && (
+        <CustomerModal
+          isOpen={showCustomerModal}
+          onClose={() => setShowCustomerModal(false)}
+          onSave={handleCustomerSave}
+        />
+      )}
     </DashboardLayout>
   )
 }

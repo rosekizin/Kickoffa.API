@@ -43,7 +43,7 @@ namespace Kickoffa.API.Controllers
 				return Unauthorized("Usuário não autenticado");
 			}
 
-			var checklists = await _checklistService.GetByOwnerIdAsync(userId.Value, cancellationToken);
+			var checklists = await _checklistService.GetAllAsync(cancellationToken);
 			return Ok(checklists);
 		}
 

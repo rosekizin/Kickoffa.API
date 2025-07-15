@@ -129,7 +129,7 @@ public class ComponentStatusRepositoryTests : IClassFixture<KickoffaDbContextFix
 	public async Task CountCompletedByChecklistIdAsync_ShouldReturnZero_WhenNoCompleted()
 	{
 		// Arrange - Criar checklist sem itens completados
-		var newChecklist = new Checklist(2, "New Checklist", "new-checklist", null, null);
+		var newChecklist = new Checklist(2, 1, "New Checklist", "new-checklist", null, null);
 		_dbContext.Checklists.Add(newChecklist);
 		await _dbContext.SaveChangesAsync(_cancellationToken);
 
@@ -211,7 +211,7 @@ public class ComponentStatusRepositoryTests : IClassFixture<KickoffaDbContextFix
 	private void SeedTestData()
 	{
 		// Criar estrutura básica
-		var checklist = new Checklist(1, "Test Checklist", "test-checklist", "Descrição", null);
+		var checklist = new Checklist(1, 1, "Test Checklist", "test-checklist", "Descrição", null);
 		_dbContext.Checklists.Add(checklist);
 		_dbContext.SaveChanges();
 

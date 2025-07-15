@@ -1,6 +1,7 @@
 ﻿
 using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models.Base;
+using Kickoffa.API.Domain.Models.FreelancerCustomer;
 
 namespace Kickoffa.API.Domain.Models
 {
@@ -9,9 +10,10 @@ namespace Kickoffa.API.Domain.Models
 		/// <summary>
 		/// Construtor para criação de novo checklist
 		/// </summary>
-		public Checklist(long ownerId, string title, string slug, string? description, DateTime? dueDate)
+		public Checklist(long ownerId, long customerId, string title, string slug, string? description, DateTime? dueDate)
 		{
 			OwnerId = ownerId;
+			CustomerId = customerId;
 			Title = title ?? throw new ArgumentNullException(nameof(title));
 			Slug = slug ?? throw new ArgumentNullException(nameof(slug));
 			Description = description;
@@ -32,6 +34,7 @@ namespace Kickoffa.API.Domain.Models
 		}
 
 		public long OwnerId { get; private set; } // ID do usuário que criou o checklist
+		public long CustomerId { get; private set; } // ID do cliente associado ao checklist
 		public string Title { get; private set; }
 		public string Slug { get; private set; } // url amigável para o checklist
 		public string? Description { get; private set; }
@@ -40,6 +43,8 @@ namespace Kickoffa.API.Domain.Models
 		public bool IsPublished { get; private set; }
 
 		// Relacionamentos
+		public virtual Customer Customer { get; private set; }
+		ICustomer  IChecklist.Customer => Customer;
 		public virtual ICollection<Section> Sections { get; private set; }
 		IEnumerable<ISection> IChecklist.Sections => Sections;
 
@@ -61,6 +66,16 @@ namespace Kickoffa.API.Domain.Models
 		public void UpdateDueDate(DateTime? dueDate)
 		{
 			DueDate = DateTime.SpecifyKind(dueDate ?? DateTime.Now.AddDays(7), DateTimeKind.Utc);
+			UpdateLastUpdatedDate();
+		}
+
+		/// <summary>
+		/// Atualiza o cliente associado ao checklist
+		/// </summary>
+		/// <param name="customerId">ID do novo cliente</param>
+		public void UpdateCustomer(long customerId)
+		{
+			CustomerId = customerId;
 			UpdateLastUpdatedDate();
 		}
 

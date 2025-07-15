@@ -4,7 +4,6 @@ using Kickoffa.API.Domain.Models.AppUser;
 using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Models.Components.Base;
 using Kickoffa.API.Domain.Models.FreelancerCustomer;
-using Kickoffa.API.Domain.Services;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -14,6 +13,8 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 	public interface IKickoffaDbContext : IDisposable
 	{
 		DbSet<Customer> Customers { get; }
+		DbSet<NaturalPerson> NaturalPersons { get; }
+		DbSet<LegalPerson> LegalPersons { get; }
 		DbSet<Checklist> Checklists { get; }
 		DbSet<Section> Sections { get; }
 		DbSet<Component> Components { get; }
@@ -35,7 +36,6 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 
 	public class KickoffaDbContext : IdentityDbContext<User, Role, long>, IKickoffaDbContext
 	{
-		private readonly ICurrentUserService _currentUserService;
 		private readonly ICustomerEntityFrameworkMapping _customerEntityFrameworkMapping;
 		private readonly IUserEntityFrameworkMapping _userEntityFrameworkMapping;
 		private readonly IChecklistEntityFrameworkMapping _checklistEntityFrameworkMapping;
@@ -52,10 +52,8 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 		private readonly ICheckboxComponentEntityFrameworkMapping _checkboxComponentEntityFrameworkMapping;
 		private readonly ISignatureComponentEntityFrameworkMapping _signatureComponentEntityFrameworkMapping;
 
-
 		public KickoffaDbContext(
 			DbContextOptions<KickoffaDbContext> options,
-			ICurrentUserService currentUserService,
 			ICustomerEntityFrameworkMapping customerEntityFrameworkMapping,
 			IUserEntityFrameworkMapping userEntityFrameworkMapping,
 			IChecklistEntityFrameworkMapping checklistEntityFrameworkMapping,
@@ -72,7 +70,6 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 			ICheckboxComponentEntityFrameworkMapping checkboxComponentEntityFrameworkMapping,
 			ISignatureComponentEntityFrameworkMapping signatureComponentEntityFrameworkMapping) : base(options)
 		{
-			_currentUserService = currentUserService;
 			_customerEntityFrameworkMapping = customerEntityFrameworkMapping;
 			_userEntityFrameworkMapping = userEntityFrameworkMapping;
 			_checklistEntityFrameworkMapping = checklistEntityFrameworkMapping;
@@ -91,6 +88,8 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 		}
 
 		public DbSet<Customer> Customers { get; private set; }
+		public DbSet<NaturalPerson> NaturalPersons { get; private set; }
+		public DbSet<LegalPerson> LegalPersons { get; private set; }
 		public DbSet<Checklist> Checklists { get; private set; }
 		public DbSet<Section> Sections { get; private set; }
 		public DbSet<Component> Components { get; private set; }
@@ -123,12 +122,12 @@ namespace Kickoffa.API.Data.EntityFramework.Context
 			_uploadComponentFileTypeSizeEntityFrameworkMapping.Map(modelBuilder);
 
 			// Mapeamentos com filtro de usuário (exceto Component base)
-			_checklistEntityFrameworkMapping.Map(modelBuilder, _currentUserService);
-			_sectionEntityFrameworkMapping.Map(modelBuilder, _currentUserService);
-			_componentStatusEntityFrameworkMapping.Map(modelBuilder, _currentUserService);
+			_checklistEntityFrameworkMapping.Map(modelBuilder);
+			_sectionEntityFrameworkMapping.Map(modelBuilder);
+			_componentStatusEntityFrameworkMapping.Map(modelBuilder);
 
 			// ✅ MAPEAMENTO BASE COMPONENT POR ÚLTIMO (evita vazamento de configurações TPC)
-			_componentEntityFrameworkMapping.Map(modelBuilder, _currentUserService);
+			_componentEntityFrameworkMapping.Map(modelBuilder);
 
 			// ✅ MAPEAMENTOS ESPECÍFICOS DE COMPONENTES PRIMEIRO (para TPC funcionar corretamente)
 			_textComponentEntityFrameworkMapping.Map(modelBuilder);

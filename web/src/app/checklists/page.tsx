@@ -1,8 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { Button } from '@/components/ui/button'
+import { useChecklists } from '@/hooks/use-api'
+import { CustomerService } from '@/services/customer.service'
+import { CustomerType } from '@/types'
 import {
   Plus,
   Search,
@@ -15,16 +19,32 @@ import {
   Trash2,
   Calendar,
   User,
+  Building,
   FileText
 } from 'lucide-react'
 
 export default function ChecklistsPage() {
+  const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [sortBy, setSortBy] = useState('recent')
 
-  // Mock data - será substituído por dados reais da API
-  const checklists = [
+  // Buscar checklists da API
+  const { data: checklists = [], isLoading, error } = useChecklists()
+
+  const handleNewChecklist = () => {
+    router.push('/checklists/new')
+  }
+
+  // Função para determinar status baseado nos dados do checklist
+  const getChecklistStatus = (checklist: any) => {
+    if (!checklist.isPublished) return 'draft'
+    // Aqui você pode adicionar mais lógica para determinar outros status
+    return 'active'
+  }
+
+  // Mock data para fallback durante desenvolvimento
+  const mockChecklists = [
     {
       id: '1',
       title: 'Onboarding - Redesign Website',
@@ -96,11 +116,48 @@ export default function ChecklistsPage() {
   }
 
   const filteredChecklists = checklists.filter(checklist => {
-    const matchesSearch = checklist.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         checklist.client.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || checklist.status === statusFilter
+    const searchLower = searchTerm.toLowerCase()
+    const titleMatches = checklist.title.toLowerCase().includes(searchLower)
+    const customerMatches = checklist.customer ?
+      CustomerService.matchesSearchTerm(checklist.customer, searchTerm) : false
+
+    const matchesSearch = titleMatches || customerMatches
+    const checklistStatus = getChecklistStatus(checklist)
+    const matchesStatus = statusFilter === 'all' || checklistStatus === statusFilter
     return matchesSearch && matchesStatus
   })
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="p-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-gray-600">Carregando checklists...</p>
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="p-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-red-600">Erro ao carregar checklists</p>
+              <p className="text-gray-600 mt-1">Tente recarregar a página</p>
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   return (
     <DashboardLayout>
@@ -118,7 +175,10 @@ export default function ChecklistsPage() {
                   <p className="text-gray-600">Gerencie todos os seus checklists de onboarding</p>
                 </div>
               </div>
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button
+                className="bg-blue-600 hover:bg-blue-700"
+                onClick={handleNewChecklist}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Checklist
               </Button>
@@ -196,7 +256,7 @@ export default function ChecklistsPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Última Atividade
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                     Ações
                   </th>
                 </tr>
@@ -207,49 +267,79 @@ export default function ChecklistsPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">{checklist.title}</div>
-                        <div className="text-sm text-gray-500">{checklist.itemsCompleted}/{checklist.itemsTotal} itens</div>
+                        <div className="text-sm text-gray-500">
+                          {checklist.sections?.length || 0} seções
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <User className="h-4 w-4 text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-900">{checklist.client}</span>
+                        {checklist.customer ? (
+                          checklist.customer.type === CustomerType.LegalCompany ? (
+                            <Building className="h-4 w-4 text-gray-400 mr-2" />
+                          ) : (
+                            <User className="h-4 w-4 text-gray-400 mr-2" />
+                          )
+                        ) : (
+                          <User className="h-4 w-4 text-gray-400 mr-2" />
+                        )}
+                        <span className="text-sm text-gray-900">
+                          {checklist.customer
+                            ? CustomerService.getDisplayName(checklist.customer)
+                            : 'Cliente não definido'
+                          }
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(checklist.status)}`}>
-                        {getStatusText(checklist.status)}
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(getChecklistStatus(checklist))}`}>
+                        {getStatusText(getChecklistStatus(checklist))}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                          <div 
+                          <div
                             className="bg-blue-600 h-2 rounded-full"
-                            style={{ width: `${checklist.progress}%` }}
+                            style={{ width: '0%' }}
                           />
                         </div>
-                        <span className="text-sm text-gray-900">{checklist.progress}%</span>
+                        <span className="text-sm text-gray-900">0%</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-900">{checklist.deadline}</span>
+                        <span className="text-sm text-gray-900">
+                          {checklist.deadline
+                            ? new Date(checklist.deadline).toLocaleDateString('pt-BR')
+                            : 'Sem prazo'
+                          }
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {checklist.lastActivity}
+                      {new Date(checklist.updatedAt || checklist.createdAt).toLocaleDateString('pt-BR')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
-                        <Button variant="ghost" size="sm">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => router.push(`/checklists/${checklist.id}`)}
+                          title="Visualizar"
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => router.push(`/checklists/${checklist.id}/edit`)}
+                          title="Editar"
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" title="Mais opções">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </div>

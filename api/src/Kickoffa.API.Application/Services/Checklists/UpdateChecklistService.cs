@@ -63,6 +63,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 			checklist.UpdateTitle(request.Title);
 			checklist.UpdateDescription(request.Description);
 			checklist.UpdateDueDate(request.Deadline);
+			checklist.UpdateCustomer(request.CustomerId);
 
 			// Atualizar seções
 			await UpdateSectionsAsync(checklist, request.Sections, cancellationToken);

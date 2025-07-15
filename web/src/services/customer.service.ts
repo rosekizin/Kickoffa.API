@@ -1,5 +1,5 @@
 import api from '@/lib/api'
-import { Customer, CreateCustomerRequest } from '@/types'
+import { CustomerUnion, CreateCustomerRequestUnion, CreateNaturalPersonRequest, CreateLegalPersonRequest, CustomerType, NaturalPerson, LegalPerson } from '@/types'
 
 /**
  * Serviço responsável por operações de API e lógica de negócio relacionadas a clientes
@@ -11,35 +11,35 @@ export class CustomerService {
   /**
    * Cria um novo cliente
    */
-  static async createCustomer(customerData: CreateCustomerRequest): Promise<Customer> {
+  static async createCustomer(customerData: CreateCustomerRequestUnion): Promise<CustomerUnion> {
     // Validar e limpar dados antes de enviar
     const cleanData = this.cleanCustomerData(customerData)
-    const response = await api.post<Customer>(this.BASE_PATH, cleanData)
+    const response = await api.post<CustomerUnion>(this.BASE_PATH, cleanData)
     return response.data
   }
 
   /**
    * Busca todos os clientes
    */
-  static async getCustomers(): Promise<Customer[]> {
-    const response = await api.get<Customer[]>(this.BASE_PATH)
+  static async getCustomers(): Promise<CustomerUnion[]> {
+    const response = await api.get<CustomerUnion[]>(this.BASE_PATH)
     return response.data
   }
 
   /**
    * Busca um cliente por ID
    */
-  static async getCustomerById(id: number): Promise<Customer> {
-    const response = await api.get<Customer>(`${this.BASE_PATH}/${id}`)
+  static async getCustomerById(id: number): Promise<CustomerUnion> {
+    const response = await api.get<CustomerUnion>(`${this.BASE_PATH}/${id}`)
     return response.data
   }
 
   /**
    * Atualiza um cliente
    */
-  static async updateCustomer(id: number, customerData: Partial<CreateCustomerRequest>): Promise<Customer> {
+  static async updateCustomer(id: number, customerData: Partial<CreateCustomerRequestUnion>): Promise<CustomerUnion> {
     const cleanData = this.cleanCustomerData(customerData)
-    const response = await api.put<Customer>(`${this.BASE_PATH}/${id}`, cleanData)
+    const response = await api.put<CustomerUnion>(`${this.BASE_PATH}/${id}`, cleanData)
     return response.data
   }
 
@@ -53,16 +53,34 @@ export class CustomerService {
   /**
    * Limpa e valida dados do cliente antes de enviar para API
    */
-  private static cleanCustomerData(data: Partial<CreateCustomerRequest>): Partial<CreateCustomerRequest> {
-    return {
-      firstName: data.firstName?.trim(),
-      lastName: data.lastName?.trim(),
+  private static cleanCustomerData(data: Partial<CreateCustomerRequestUnion>): Partial<CreateCustomerRequestUnion> {
+    const baseData = {
       email: data.email?.trim() || undefined,
       phoneNumber: data.phoneNumber?.replace(/\D/g, '') || undefined,
       address: data.address?.trim() || undefined,
-      cpf: data.cpf?.replace(/\D/g, '') || undefined,
-      cnpj: data.cnpj?.replace(/\D/g, '') || undefined
+      type: data.type
     }
+
+    if (data.type === CustomerType.NaturalPerson) {
+      const naturalPersonData = data as Partial<CreateNaturalPersonRequest>
+      return {
+        ...baseData,
+        type: CustomerType.NaturalPerson,
+        firstName: naturalPersonData.firstName?.trim(),
+        lastName: naturalPersonData.lastName?.trim(),
+        cpf: naturalPersonData.cpf?.replace(/\D/g, '') || undefined
+      }
+    } else if (data.type === CustomerType.LegalCompany) {
+      const legalPersonData = data as Partial<CreateLegalPersonRequest>
+      return {
+        ...baseData,
+        type: CustomerType.LegalCompany,
+        company: legalPersonData.company?.trim(),
+        cnpj: legalPersonData.cnpj?.replace(/\D/g, '') || undefined
+      }
+    }
+
+    return baseData
   }
 
   /**
@@ -172,7 +190,104 @@ export class CustomerService {
     } else if (cleanPhone.length === 10) {
       return cleanPhone.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3')
     }
-    
+
     return phone
+  }
+
+  /**
+   * Verifica se um customer é pessoa física
+   */
+  static isNaturalPerson(customer: CustomerUnion): customer is NaturalPerson {
+    return customer.type === CustomerType.NaturalPerson
+  }
+
+  /**
+   * Verifica se um customer é pessoa jurídica
+   */
+  static isLegalPerson(customer: CustomerUnion): customer is LegalPerson {
+    return customer.type === CustomerType.LegalCompany
+  }
+
+  /**
+   * Obtém o nome de exibição do customer
+   */
+  static getDisplayName(customer: CustomerUnion): string {
+    if (this.isNaturalPerson(customer)) {
+      return `${customer.firstName} ${customer.lastName}`
+    } else if (this.isLegalPerson(customer)) {
+      return customer.company
+    }
+    return 'Cliente'
+  }
+
+  /**
+   * Obtém o documento do customer (CPF ou CNPJ)
+   */
+  static getDocument(customer: CustomerUnion): string | undefined {
+    if (this.isNaturalPerson(customer)) {
+      return customer.cpf
+    } else if (this.isLegalPerson(customer)) {
+      return customer.cnpj
+    }
+    return undefined
+  }
+
+  /**
+   * Obtém o documento formatado do customer
+   */
+  static getFormattedDocument(customer: CustomerUnion): string | undefined {
+    if (this.isNaturalPerson(customer) && customer.cpf) {
+      return this.formatCpf(customer.cpf)
+    } else if (this.isLegalPerson(customer) && customer.cnpj) {
+      return this.formatCnpj(customer.cnpj)
+    }
+    return undefined
+  }
+
+  /**
+   * Obtém o tipo de customer como string
+   */
+  static getCustomerTypeLabel(customer: CustomerUnion): string {
+    return customer.type === CustomerType.NaturalPerson ? 'Pessoa Física' : 'Pessoa Jurídica'
+  }
+
+  /**
+   * Verifica se um customer corresponde ao termo de busca
+   * Busca em FirstName, LastName, Company, email e documentos
+   */
+  static matchesSearchTerm(customer: CustomerUnion, searchTerm: string): boolean {
+    if (!searchTerm.trim()) return true
+
+    const searchLower = searchTerm.toLowerCase()
+
+    // Buscar no nome de exibição (FirstName + LastName ou Company)
+    const displayName = this.getDisplayName(customer).toLowerCase()
+    if (displayName.includes(searchLower)) return true
+
+    // Buscar no email
+    if (customer.email?.toLowerCase().includes(searchLower)) return true
+
+    // Buscar no documento (CPF ou CNPJ)
+    const document = this.getDocument(customer)
+    if (document?.includes(searchTerm)) return true
+
+    // Buscar especificamente em cada campo para maior precisão
+    if (this.isNaturalPerson(customer)) {
+      if (customer.firstName.toLowerCase().includes(searchLower)) return true
+      if (customer.lastName.toLowerCase().includes(searchLower)) return true
+    } else if (this.isLegalPerson(customer)) {
+      if (customer.company.toLowerCase().includes(searchLower)) return true
+    }
+
+    return false
+  }
+
+  /**
+   * Filtra uma lista de customers baseado no termo de busca
+   */
+  static filterBySearchTerm(customers: CustomerUnion[], searchTerm: string): CustomerUnion[] {
+    if (!searchTerm.trim()) return customers
+
+    return customers.filter(customer => this.matchesSearchTerm(customer, searchTerm))
   }
 }

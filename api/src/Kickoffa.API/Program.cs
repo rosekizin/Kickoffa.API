@@ -1,6 +1,7 @@
 using Kickoffa.API.AspNet.Infrastructure.Configuration.Data;
 using Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection;
 using Kickoffa.API.AspNet.Infrastructure.Wrappers;
+using Kickoffa.API.Contracts.Newtonsoft;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -14,6 +15,7 @@ builder.Services.AddControllers()
 	.AddNewtonsoftJson(options =>
 	{
 		options.SerializerSettings.Converters.Add(new StringEnumConverter());
+		options.SerializerSettings.Converters.Add(new CustomerRequestConverter());
 		options.SerializerSettings.TypeNameHandling = TypeNameHandling.None; // ou Auto, se quiser polimorfismo com $type
 	});
 
