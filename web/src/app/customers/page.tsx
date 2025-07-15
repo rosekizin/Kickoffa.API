@@ -3,10 +3,18 @@
 import { useState } from 'react'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { CustomerService } from '@/services/customer.service'
 import { CustomerModal } from '@/components/customers/customer-modal'
 import { useCustomers, useDeleteCustomer } from '@/hooks/use-api'
-import { Customer } from '@/types'
+import { CustomerUnion, CustomerType } from '@/types'
 import {
   Plus,
   Search,
@@ -24,28 +32,25 @@ import {
 export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showModal, setShowModal] = useState(false)
-  const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>()
+  const [editingCustomer, setEditingCustomer] = useState<CustomerUnion | undefined>()
+  const [customerToDelete, setCustomerToDelete] = useState<CustomerUnion | null>(null)
 
   // Hooks do TanStack Query
   const { data: customers = [], isLoading: loading, error } = useCustomers()
   const deleteCustomerMutation = useDeleteCustomer()
 
-  const filteredCustomers = customers.filter(customer => {
-    const searchLower = searchTerm.toLowerCase()
-    return (
-      customer.firstName.toLowerCase().includes(searchLower) ||
-      customer.lastName.toLowerCase().includes(searchLower) ||
-      customer.email?.toLowerCase().includes(searchLower) ||
-      customer.cpf?.includes(searchTerm) ||
-      customer.cnpj?.includes(searchTerm)
-    )
-  })
+  const filteredCustomers = CustomerService.filterBySearchTerm(customers, searchTerm)
 
-  const handleDeleteCustomer = async (id: number) => {
-    if (!confirm('Tem certeza que deseja excluir este cliente?')) return
+  const handleDeleteCustomer = (customer: CustomerUnion) => {
+    setCustomerToDelete(customer)
+  }
+
+  const confirmDeleteCustomer = async () => {
+    if (!customerToDelete) return
 
     try {
-      await deleteCustomerMutation.mutateAsync(id)
+      await deleteCustomerMutation.mutateAsync(customerToDelete.id)
+      setCustomerToDelete(null)
       // TODO: Mostrar toast de sucesso
     } catch (error) {
       console.error('Erro ao excluir cliente:', error)
@@ -53,13 +58,17 @@ export default function CustomersPage() {
     }
   }
 
-  const handleSaveCustomer = (customer: Customer) => {
+  const cancelDeleteCustomer = () => {
+    setCustomerToDelete(null)
+  }
+
+  const handleSaveCustomer = (customer: CustomerUnion) => {
     // O cache será atualizado automaticamente pelos hooks
     setShowModal(false)
     setEditingCustomer(undefined)
   }
 
-  const handleEditCustomer = (customer: Customer) => {
+  const handleEditCustomer = (customer: CustomerUnion) => {
     setEditingCustomer(customer)
     setShowModal(true)
   }
@@ -167,7 +176,7 @@ export default function CustomersPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            {customer.cnpj ? (
+                            {customer.type === CustomerType.LegalCompany ? (
                               <Building className="h-5 w-5 text-blue-600" />
                             ) : (
                               <User className="h-5 w-5 text-blue-600" />
@@ -175,10 +184,10 @@ export default function CustomersPage() {
                           </div>
                           <div className="ml-3">
                             <div className="text-sm font-medium text-gray-900">
-                              {customer.firstName} {customer.lastName}
+                              {CustomerService.getDisplayName(customer)}
                             </div>
                             <div className="text-sm text-gray-500">
-                              {customer.cnpj ? 'Pessoa Jurídica' : 'Pessoa Física'}
+                              {CustomerService.getCustomerTypeLabel(customer)}
                             </div>
                           </div>
                         </div>
@@ -187,8 +196,7 @@ export default function CustomersPage() {
                       {/* Documento */}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-900">
-                          {customer.cpf && CustomerService.formatCpf(customer.cpf)}
-                          {customer.cnpj && CustomerService.formatCnpj(customer.cnpj)}
+                          {CustomerService.getFormattedDocument(customer) || '-'}
                         </span>
                       </td>
 
@@ -236,7 +244,7 @@ export default function CustomersPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDeleteCustomer(customer.id)}
+                            onClick={() => handleDeleteCustomer(customer)}
                             className="text-red-600 hover:text-red-700"
                             disabled={deleteCustomerMutation.isPending}
                           >
@@ -282,6 +290,26 @@ export default function CustomersPage() {
         onSave={handleSaveCustomer}
         customer={editingCustomer}
       />
+
+      {/* Modal de confirmação de exclusão */}
+      <Dialog open={customerToDelete !== null} onOpenChange={() => setCustomerToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar exclusão</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir o cliente "{customerToDelete ? CustomerService.getDisplayName(customerToDelete) : ''}"? Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={cancelDeleteCustomer}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteCustomer} disabled={deleteCustomerMutation.isPending}>
+              {deleteCustomerMutation.isPending ? 'Excluindo...' : 'Excluir'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   )
 }

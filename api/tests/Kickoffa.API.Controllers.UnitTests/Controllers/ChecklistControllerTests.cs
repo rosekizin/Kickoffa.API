@@ -12,6 +12,8 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 {
 	public class ChecklistControllerTests
 	{
+		private const long AUTHENTICATED_USER_ID = 1L;
+
 		private readonly IChecklistService _checklistService;
 		private readonly ILogger<ChecklistController> _logger;
 		private readonly ChecklistController _checklistController;
@@ -25,21 +27,20 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 			_checklistController = new ChecklistController(_checklistService, _logger, _createChecklistService);
 
 			// Mock HttpContext com usuário autenticado
-			SetupAuthenticatedUser(1L);
+			SetupAuthenticatedUser(AUTHENTICATED_USER_ID);
 		}
 
 		[Fact]
 		public async Task GetAllAsync_ShouldReturnOk_WhenUserIsAuthenticated()
 		{
 			// Arrange
-			var userId = 1L;
 			var expectedChecklists = new List<ChecklistResponse>
 			{
-				CreateChecklistResponse(1, userId, "Checklist 1"),
-				CreateChecklistResponse(2, userId, "Checklist 2")
+				CreateChecklistResponse(1, AUTHENTICATED_USER_ID, "Checklist 1"),
+				CreateChecklistResponse(2, AUTHENTICATED_USER_ID, "Checklist 2")
 			};
 
-			_checklistService.GetByOwnerIdAsync(userId, Arg.Any<CancellationToken>())
+			_checklistService.GetAllAsync(Arg.Any<CancellationToken>())
 				.Returns(expectedChecklists);
 
 			// Act
@@ -50,7 +51,7 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 			var value = Assert.IsAssignableFrom<IEnumerable<ChecklistResponse>>(okResult.Value);
 			Assert.Equal(2, value.Count());
 
-			await _checklistService.Received(1).GetByOwnerIdAsync(userId, Arg.Any<CancellationToken>());
+			await _checklistService.Received(1).GetAllAsync(Arg.Any<CancellationToken>());
 		}
 
 		[Fact]
@@ -66,7 +67,7 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 			var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result.Result);
 			Assert.Equal("Usuário não autenticado", unauthorizedResult.Value);
 
-			await _checklistService.DidNotReceive().GetByOwnerIdAsync(Arg.Any<long>(), Arg.Any<CancellationToken>());
+			await _checklistService.DidNotReceive().GetAllAsync(Arg.Any<CancellationToken>());
 		}
 
 		[Fact]
@@ -74,8 +75,7 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 		{
 			// Arrange
 			var checklistId = 1L;
-			var userId = 1L;
-			var expectedChecklist = CreateChecklistResponse(checklistId, userId, "Test Checklist");
+			var expectedChecklist = CreateChecklistResponse(checklistId, AUTHENTICATED_USER_ID, "Test Checklist");
 
 			_checklistService.GetByIdAsync(checklistId, Arg.Any<CancellationToken>())
 				.Returns(expectedChecklist);
@@ -134,11 +134,10 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 		public async Task CreateAsync_ShouldReturnCreated_WhenValidRequest()
 		{
 			// Arrange
-			var userId = 1L;
 			var request = CreateValidChecklistRequest();
-			var expectedResponse = CreateChecklistResponse(1, userId, request.Title);
+			var expectedResponse = CreateChecklistResponse(1, AUTHENTICATED_USER_ID, request.Title);
 
-			_createChecklistService.CreateAsync(userId, request, Arg.Any<CancellationToken>())
+			_createChecklistService.CreateAsync(AUTHENTICATED_USER_ID, request, Arg.Any<CancellationToken>())
 				.Returns(expectedResponse);
 
 			// Act
@@ -150,7 +149,7 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 			Assert.Equal(expectedResponse.Id, value.Id);
 			Assert.Equal(expectedResponse.Title, value.Title);
 
-			await _createChecklistService.Received(1).CreateAsync(userId, request, Arg.Any<CancellationToken>());
+			await _createChecklistService.Received(1).CreateAsync(AUTHENTICATED_USER_ID, request, Arg.Any<CancellationToken>());
 		}
 
 		[Fact]
@@ -174,10 +173,9 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 		public async Task CreateAsync_ShouldReturnInternalServerError_WhenServiceThrowsException()
 		{
 			// Arrange
-			var userId = 1L;
 			var request = CreateValidChecklistRequest();
 
-			_createChecklistService.CreateAsync(userId, request, Arg.Any<CancellationToken>())
+			_createChecklistService.CreateAsync(AUTHENTICATED_USER_ID, request, Arg.Any<CancellationToken>())
 				.ThrowsAsync(new Exception("Database error"));
 
 			// Act
@@ -194,9 +192,8 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 		{
 			// Arrange
 			var checklistId = 1L;
-			var userId = 1L;
 
-			_checklistService.DeleteAsync(checklistId, userId, Arg.Any<CancellationToken>())
+			_checklistService.DeleteAsync(checklistId, AUTHENTICATED_USER_ID, Arg.Any<CancellationToken>())
 				.Returns(true);
 
 			// Act
@@ -205,7 +202,7 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 			// Assert
 			Assert.IsType<NoContentResult>(result);
 
-			await _checklistService.Received(1).DeleteAsync(checklistId, userId, Arg.Any<CancellationToken>());
+			await _checklistService.Received(1).DeleteAsync(checklistId, AUTHENTICATED_USER_ID, Arg.Any<CancellationToken>());
 		}
 
 		[Fact]
@@ -213,9 +210,8 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 		{
 			// Arrange
 			var checklistId = 1L;
-			var userId = 1L;
 
-			_checklistService.DeleteAsync(checklistId, userId, Arg.Any<CancellationToken>())
+			_checklistService.DeleteAsync(checklistId, AUTHENTICATED_USER_ID, Arg.Any<CancellationToken>())
 				.Returns(false);
 
 			// Act
@@ -225,7 +221,7 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 			var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
 			Assert.Equal("Checklist não encontrado ou acesso negado", notFoundResult.Value);
 
-			await _checklistService.Received(1).DeleteAsync(checklistId, userId, Arg.Any<CancellationToken>());
+			await _checklistService.Received(1).DeleteAsync(checklistId, AUTHENTICATED_USER_ID, Arg.Any<CancellationToken>());
 		}
 
 		[Fact]
@@ -233,9 +229,8 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 		{
 			// Arrange
 			var checklistId = 1L;
-			var userId = 1L;
 
-			_checklistService.PublishAsync(checklistId, userId, Arg.Any<CancellationToken>())
+			_checklistService.PublishAsync(checklistId, AUTHENTICATED_USER_ID, Arg.Any<CancellationToken>())
 				.Returns(true);
 
 			// Act
@@ -246,7 +241,7 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 			var value = okResult.Value;
 			Assert.NotNull(value);
 
-			await _checklistService.Received(1).PublishAsync(checklistId, userId, Arg.Any<CancellationToken>());
+			await _checklistService.Received(1).PublishAsync(checklistId, AUTHENTICATED_USER_ID, Arg.Any<CancellationToken>());
 		}
 
 		[Fact]
@@ -254,10 +249,9 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 		{
 			// Arrange
 			var checklistId = 1L;
-			var userId = 1L;
 			var newToken = "new-access-token";
 
-			_checklistService.RegenerateAccessTokenAsync(checklistId, userId, Arg.Any<CancellationToken>())
+			_checklistService.RegenerateAccessTokenAsync(checklistId, AUTHENTICATED_USER_ID, Arg.Any<CancellationToken>())
 				.Returns(newToken);
 
 			// Act
@@ -268,7 +262,7 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 			var value = okResult.Value;
 			Assert.NotNull(value);
 
-			await _checklistService.Received(1).RegenerateAccessTokenAsync(checklistId, userId, Arg.Any<CancellationToken>());
+			await _checklistService.Received(1).RegenerateAccessTokenAsync(checklistId, AUTHENTICATED_USER_ID, Arg.Any<CancellationToken>());
 		}
 
 		#region Helper Methods
@@ -306,6 +300,7 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 			{
 				Id = id,
 				OwnerId = ownerId,
+				CustomerId = 1, // Assuming a default customer ID for tests
 				Title = title,
 				Slug = title.ToLowerInvariant().Replace(" ", "-"),
 				Description = "Test description",
@@ -323,6 +318,7 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 			return new ChecklistRequest
 			{
 				Id = 1,
+				CustomerId = 1,
 				Title = "Test Checklist",
 				Description = "Test description",
 				Deadline = DateTime.UtcNow.AddDays(7),

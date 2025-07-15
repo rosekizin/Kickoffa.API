@@ -1,4 +1,3 @@
-using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Models.Components.Base;
 using Kickoffa.API.Domain.Services;
 using Microsoft.EntityFrameworkCore;
@@ -7,14 +6,28 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 {
 	public interface IComponentEntityFrameworkMapping
 	{
-		void Map(ModelBuilder modelBuilder, ICurrentUserService currentUserService);
+		void Map(ModelBuilder modelBuilder);
 	}
 
 	public class ComponentEntityFrameworkMapping : IComponentEntityFrameworkMapping
 	{
-		public void Map(ModelBuilder modelBuilder, ICurrentUserService currentUserService)
+		private readonly ICurrentUserService _currentUserService;
+
+		public ComponentEntityFrameworkMapping(ICurrentUserService currentUserService)
+		{
+			_currentUserService = currentUserService;
+		}
+
+		public void Map(ModelBuilder modelBuilder)
 		{
 			var entity = modelBuilder.Entity<Component>();
+
+			// Query Filter através do relacionamento Section -> Checklist
+			if (_currentUserService.IsAuthenticated)
+			{
+				var currentUserId = _currentUserService.UserId!.Value;
+				entity.HasQueryFilter(c => c.Section.Checklist.OwnerId == currentUserId);
+			}
 
 			// Configuração TPC (Table-Per-Concrete-Type)
 			entity.UseTpcMappingStrategy();
@@ -53,13 +66,6 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 
 			// Ignorar propriedade Type abstrata (pode causar conflitos TPC)
 			entity.Ignore(i => i.Type);
-
-			// Query Filter através do relacionamento Section -> Checklist
-			if (currentUserService.IsAuthenticated)
-			{
-				var currentUserId = currentUserService.UserId!.Value;
-				entity.HasQueryFilter(c => c.Section.Checklist.OwnerId == currentUserId);
-			}
 
 			// Nota: Com TPC, relacionamentos são inferidos automaticamente através das foreign keys
 			// Não configuramos relacionamentos explicitamente na classe base para evitar

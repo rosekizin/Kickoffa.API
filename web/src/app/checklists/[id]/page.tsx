@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useChecklist } from '@/hooks/use-api'
 import { useApiError } from '@/hooks/use-api-error'
+import { CustomerService } from '@/services/customer.service'
 import { Button } from '@/components/ui/button'
 import { 
   ArrowLeft, 
@@ -177,9 +178,12 @@ export default function ChecklistDetailPage() {
                 <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                   <div className="flex items-center">
                     <User className="h-4 w-4 mr-1" />
-                    ID: {checklist.ownerId}
+                    Cliente: {checklist.customer
+                      ? CustomerService.getDisplayName(checklist.customer)
+                      : 'Não definido'
+                    }
                   </div>
-                  
+
                   <div className="flex items-center">
                     <CheckSquare className="h-4 w-4 mr-1" />
                     {checklist.sections.length} seç{checklist.sections.length !== 1 ? 'ões' : 'ão'}

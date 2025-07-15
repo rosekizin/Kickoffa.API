@@ -1,5 +1,7 @@
 using Kickoffa.API.Application.Interfaces;
 using Kickoffa.API.Contracts.Customer;
+using Kickoffa.API.Domain.Interfaces.Models;
+using Kickoffa.API.Domain.Models.FreelancerCustomer;
 using Kickoffa.API.Domain.Repositories;
 
 namespace Kickoffa.API.Application.Services
@@ -30,19 +32,7 @@ namespace Kickoffa.API.Application.Services
 		{
 			var customers = await _customerRepository.GetAllAsync(cancellationToken);
 
-			return customers.Select(customer => new CustomerResponse
-			{
-				Id = customer.Id,
-				FirstName = customer.FirstName,
-				LastName = customer.LastName,
-				Email = customer.Email,
-				Cpf = customer.Cpf,
-				Cnpj = customer.Cnpj,
-				PhoneNumber = customer.PhoneNumber,
-				Address = customer.Address,
-				CreatedDateUtc = customer.CreatedDateUtc,
-				LastUpdatedDateUtc = customer.LastUpdatedDateUtc
-			});
+			return customers.Select(MapToResponse);
 		}
 
 		/// <inheritdoc />
@@ -53,19 +43,7 @@ namespace Kickoffa.API.Application.Services
 			if (customer is null)
 				return null;
 
-			return new CustomerResponse
-			{
-				Id = customer.Id,
-				FirstName = customer.FirstName,
-				LastName = customer.LastName,
-				Email = customer.Email,
-				Cpf = customer.Cpf,
-				Cnpj = customer.Cnpj,
-				PhoneNumber = customer.PhoneNumber,
-				Address = customer.Address,
-				CreatedDateUtc = customer.CreatedDateUtc,
-				LastUpdatedDateUtc = customer.LastUpdatedDateUtc
-			};
+			return MapToResponse(customer);
 		}
 
 		/// <summary>
@@ -87,19 +65,7 @@ namespace Kickoffa.API.Application.Services
 			await _customerRepository.SaveChangesAsync(cancellationToken);
 
 			// Mapear para response
-			return new CustomerResponse
-			{
-				Id = customer.Id,
-				FirstName = customer.FirstName,
-				LastName = customer.LastName,
-				Email = customer.Email,
-				Cpf = customer.Cpf,
-				Cnpj = customer.Cnpj,
-				PhoneNumber = customer.PhoneNumber,
-				Address = customer.Address,
-				CreatedDateUtc = customer.CreatedDateUtc,
-				LastUpdatedDateUtc = customer.LastUpdatedDateUtc
-			};
+			return MapToResponse(customer);
 		}
 
 		/// <inheritdoc />
@@ -120,6 +86,44 @@ namespace Kickoffa.API.Application.Services
 			await _customerRepository.SaveChangesAsync(cancellationToken);
 
 			return true;
+		}
+
+		/// <summary>
+		/// Mapeia um Customer para CustomerResponse baseado no tipo
+		/// </summary>
+		/// <param name="customer">Customer a ser mapeado</param>
+		/// <returns>CustomerResponse correspondente</returns>
+		private static CustomerResponse MapToResponse(ICustomer customer)
+		{
+			return customer switch
+			{
+				NaturalPerson naturalPerson => new CustomerResponse
+				{
+					Id = naturalPerson.Id,
+					PhoneNumber = naturalPerson.PhoneNumber,
+					Address = naturalPerson.Address,
+					Email = naturalPerson.Email,
+					Type = (CustomerType)naturalPerson.Type,
+					CreatedDateUtc = naturalPerson.CreatedDateUtc,
+					LastUpdatedDateUtc = naturalPerson.LastUpdatedDateUtc,
+					FirstName = naturalPerson.FirstName,
+					LastName = naturalPerson.LastName,
+					Cpf = naturalPerson.Cpf
+				},
+				LegalPerson legalPerson => new CustomerResponse
+				{
+					Id = legalPerson.Id,
+					PhoneNumber = legalPerson.PhoneNumber,
+					Address = legalPerson.Address,
+					Email = legalPerson.Email,
+					Type = (CustomerType)legalPerson.Type,
+					CreatedDateUtc = legalPerson.CreatedDateUtc,
+					LastUpdatedDateUtc = legalPerson.LastUpdatedDateUtc,
+					Company = legalPerson.Company,
+					Cnpj = legalPerson.Cnpj
+				},
+				_ => throw new InvalidOperationException($"Unknown customer type: {customer.GetType()}")
+			};
 		}
 	}
 }

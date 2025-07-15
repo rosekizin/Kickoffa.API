@@ -10,8 +10,8 @@ import {
   CreateComponentRequest,
   UpdateComponentStatusRequest,
   PublicChecklistView,
-  Customer,
-  CreateCustomerRequest,
+  CustomerUnion,
+  CreateCustomerRequestUnion,
   LoginRequest,
   FileTypesSearchResponse,
   FileTypeCategory
@@ -196,7 +196,7 @@ export const useCreateCustomer = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data: CreateCustomerRequest) => CustomerService.createCustomer(data),
+    mutationFn: (data: CreateCustomerRequestUnion) => CustomerService.createCustomer(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
     }
@@ -207,7 +207,7 @@ export const useUpdateCustomer = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<CreateCustomerRequest> }) =>
+    mutationFn: ({ id, data }: { id: number; data: Partial<CreateCustomerRequestUnion> }) =>
       CustomerService.updateCustomer(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })

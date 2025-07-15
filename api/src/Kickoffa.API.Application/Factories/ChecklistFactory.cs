@@ -18,28 +18,30 @@ namespace Kickoffa.API.Application.Factories
 		///<inheritdoc/>
 		public IChecklist CreateChecklist(
 			long ownerId,
+			long customerId,
 			string title,
 			string? description = null,
 			DateTime? dueDate = null,
 			string? customSlug = null)
 		{
-			var slug = !string.IsNullOrWhiteSpace(customSlug) 
-				? NormalizeSlug(customSlug) 
+			var slug = !string.IsNullOrWhiteSpace(customSlug)
+				? NormalizeSlug(customSlug)
 				: GenerateSlugFromTitle(title);
 
-			return new Checklist(ownerId, title, slug, description, dueDate);
+			return new Checklist(ownerId, customerId, title, slug, description, dueDate);
 		}
 
 		///<inheritdoc/>
 		public IChecklist CreateChecklistWithSections(
 			long ownerId,
+			long customerId,
 			string title,
 			string? description = null,
 			DateTime? dueDate = null,
 			string? customSlug = null,
 			params (string sectionTitle, bool isBriefing)[] sections)
 		{
-			var checklist = CreateChecklist(ownerId, title, description, dueDate, customSlug);
+			var checklist = CreateChecklist(ownerId, customerId, title, description, dueDate, customSlug);
 
 			for (int i = 0; i < sections.Length; i++)
 			{
@@ -55,13 +57,14 @@ namespace Kickoffa.API.Application.Factories
 		}
 
 		///<inheritdoc/>
-		public IChecklist CreateOnboardingChecklist(long ownerId, string clientName)
+		public IChecklist CreateOnboardingChecklist(long ownerId, long customerId, string clientName)
 		{
 			var title = $"Onboarding - {clientName}";
 			var description = $"Processo de onboarding para o cliente {clientName}";
 
 			return CreateChecklistWithSections(
 				ownerId,
+				customerId,
 				title,
 				description,
 				DateTime.UtcNow.AddDays(30), // 30 dias para completar
@@ -74,13 +77,14 @@ namespace Kickoffa.API.Application.Factories
 		}
 
 		///<inheritdoc/>
-		public IChecklist CreateWebDevelopmentChecklist(long ownerId, string projectName)
+		public IChecklist CreateWebDevelopmentChecklist(long ownerId, long customerId, string projectName)
 		{
 			var title = $"Desenvolvimento Web - {projectName}";
 			var description = $"Checklist para desenvolvimento do projeto {projectName}";
 
 			return CreateChecklistWithSections(
 				ownerId,
+				customerId,
 				title,
 				description,
 				DateTime.UtcNow.AddDays(60), // 60 dias para completar
@@ -94,13 +98,14 @@ namespace Kickoffa.API.Application.Factories
 		}
 
 		///<inheritdoc/>
-		public IChecklist CreateDesignChecklist(long ownerId, string projectName)
+		public IChecklist CreateDesignChecklist(long ownerId, long customerId, string projectName)
 		{
 			var title = $"Design - {projectName}";
 			var description = $"Processo de design para o projeto {projectName}";
 
 			return CreateChecklistWithSections(
 				ownerId,
+				customerId,
 				title,
 				description,
 				DateTime.UtcNow.AddDays(45), // 45 dias para completar
@@ -242,24 +247,24 @@ namespace Kickoffa.API.Application.Factories
 		}
 
 		///<inheritdoc/>
-		public Dictionary<string, Func<long, string, IChecklist>> GetAvailableTemplates()
+		public Dictionary<string, Func<long, long, string, IChecklist>> GetAvailableTemplates()
 		{
-			return new Dictionary<string, Func<long, string, IChecklist>>
+			return new Dictionary<string, Func<long, long, string, IChecklist>>
 			{
-				["onboarding"] = (ownerId, name) => CreateOnboardingChecklist(ownerId, name),
-				["web-development"] = (ownerId, name) => CreateWebDevelopmentChecklist(ownerId, name),
-				["design"] = (ownerId, name) => CreateDesignChecklist(ownerId, name)
+				["onboarding"] = (ownerId, customerId, name) => CreateOnboardingChecklist(ownerId, customerId, name),
+				["web-development"] = (ownerId, customerId, name) => CreateWebDevelopmentChecklist(ownerId, customerId, name),
+				["design"] = (ownerId, customerId, name) => CreateDesignChecklist(ownerId, customerId, name)
 			};
 		}
 
 		///<inheritdoc/>
-		public IChecklist? CreateFromTemplate(string templateName, long ownerId, string projectName)
+		public IChecklist? CreateFromTemplate(string templateName, long ownerId, long customerId, string projectName)
 		{
 			var templates = GetAvailableTemplates();
-			
+
 			if (templates.TryGetValue(templateName.ToLowerInvariant(), out var templateFactory))
 			{
-				return templateFactory(ownerId, projectName);
+				return templateFactory(ownerId, customerId, projectName);
 			}
 
 			return null;

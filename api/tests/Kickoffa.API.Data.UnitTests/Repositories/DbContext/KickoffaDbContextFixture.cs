@@ -1,6 +1,5 @@
 ﻿using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.EntityFramework.Mapping;
-using Kickoffa.API.Domain.Services;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 
@@ -9,7 +8,6 @@ namespace Kickoffa.API.Data.UnitTests.Repositories.DbContext
 	public class KickoffaDbContextFixture : IDisposable
 	{
 		private readonly KickoffaDbContext _dbContext;
-		private readonly ICurrentUserService _currentUserService;
 		private readonly ICustomerEntityFrameworkMapping _customerEntityFrameworkMapping;
 		private readonly IUserEntityFrameworkMapping _userEntityFrameworkMapping;
 		private readonly IChecklistEntityFrameworkMapping _checklistEntityFrameworkMapping;
@@ -28,7 +26,6 @@ namespace Kickoffa.API.Data.UnitTests.Repositories.DbContext
 
 		public KickoffaDbContextFixture()
 		{
-			_currentUserService = Substitute.For<ICurrentUserService>();
 			_customerEntityFrameworkMapping = Substitute.For<ICustomerEntityFrameworkMapping>();
 			_userEntityFrameworkMapping = Substitute.For<IUserEntityFrameworkMapping>();
 			_checklistEntityFrameworkMapping = Substitute.For<IChecklistEntityFrameworkMapping>();
@@ -58,7 +55,6 @@ namespace Kickoffa.API.Data.UnitTests.Repositories.DbContext
 
 			var newDbContext = new KickoffaDbContext(
 				options,
-				_currentUserService,
 				_customerEntityFrameworkMapping,
 				_userEntityFrameworkMapping,
 				_checklistEntityFrameworkMapping,

@@ -6,14 +6,28 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 {
 	public interface IChecklistEntityFrameworkMapping
 	{
-		void Map(ModelBuilder modelBuilder, ICurrentUserService currentUserService);
+		void Map(ModelBuilder modelBuilder);
 	}
 
 	public class ChecklistEntityFrameworkMapping : IChecklistEntityFrameworkMapping
 	{
-		public void Map(ModelBuilder modelBuilder, ICurrentUserService currentUserService)
+		private readonly ICurrentUserService _currentUserService;
+
+		public ChecklistEntityFrameworkMapping(ICurrentUserService currentUserService)
+		{
+			_currentUserService = currentUserService;
+		}
+
+		public void Map(ModelBuilder modelBuilder)
 		{
 			var entity = modelBuilder.Entity<Checklist>();
+
+			// Query Filter para isolamento por usuário
+			if (_currentUserService.IsAuthenticated)
+			{
+				var currentUserId = _currentUserService.UserId!.Value;
+				entity.HasQueryFilter(c => c.OwnerId == currentUserId);
+			}
 
 			// Configuração da tabela
 			entity.ToTable("Checklists");
@@ -28,6 +42,10 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 
 			entity.Property(c => c.OwnerId)
 				.IsRequired();
+
+			entity.Property(c => c.CustomerId)
+				.IsRequired()
+				.HasDefaultValue(6L);
 
 			entity.Property(c => c.Title)
 				.IsRequired()
@@ -53,13 +71,6 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			entity.Property(c => c.LastUpdatedDateUtc)
 				.IsRequired();
 
-			// Query Filter para isolamento por usuário
-			if (currentUserService.IsAuthenticated)
-			{
-				var currentUserId = currentUserService.UserId!.Value;
-				entity.HasQueryFilter(c => c.OwnerId == currentUserId);
-			}
-
 			// Índices otimizados para multi-tenancy
 			entity.HasIndex(c => new { c.OwnerId, c.CreatedDateUtc })
 				.HasDatabaseName("IX_Checklists_OwnerId_CreatedDateUtc");
@@ -71,6 +82,9 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 				.IsUnique()
 				.HasDatabaseName("IX_Checklists_OwnerId_Slug");
 
+			entity.HasIndex(c => new { c.OwnerId, c.CustomerId })
+				.HasDatabaseName("IX_Checklists_OwnerId_CustomerId");
+
 			entity.HasIndex(c => c.AccessToken)
 				.IsUnique()
 				.HasDatabaseName("IX_Checklists_AccessToken");
@@ -81,6 +95,11 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 				.HasFilter("\"IsPublished\" = true");
 
 			// Relacionamentos
+			entity.HasOne(c => c.Customer)
+				.WithMany()
+				.HasForeignKey(c => c.CustomerId)
+				.OnDelete(DeleteBehavior.Restrict); // Não permitir deletar customer se houver checklists
+
 			entity.HasMany(c => c.Sections)
 				.WithOne(s => s.Checklist)
 				.HasForeignKey(s => s.ChecklistId)

@@ -1,4 +1,5 @@
 using Kickoffa.API.Contracts.Checklist.Sections;
+using Kickoffa.API.Contracts.Customer;
 using Kickoffa.API.Contracts.Newtonsoft;
 using Newtonsoft.Json;
 
@@ -14,6 +15,12 @@ public sealed record ChecklistResponse
 
 	[JsonProperty(PropertyName = "ownerId", Required = Required.Always)]
 	public required long OwnerId { get; init; }
+
+	[JsonProperty(PropertyName = "customerId", Required = Required.Always)]
+	public required long CustomerId { get; init; }
+
+	[JsonProperty(PropertyName = "customer", Required = Required.Default)]
+	public CustomerResponse? Customer { get; init; }
 
 	[JsonProperty(PropertyName = "title", Required = Required.Always)]
 	public required string Title { get; init; }

@@ -35,9 +35,9 @@ namespace Kickoffa.API.Application.Services.Checklists
 		}
 
 		/// <inheritdoc />
-		public async Task<IEnumerable<ChecklistResponse>> GetByOwnerIdAsync(long ownerId, CancellationToken cancellationToken)
+		public async Task<IEnumerable<ChecklistResponse>> GetAllAsync(CancellationToken cancellationToken)
 		{
-			var checklists = await _checklistRepository.GetByOwnerIdAsync(ownerId, cancellationToken);
+			var checklists = await _checklistRepository.GetAllAsync(cancellationToken);
 			return checklists.Select(_mapChecklistToResponse.MapToResponse);
 		}
 

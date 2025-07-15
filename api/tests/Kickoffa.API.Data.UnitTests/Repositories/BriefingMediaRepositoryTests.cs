@@ -115,7 +115,7 @@ public class BriefingMediaRepositoryTests : IClassFixture<KickoffaDbContextFixtu
 	private void SeedTestData()
 	{
 		// Criar estrutura básica
-		var checklist = new Checklist(1, "Test Checklist", "test-checklist", "Descrição", null);
+		var checklist = new Checklist(1, 1, "Test Checklist", "test-checklist", "Descrição", null);
 		_contextFixture.KickoffaDbContext.Checklists.Add(checklist);
 		_contextFixture.KickoffaDbContext.SaveChanges();
 
