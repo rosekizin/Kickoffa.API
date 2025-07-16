@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Authentication\LoginRequest.cs~RF110da9dd.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" />
   </ItemGroup>

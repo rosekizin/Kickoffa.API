@@ -9,6 +9,12 @@
 		/// <returns>True se válido</returns>
 		public static bool IsValidCpf(string cpf)
 		{
+			if (string.IsNullOrWhiteSpace(cpf) || AreThereNonNumericChars(cpf))
+				return false;
+
+			if (cpf.Length != 11)
+				return false;
+
 			// CPFs inválidos conhecidos
 			if (cpf == "00000000000" || cpf == "11111111111" || cpf == "22222222222" ||
 				cpf == "33333333333" || cpf == "44444444444" || cpf == "55555555555" ||
@@ -49,6 +55,12 @@
 		/// <returns>True se válido</returns>
 		public static bool IsValidCnpj(string cnpj)
 		{
+			if (string.IsNullOrWhiteSpace(cnpj) || AreThereNonNumericChars(cnpj))
+				return false;
+
+			if (cnpj.Length != 14)
+				return false;
+
 			// CNPJs inválidos conhecidos
 			if (cnpj == "00000000000000" || cnpj == "11111111111111" || cnpj == "22222222222222" ||
 				cnpj == "33333333333333" || cnpj == "44444444444444" || cnpj == "55555555555555" ||
@@ -82,6 +94,20 @@
 			var digit2 = remainder < 2 ? 0 : 11 - remainder;
 
 			return int.Parse(cnpj[13].ToString()) == digit2;
+		}
+
+		public static bool AreThereNonNumericChars(string input)
+		{
+			if (string.IsNullOrWhiteSpace(input))
+				return true;
+
+			foreach (char c in input)
+			{
+				if (!char.IsDigit(c))
+					return true;
+			}
+
+			return false;
 		}
 	}
 }

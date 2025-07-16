@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
-namespace Kickoffa.API.Contracts.Checklist.Components
+namespace Kickoffa.API.Contracts.Checklist.Components.Request
 {
 	/// <summary>
 	/// Request para representação de componente de confirmação

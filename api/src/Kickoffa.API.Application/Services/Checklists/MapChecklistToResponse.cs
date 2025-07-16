@@ -1,13 +1,13 @@
 ﻿using Kickoffa.API.Application.Interfaces.Checkilists;
 using Kickoffa.API.Contracts.Checklist;
-using Kickoffa.API.Contracts.Checklist.Components;
+using Kickoffa.API.Contracts.Checklist.Components.Request;
+using Kickoffa.API.Contracts.Checklist.Components.Response;
 using Kickoffa.API.Contracts.Checklist.Sections;
 using Kickoffa.API.Contracts.Customer;
 using Kickoffa.API.Contracts.FileType;
 using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models;
-using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Models.FreelancerCustomer;
 
 namespace Kickoffa.API.Application.Services.Checklists
@@ -274,7 +274,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 		/// </summary>
 		private static ComponentStatusResponse? MapComponentStatusToResponse(IComponentStatus? status)
 		{
-			if(status is null)
+			if (status is null)
 				return default;
 
 			return new ComponentStatusResponse

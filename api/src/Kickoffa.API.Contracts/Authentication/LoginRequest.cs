@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 
 namespace Kickoffa.API.Contracts.Authentication;
 
 /// <summary>
 /// Request para login de usuário
 /// </summary>
-public sealed record LoginRequest : IValidatableObject
+public sealed partial record LoginRequest : IValidatableObject
 {
     /// <summary>
     /// Email do usuário
@@ -69,6 +70,12 @@ public sealed record LoginRequest : IValidatableObject
     /// <returns>True se válido</returns>
     private static bool IsValidEmail(string email)
     {
+		// Regex que bloqueia pontos consecutivos e outros erros comuns
+		var regex = ValidEmail();
+
+		if (!regex.IsMatch(email))
+			return false;
+		
         try
         {
             var addr = new System.Net.Mail.MailAddress(email);
@@ -79,4 +86,7 @@ public sealed record LoginRequest : IValidatableObject
             return false;
         }
     }
+
+	[GeneratedRegex(@"^(?!.*\.\.)(?!\.)(?!.*\.$)[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")]
+	private static partial Regex ValidEmail();
 }

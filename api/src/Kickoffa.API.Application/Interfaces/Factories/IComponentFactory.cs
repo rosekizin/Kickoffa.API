@@ -1,4 +1,4 @@
-﻿using Kickoffa.API.Contracts.Checklist.Components;
+﻿using Kickoffa.API.Contracts.Checklist.Components.Request;
 using Kickoffa.API.Domain.Interfaces.Models.Components;
 
 namespace Kickoffa.API.Application.Interfaces.Factories
