@@ -21,7 +21,9 @@ public abstract record ComponentResponse
 	public string? Description { get; init; }
 
 	[JsonProperty(PropertyName = "type", Required = Required.Always)]
-	public required string Type { get; init; }
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+	public string Type { get; init; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 	[JsonProperty(PropertyName = "isRequired", Required = Required.Always)]
 	public required bool IsRequired { get; init; }

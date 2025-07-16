@@ -1,4 +1,5 @@
 ﻿using Kickoffa.API.Contracts.Customer.Validations;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
@@ -10,11 +11,20 @@ namespace Kickoffa.API.Contracts.Customer;
 ///
 public abstract record CreateCustomerRequest : IValidatableObject
 {
+	[JsonProperty(PropertyName = "id", Required = Required.Default)]
 	public long Id { get; init; }
+
+	[JsonProperty(PropertyName = "email", Required = Required.Default)]
 	public string? Email { get; init; }
+
+	[JsonProperty(PropertyName = "phoneNumber", Required = Required.Default)]
 	public string? PhoneNumber { get; init; }
+
+	[JsonProperty(PropertyName = "address", Required = Required.Default)]
 	public string? Address { get; init; }
-	public required CustomerType Type { get; init; }
+
+	[JsonProperty(PropertyName = "type", Required = Required.Always)]
+	public CustomerType Type { get; init; }
 
 	/// <summary>
 	/// Valida as propriedades do request
@@ -75,10 +85,15 @@ public abstract record CreateCustomerRequest : IValidatableObject
 /// <summary>
 /// Request para criação de pessoa física (NaturalPerson)
 /// </summary>
-public sealed record CreateNaturalPersonRequest : CreateCustomerRequest
+public sealed partial record CreateNaturalPersonRequest : CreateCustomerRequest
 {
+	[JsonProperty(PropertyName = "firstName", Required = Required.Always)]
 	public required string FirstName { get; init; }
+
+	[JsonProperty(PropertyName = "lastName", Required = Required.Always)]
 	public required string LastName { get; init; }
+
+	[JsonProperty(PropertyName = "cpf", Required = Required.Always)]
 	public string? Cpf { get; init; }
 
 	public CreateNaturalPersonRequest()
@@ -117,7 +132,7 @@ public sealed record CreateNaturalPersonRequest : CreateCustomerRequest
 			{
 				results.Add(new ValidationResult("O CPF deve ter exatamente 11 dígitos", [nameof(Cpf)]));
 			}
-			else if (!Regex.IsMatch(Cpf, @"^\d{11}$"))
+			else if (!CpfLength().IsMatch(Cpf))
 			{
 				results.Add(new ValidationResult("O CPF deve conter apenas números", [nameof(Cpf)]));
 			}
@@ -129,14 +144,20 @@ public sealed record CreateNaturalPersonRequest : CreateCustomerRequest
 
 		return results;
 	}
+
+	[GeneratedRegex(@"^\d{11}$")]
+	private static partial Regex CpfLength();
 }
 
 /// <summary>
 /// Request para criação de pessoa jurídica (LegalPerson)
 /// </summary>
-public sealed record CreateLegalPersonRequest : CreateCustomerRequest
+public sealed partial record CreateLegalPersonRequest : CreateCustomerRequest
 {
+	[JsonProperty(PropertyName = "company", Required = Required.Default)]
 	public required string Company { get; init; } // Razão Social
+
+	[JsonProperty(PropertyName = "cnpj", Required = Required.Default)]
 	public string? Cnpj { get; init; }
 
 	public CreateLegalPersonRequest()
@@ -165,7 +186,7 @@ public sealed record CreateLegalPersonRequest : CreateCustomerRequest
 			{
 				results.Add(new ValidationResult("O CNPJ deve ter exatamente 14 dígitos", [nameof(Cnpj)]));
 			}
-			else if (!Regex.IsMatch(Cnpj, @"^\d{14}$"))
+			else if (!CNPJLength().IsMatch(Cnpj))
 			{
 				results.Add(new ValidationResult("O CNPJ deve conter apenas números", [nameof(Cnpj)]));
 			}
@@ -177,4 +198,7 @@ public sealed record CreateLegalPersonRequest : CreateCustomerRequest
 
 		return results;
 	}
+
+	[GeneratedRegex(@"^\d{14}$")]
+	private static partial Regex CNPJLength();
 }
