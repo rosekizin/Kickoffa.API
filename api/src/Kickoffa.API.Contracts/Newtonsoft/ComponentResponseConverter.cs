@@ -1,4 +1,5 @@
 using Kickoffa.API.Contracts.Checklist.Components;
+using Kickoffa.API.Contracts.Checklist.Components.Response;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

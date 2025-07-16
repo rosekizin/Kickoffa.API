@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Kickoffa.API.Contracts.Checklist.Components
+namespace Kickoffa.API.Contracts.Checklist.Components.Request
 {
 	/// <summary>
 	/// Response para configuração de tamanho máximo por tipo de arquivo

@@ -1,7 +1,9 @@
-using Kickoffa.API.Contracts.Checklist.Components;
+using Kickoffa.API.Contracts.Checklist.Components.Request;
+using Kickoffa.API.TestUtils.JsonProperty;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
-namespace Kickoffa.API.Contracts.UnitTests.Checklist.Components;
+namespace Kickoffa.API.Contracts.UnitTests.Checklist.Components.Request;
 
 public class CheckboxComponentRequestTests
 {
@@ -355,11 +357,26 @@ public class CheckboxComponentRequestTests
         // Assert
         Assert.Empty(validationResults);
         Assert.Equal(id, request.Id);
-    }
+	}
 
-    #region Helper Methods
+	[Fact]
+	public void CheckboxComponentRequest_ShouldHaveCorrectJsonPropertyAttributes()
+	{
+		// Arrange
+		var type = typeof(CheckboxComponentRequest);
 
-    private static List<ValidationResult> ValidateModel(object model)
+		// Act & Assert
+		type.GetProperty(nameof(CheckboxComponentRequest.Id))!.AssertPropertyName("id").AssertRequired(Required.Default);
+		type.GetProperty(nameof(CheckboxComponentRequest.Title))!.AssertPropertyName("title").AssertRequired(Required.Always);
+		type.GetProperty(nameof(CheckboxComponentRequest.Description))!.AssertPropertyName("description").AssertRequired(Required.Default);
+		type.GetProperty(nameof(CheckboxComponentRequest.IsRequired))!.AssertPropertyName("isRequired").AssertRequired(Required.Always);
+		type.GetProperty(nameof(CheckboxComponentRequest.Order))!.AssertPropertyName("order").AssertRequired(Required.Always);
+		type.GetProperty(nameof(CheckboxComponentRequest.Type))!.AssertPropertyName("type").AssertRequired(Required.Always);
+	}
+
+	#region Helper Methods
+
+	private static List<ValidationResult> ValidateModel(object model)
     {
         var validationResults = new List<ValidationResult>();
         var validationContext = new ValidationContext(model);

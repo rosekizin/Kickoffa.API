@@ -1,6 +1,8 @@
 using Kickoffa.API.Contracts.Checklist;
-using Kickoffa.API.Contracts.Checklist.Components;
+using Kickoffa.API.Contracts.Checklist.Components.Request;
 using Kickoffa.API.Contracts.Checklist.Sections;
+using Kickoffa.API.TestUtils.JsonProperty;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
 namespace Kickoffa.API.Contracts.UnitTests.Checklist;
@@ -373,11 +375,40 @@ public class ChecklistRequestTests
 
         // Assert
         Assert.Empty(validationResults);
-    }
+	}
 
-    #region Helper Methods
+	[Fact]
+	public void ChecklistRequest_ShouldHaveCorrectJsonPropertyAttributes()
+	{
+		// Arrange
+		var type = typeof(ChecklistRequest);
 
-    private static List<ValidationResult> ValidateModel(object model)
+		// Act & Assert
+		type.GetProperty(nameof(ChecklistRequest.Id))!.AssertPropertyName("id").AssertRequired(Required.Default);
+		type.GetProperty(nameof(ChecklistRequest.CustomerId))!.AssertPropertyName("customerId").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistRequest.Title))!.AssertPropertyName("title").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistRequest.Description))!.AssertPropertyName("description").AssertRequired(Required.Default);
+		type.GetProperty(nameof(ChecklistRequest.Deadline))!.AssertPropertyName("deadline").AssertRequired(Required.Default);
+		type.GetProperty(nameof(ChecklistRequest.Sections))!.AssertPropertyName("sections").AssertRequired(Required.Always);
+	}
+
+	[Fact]
+	public void ChecklistSectionRequest_ShouldHaveCorrectJsonPropertyAttributes()
+	{
+		// Arrange
+		var type = typeof(ChecklistSectionRequest);
+
+		// Act & Assert
+		type.GetProperty(nameof(ChecklistSectionRequest.Id))!.AssertPropertyName("id").AssertRequired(Required.Default);
+		type.GetProperty(nameof(ChecklistSectionRequest.Title))!.AssertPropertyName("title").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistSectionRequest.Type))!.AssertPropertyName("type").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistSectionRequest.Order))!.AssertPropertyName("order").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistSectionRequest.Components))!.AssertPropertyName("components").AssertRequired(Required.Always);
+	}
+
+	#region Helper Methods
+
+	private static List<ValidationResult> ValidateModel(object model)
     {
         var validationResults = new List<ValidationResult>();
         var validationContext = new ValidationContext(model);

@@ -1,7 +1,9 @@
-using Kickoffa.API.Contracts.Checklist.Components;
+using Kickoffa.API.Contracts.Checklist.Components.Request;
+using Kickoffa.API.TestUtils.JsonProperty;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
-namespace Kickoffa.API.Contracts.UnitTests.Checklist.Components;
+namespace Kickoffa.API.Contracts.UnitTests.Checklist.Components.Request;
 
 public class SignatureComponentRequestTests
 {
@@ -355,11 +357,26 @@ public class SignatureComponentRequestTests
 
         // Assert - SignatureComponentRequest should not declare any additional properties beyond ComponentRequest
         Assert.Empty(declaredProperties.Where(p => !p.Name.Contains("EqualityContract")));
-    }
+	}
 
-    #region Helper Methods
+	[Fact]
+	public void SignatureComponentRequest_ShouldHaveCorrectJsonPropertyAttributes()
+	{
+		// Arrange
+		var type = typeof(SignatureComponentRequest);
 
-    private static List<ValidationResult> ValidateModel(object model)
+		// Act & Assert
+		type.GetProperty(nameof(SignatureComponentRequest.Id))!.AssertPropertyName("id").AssertRequired(Required.Default);
+		type.GetProperty(nameof(SignatureComponentRequest.Title))!.AssertPropertyName("title").AssertRequired(Required.Always);
+		type.GetProperty(nameof(SignatureComponentRequest.Description))!.AssertPropertyName("description").AssertRequired(Required.Default);
+		type.GetProperty(nameof(SignatureComponentRequest.IsRequired))!.AssertPropertyName("isRequired").AssertRequired(Required.Always);
+		type.GetProperty(nameof(SignatureComponentRequest.Order))!.AssertPropertyName("order").AssertRequired(Required.Always);
+		type.GetProperty(nameof(SignatureComponentRequest.Type))!.AssertPropertyName("type").AssertRequired(Required.Always);
+	}
+
+	#region Helper Methods
+
+	private static List<ValidationResult> ValidateModel(object model)
     {
         var validationResults = new List<ValidationResult>();
         var validationContext = new ValidationContext(model);

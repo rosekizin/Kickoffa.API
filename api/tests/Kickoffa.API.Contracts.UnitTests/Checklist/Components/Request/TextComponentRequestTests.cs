@@ -1,7 +1,9 @@
-using Kickoffa.API.Contracts.Checklist.Components;
+using Kickoffa.API.Contracts.Checklist.Components.Request;
+using Kickoffa.API.TestUtils.JsonProperty;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
-namespace Kickoffa.API.Contracts.UnitTests.Checklist.Components;
+namespace Kickoffa.API.Contracts.UnitTests.Checklist.Components.Request;
 
 public class TextComponentRequestTests
 {
@@ -415,11 +417,28 @@ public class TextComponentRequestTests
         Assert.Equal(2, validationResults.Count);
         Assert.Contains(validationResults, v => v.ErrorMessage == "O título do componente deve ter entre 2 e 200 caracteres"); // Base validation
         Assert.Contains(validationResults, v => v.ErrorMessage == "O comprimento máximo deve ser maior que zero"); // Specific validation
-    }
+	}
 
-    #region Helper Methods
+	[Fact]
+	public void TextComponentRequest_ShouldHaveCorrectJsonPropertyAttributes()
+	{
+		// Arrange
+		var type = typeof(TextComponentRequest);
 
-    private static List<ValidationResult> ValidateModel(object model)
+		// Act & Assert
+		type.GetProperty(nameof(TextComponentRequest.Id))!.AssertPropertyName("id").AssertRequired(Required.Default);
+		type.GetProperty(nameof(TextComponentRequest.Title))!.AssertPropertyName("title").AssertRequired(Required.Always);
+		type.GetProperty(nameof(TextComponentRequest.Description))!.AssertPropertyName("description").AssertRequired(Required.Default);
+		type.GetProperty(nameof(TextComponentRequest.IsRequired))!.AssertPropertyName("isRequired").AssertRequired(Required.Always);
+		type.GetProperty(nameof(TextComponentRequest.Order))!.AssertPropertyName("order").AssertRequired(Required.Always);
+		type.GetProperty(nameof(TextComponentRequest.Type))!.AssertPropertyName("type").AssertRequired(Required.Always);
+		type.GetProperty(nameof(TextComponentRequest.Placeholder))!.AssertPropertyName("placeholder").AssertRequired(Required.Default);
+		type.GetProperty(nameof(TextComponentRequest.MaxLength))!.AssertPropertyName("maxLength").AssertRequired(Required.Default);
+	}
+
+	#region Helper Methods
+
+	private static List<ValidationResult> ValidateModel(object model)
     {
         var validationResults = new List<ValidationResult>();
         var validationContext = new ValidationContext(model);

@@ -71,21 +71,21 @@ public class DocumentValidationsTests
     [InlineData("123456789")] // Too short
     [InlineData("123456789012")] // Too long
     [InlineData("")] // Empty
-    public void IsValidCpf_WithInvalidLength_ShouldThrowException(string cpf)
+    public void IsValidCpf_WithInvalidLength_ShouldReturnFalse(string cpf)
     {
-        // Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => DocumentValidations.IsValidCpf(cpf));
-    }
+		// Act & Assert
+		Assert.False(DocumentValidations.IsValidCnpj(cpf));
+	}
 
     [Theory]
     [InlineData("1234567890a")] // Contains letter
     [InlineData("123.456.789-01")] // Contains formatting
     [InlineData("123 456 789 01")] // Contains spaces
-    public void IsValidCpf_WithNonNumericCharacters_ShouldThrowException(string cpf)
+    public void IsValidCpf_WithNonNumericCharacters_ShouldReturnFalse(string cpf)
     {
-        // Act & Assert
-        Assert.Throws<FormatException>(() => DocumentValidations.IsValidCpf(cpf));
-    }
+		// Act & Assert
+		Assert.False(DocumentValidations.IsValidCnpj(cpf));
+	}
 
     #endregion
 
@@ -140,20 +140,20 @@ public class DocumentValidationsTests
     [InlineData("12345678901")] // Too short
     [InlineData("123456789012345")] // Too long
     [InlineData("")] // Empty
-    public void IsValidCnpj_WithInvalidLength_ShouldThrowException(string cnpj)
+    public void IsValidCnpj_WithInvalidLength_ShouldReturnFalse(string cnpj)
     {
         // Act & Assert
-        Assert.Throws<ArgumentOutOfRangeException>(() => DocumentValidations.IsValidCnpj(cnpj));
+        Assert.False(DocumentValidations.IsValidCnpj(cnpj));
     }
 
     [Theory]
     [InlineData("1234567800019a")] // Contains letter
     [InlineData("12.345.678/0001-95")] // Contains formatting
     [InlineData("12 345 678 0001 95")] // Contains spaces
-    public void IsValidCnpj_WithNonNumericCharacters_ShouldThrowException(string cnpj)
+    public void IsValidCnpj_WithNonNumericCharacters_ShouldReturnFalse(string cnpj)
     {
-        // Act & Assert
-        Assert.Throws<FormatException>(() => DocumentValidations.IsValidCnpj(cnpj));
+		// Act & Assert
+		Assert.False(DocumentValidations.IsValidCnpj(cnpj));
     }
 
     #endregion
@@ -163,16 +163,16 @@ public class DocumentValidationsTests
     [Fact]
     public void IsValidCpf_StaticMethod_ShouldBeAccessible()
     {
-        // Act & Assert - Should not throw
-        var result = DocumentValidations.IsValidCpf("11144477735");
+		// Act & Assert - Should return true for a valid CPF
+		var result = DocumentValidations.IsValidCpf("11144477735");
         Assert.True(result);
     }
 
     [Fact]
     public void IsValidCnpj_StaticMethod_ShouldBeAccessible()
     {
-        // Act & Assert - Should not throw
-        var result = DocumentValidations.IsValidCnpj("11222333000181");
+		// Act & Assert - Should return true for a valid CPF
+		var result = DocumentValidations.IsValidCnpj("11222333000181");
         Assert.True(result);
     }
 

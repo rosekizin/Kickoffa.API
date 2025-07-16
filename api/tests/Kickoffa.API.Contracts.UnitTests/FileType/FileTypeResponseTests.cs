@@ -1,4 +1,5 @@
 using Kickoffa.API.Contracts.FileType;
+using Kickoffa.API.TestUtils.JsonProperty;
 using Newtonsoft.Json;
 
 namespace Kickoffa.API.Contracts.UnitTests.FileType;
@@ -448,5 +449,21 @@ public class FileTypesSearchResponseTests
         
         var getHashCodeMethod = type.GetMethod("GetHashCode", Type.EmptyTypes);
         Assert.NotNull(getHashCodeMethod);
-    }
+	}
+
+	[Fact]
+	public void FileTypeResponse_ShouldHaveCorrectJsonPropertyAttributes()
+	{
+		// Arrange
+		var type = typeof(FileTypeResponse);
+
+		// Act & Assert
+		type.GetProperty(nameof(FileTypeResponse.Id))!.AssertPropertyName("id").AssertRequired(Required.Always);
+		type.GetProperty(nameof(FileTypeResponse.MimeType))!.AssertPropertyName("mimeType").AssertRequired(Required.Always);
+		type.GetProperty(nameof(FileTypeResponse.Extension))!.AssertPropertyName("extension").AssertRequired(Required.Always);
+		type.GetProperty(nameof(FileTypeResponse.DisplayName))!.AssertPropertyName("displayName").AssertRequired(Required.Always);
+		type.GetProperty(nameof(FileTypeResponse.Description))!.AssertPropertyName("description").AssertRequired(Required.Default);
+		type.GetProperty(nameof(FileTypeResponse.Category))!.AssertPropertyName("category").AssertRequired(Required.Default);
+		type.GetProperty(nameof(FileTypeResponse.RecommendedMaxSizeMB))!.AssertPropertyName("recommendedMaxSizeMB").AssertRequired(Required.Default);
+	}
 }

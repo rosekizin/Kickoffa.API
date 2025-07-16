@@ -1,7 +1,9 @@
-using Kickoffa.API.Contracts.Checklist.Components;
+using Kickoffa.API.Contracts.Checklist.Components.Request;
+using Kickoffa.API.TestUtils.JsonProperty;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
-namespace Kickoffa.API.Contracts.UnitTests.Checklist.Components;
+namespace Kickoffa.API.Contracts.UnitTests.Checklist.Components.Request;
 
 public class ConfirmationComponentRequestTests
 {
@@ -393,11 +395,27 @@ public class ConfirmationComponentRequestTests
         // Assert
         Assert.Empty(validationResults);
         Assert.Equal(confirmationText, request.ConfirmationText);
-    }
+	}
 
-    #region Helper Methods
+	[Fact]
+	public void ConfirmationComponentRequest_ShouldHaveCorrectJsonPropertyAttributes()
+	{
+		// Arrange
+		var type = typeof(ConfirmationComponentRequest);
 
-    private static List<ValidationResult> ValidateModel(object model)
+		// Act & Assert
+		type.GetProperty(nameof(ConfirmationComponentRequest.Id))!.AssertPropertyName("id").AssertRequired(Required.Default);
+		type.GetProperty(nameof(ConfirmationComponentRequest.Title))!.AssertPropertyName("title").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ConfirmationComponentRequest.Description))!.AssertPropertyName("description").AssertRequired(Required.Default);
+		type.GetProperty(nameof(ConfirmationComponentRequest.IsRequired))!.AssertPropertyName("isRequired").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ConfirmationComponentRequest.Order))!.AssertPropertyName("order").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ConfirmationComponentRequest.Type))!.AssertPropertyName("type").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ConfirmationComponentRequest.ConfirmationText))!.AssertPropertyName("confirmationText").AssertRequired(Required.Always);
+	}
+
+	#region Helper Methods
+
+	private static List<ValidationResult> ValidateModel(object model)
     {
         var validationResults = new List<ValidationResult>();
         var validationContext = new ValidationContext(model);

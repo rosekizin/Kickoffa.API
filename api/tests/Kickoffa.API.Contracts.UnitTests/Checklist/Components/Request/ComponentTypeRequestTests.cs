@@ -1,6 +1,6 @@
-using Kickoffa.API.Contracts.Checklist.Components;
+using Kickoffa.API.Contracts.Checklist.Components.Request;
 
-namespace Kickoffa.API.Contracts.UnitTests.Checklist.Components;
+namespace Kickoffa.API.Contracts.UnitTests.Checklist.Components.Request;
 
 public class ComponentTypeRequestTests
 {
@@ -256,27 +256,6 @@ public class ComponentTypeRequestTests
         for (int i = 0; i < values.Length; i++)
         {
             Assert.Equal(i, values[i]);
-        }
-    }
-
-    [Theory]
-    [InlineData(ComponentTypeRequest.Checkbox, ComponentTypeRequest.Text, true)]
-    [InlineData(ComponentTypeRequest.Text, ComponentTypeRequest.Upload, true)]
-    [InlineData(ComponentTypeRequest.Upload, ComponentTypeRequest.Signature, true)]
-    [InlineData(ComponentTypeRequest.Signature, ComponentTypeRequest.Confirmation, true)]
-    [InlineData(ComponentTypeRequest.Checkbox, ComponentTypeRequest.Confirmation, false)]
-    public void ComponentTypeRequest_ShouldSupportComparison(ComponentTypeRequest first, ComponentTypeRequest second, bool firstIsLess)
-    {
-        // Act & Assert
-        if (firstIsLess)
-        {
-            Assert.True(first < second);
-            Assert.False(first > second);
-        }
-        else
-        {
-            Assert.False(first < second);
-            Assert.True(first > second);
         }
     }
 

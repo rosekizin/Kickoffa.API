@@ -1,6 +1,7 @@
 using Kickoffa.API.Contracts.Checklist;
 using Kickoffa.API.Contracts.Checklist.Sections;
 using Kickoffa.API.Contracts.Customer;
+using Kickoffa.API.TestUtils.JsonProperty;
 using Newtonsoft.Json;
 
 namespace Kickoffa.API.Contracts.UnitTests.Checklist;
@@ -367,11 +368,50 @@ public class ChecklistResponseTests
         Assert.Null(response.Description);
         Assert.Null(response.Deadline);
         Assert.Null(response.AccessToken);
-    }
+	}
 
-    #region Helper Methods
+	[Fact]
+	public void ChecklistResponse_ShouldHaveCorrectJsonPropertyAttributes()
+	{
+		// Arrange
+		var type = typeof(ChecklistResponse);
 
-    private static CustomerResponse CreateCustomerResponse(long id)
+		// Act & Assert
+		type.GetProperty(nameof(ChecklistResponse.Id))!.AssertPropertyName("id").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistResponse.OwnerId))!.AssertPropertyName("ownerId").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistResponse.CustomerId))!.AssertPropertyName("customerId").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistResponse.Customer))!.AssertPropertyName("customer").AssertRequired(Required.Default);
+		type.GetProperty(nameof(ChecklistResponse.Title))!.AssertPropertyName("title").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistResponse.Slug))!.AssertPropertyName("slug").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistResponse.Description))!.AssertPropertyName("description").AssertRequired(Required.Default);
+		type.GetProperty(nameof(ChecklistResponse.Deadline))!.AssertPropertyName("deadline").AssertRequired(Required.Default);
+		type.GetProperty(nameof(ChecklistResponse.AccessToken))!.AssertPropertyName("accessToken").AssertRequired(Required.Default);
+		type.GetProperty(nameof(ChecklistResponse.IsPublished))!.AssertPropertyName("isPublished").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistResponse.Sections))!.AssertPropertyName("sections").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistResponse.CreatedDateUtc))!.AssertPropertyName("createdDateUtc").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistResponse.LastUpdatedDateUtc))!.AssertPropertyName("lastUpdatedDateUtc").AssertRequired(Required.Always);
+	}
+
+	[Fact]
+	public void ChecklistSectionResponse_ShouldHaveCorrectJsonPropertyAttributes()
+	{
+		// Arrange
+		var type = typeof(ChecklistSectionResponse);
+
+		// Act & Assert
+		type.GetProperty(nameof(ChecklistSectionResponse.Id))!.AssertPropertyName("id").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistSectionResponse.ChecklistId))!.AssertPropertyName("checklistId").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistSectionResponse.Title))!.AssertPropertyName("title").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistSectionResponse.Type))!.AssertPropertyName("type").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistSectionResponse.Order))!.AssertPropertyName("order").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistSectionResponse.CreatedDateUtc))!.AssertPropertyName("createdDateUtc").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistSectionResponse.LastUpdatedDateUtc))!.AssertPropertyName("lastUpdatedDateUtc").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistSectionResponse.Components))!.AssertPropertyName("components").AssertRequired(Required.Always);
+	}
+
+	#region Helper Methods
+
+	private static CustomerResponse CreateCustomerResponse(long id)
     {
         return new CustomerResponse
         {
@@ -385,7 +425,7 @@ public class ChecklistResponseTests
         };
     }
 
-    private static SectionResponse CreateSectionResponse(long id)
+    private static BriefingSectionResponse CreateSectionResponse(long id)
     {
         return new BriefingSectionResponse
         {

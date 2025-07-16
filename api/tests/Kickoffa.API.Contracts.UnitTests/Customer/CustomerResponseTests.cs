@@ -1,4 +1,5 @@
 using Kickoffa.API.Contracts.Customer;
+using Kickoffa.API.TestUtils.JsonProperty;
 using Newtonsoft.Json;
 
 namespace Kickoffa.API.Contracts.UnitTests.Customer;
@@ -348,5 +349,26 @@ public class CustomerResponseTests
         Assert.Null(response.Cpf);
         Assert.Null(response.Company);
         Assert.Null(response.Cnpj);
-    }
+	}
+
+	[Fact]
+	public void CustomerResponse_ShouldHaveCorrectJsonPropertyAttributes()
+	{
+		// Arrange
+		var type = typeof(CustomerResponse);
+
+		// Act & Assert
+		type.GetProperty(nameof(CustomerResponse.Id))!.AssertPropertyName("id").AssertRequired(Required.Always);
+		type.GetProperty(nameof(CustomerResponse.PhoneNumber))!.AssertPropertyName("phoneNumber").AssertRequired(Required.Default);
+		type.GetProperty(nameof(CustomerResponse.Address))!.AssertPropertyName("address").AssertRequired(Required.Default);
+		type.GetProperty(nameof(CustomerResponse.Email))!.AssertPropertyName("email").AssertRequired(Required.Default);
+		type.GetProperty(nameof(CustomerResponse.Type))!.AssertPropertyName("type").AssertRequired(Required.Always);
+		type.GetProperty(nameof(CustomerResponse.CreatedDateUtc))!.AssertPropertyName("createdDateUtc").AssertRequired(Required.Always);
+		type.GetProperty(nameof(CustomerResponse.LastUpdatedDateUtc))!.AssertPropertyName("lastUpdatedDateUtc").AssertRequired(Required.Always);
+		type.GetProperty(nameof(CustomerResponse.FirstName))!.AssertPropertyName("firstName").AssertRequired(Required.Default);
+		type.GetProperty(nameof(CustomerResponse.LastName))!.AssertPropertyName("lastName").AssertRequired(Required.Default);
+		type.GetProperty(nameof(CustomerResponse.Cpf))!.AssertPropertyName("cpf").AssertRequired(Required.Default);
+		type.GetProperty(nameof(CustomerResponse.Company))!.AssertPropertyName("company").AssertRequired(Required.Default);
+		type.GetProperty(nameof(CustomerResponse.Cnpj))!.AssertPropertyName("cnpj").AssertRequired(Required.Default);
+	}
 }

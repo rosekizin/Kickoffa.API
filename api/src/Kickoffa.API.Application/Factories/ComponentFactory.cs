@@ -1,5 +1,5 @@
 using Kickoffa.API.Application.Interfaces.Factories;
-using Kickoffa.API.Contracts.Checklist.Components;
+using Kickoffa.API.Contracts.Checklist.Components.Request;
 using Kickoffa.API.Domain.Interfaces.Models.Components;
 using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Repositories;
