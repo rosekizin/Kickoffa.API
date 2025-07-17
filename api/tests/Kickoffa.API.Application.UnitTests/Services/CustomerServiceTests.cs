@@ -1,4 +1,5 @@
 using Kickoffa.API.Application.Interfaces;
+using Kickoffa.API.Application.MessageErrors;
 using Kickoffa.API.Application.Services;
 using Kickoffa.API.Contracts.Customer;
 using Kickoffa.API.Domain.Interfaces.Models.Customer;
@@ -6,6 +7,7 @@ using Kickoffa.API.Domain.Models.FreelancerCustomer;
 using Kickoffa.API.Domain.Repositories;
 using Kickoffa.API.TestUtils.InternalMember;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 
 namespace Kickoffa.API.Application.UnitTests.Services;
 
@@ -63,13 +65,14 @@ public class CustomerServiceTests
 		var result = await _customerService.UpdateAsync(customerId, updateRequest, _cancellationToken);
 
 		// Assert
-		Assert.NotNull(result);
-		Assert.Equal(customerId, result.Id);
-		Assert.Equal("João Carlos", result.FirstName);
-		Assert.Equal("Silva Santos", result.LastName);
-		Assert.Equal("joao.carlos@email.com", result.Email);
-		Assert.Equal("11888888888", result.PhoneNumber);
-		Assert.Equal("Rua B, 456", result.Address);
+		Assert.True(result.IsSuccess);
+		Assert.NotNull(result.Value);
+		Assert.Equal(customerId, result.Value.Id);
+		Assert.Equal("João Carlos", result.Value.FirstName);
+		Assert.Equal("Silva Santos", result.Value.LastName);
+		Assert.Equal("joao.carlos@email.com", result.Value.Email);
+		Assert.Equal("11888888888", result.Value.PhoneNumber);
+		Assert.Equal("Rua B, 456", result.Value.Address);
 
 		// Verificar que o customer foi atualizado
 		Assert.Equal("João Carlos", existingCustomer.FirstName);
@@ -111,12 +114,13 @@ public class CustomerServiceTests
 		var result = await _customerService.UpdateAsync(customerId, updateRequest, _cancellationToken);
 
 		// Assert
-		Assert.NotNull(result);
-		Assert.Equal(customerId, result.Id);
-		Assert.Equal("Empresa ABC Ltda", result.Company);
-		Assert.Equal("novo@empresa.com", result.Email);
-		Assert.Equal("11888888888", result.PhoneNumber);
-		Assert.Equal("Av. Secundária, 200", result.Address);
+		Assert.True(result.IsSuccess);
+		Assert.NotNull(result.Value);
+		Assert.Equal(customerId, result.Value.Id);
+		Assert.Equal("Empresa ABC Ltda", result.Value.Company);
+		Assert.Equal("novo@empresa.com", result.Value.Email);
+		Assert.Equal("11888888888", result.Value.PhoneNumber);
+		Assert.Equal("Av. Secundária, 200", result.Value.Address);
 
 		// Verificar que o customer foi atualizado
 		Assert.Equal("novo@empresa.com", existingCustomer.Email);
@@ -127,7 +131,7 @@ public class CustomerServiceTests
 	}
 
 	[Fact]
-	public async Task UpdateAsync_WithNonExistentCustomer_ShouldReturnNull()
+	public async Task UpdateAsync_WithNonExistentCustomer_ShouldReturnFailureResult()
 	{
 		// Arrange
 		var customerId = 999L;
@@ -144,23 +148,13 @@ public class CustomerServiceTests
 		var result = await _customerService.UpdateAsync(customerId, updateRequest, _cancellationToken);
 
 		// Assert
-		Assert.Null(result);
+		Assert.True(result.IsFailure);
+		Assert.Equal($"CUSTOMER_NOT_FOUND: {CustomerServiceErrors.CustomerNotFound(customerId).Message}", result.Error);
 		await _customerRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
-	public async Task UpdateAsync_WithNullRequest_ShouldThrowArgumentNullException()
-	{
-		// Arrange
-		var customerId = 1L;
-
-		// Act & Assert
-		await Assert.ThrowsAsync<ArgumentNullException>(() =>
-			_customerService.UpdateAsync(customerId, null!, _cancellationToken));
-	}
-
-	[Fact]
-	public async Task UpdateAsync_WithDifferentCustomerType_ShouldThrowInvalidOperationException()
+	public async Task UpdateAsync_WithDifferentCustomerType_ShouldReturnFailureResult()
 	{
 		// Arrange
 		var customerId = 1L;
@@ -180,16 +174,17 @@ public class CustomerServiceTests
 		_customerRepository.GetByIdAsync(customerId, Arg.Any<CancellationToken>())
 			.Returns(existingCustomer);
 
-		// Act & Assert
-		var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-			_customerService.UpdateAsync(customerId, updateRequest, _cancellationToken));
+		// Act
+		var result = await _customerService.UpdateAsync(customerId, updateRequest, _cancellationToken);
 
-		Assert.Equal("Não é possível alterar o tipo do cliente após a criação", exception.Message);
+		// Assert
+		Assert.True(result.IsFailure);
+		Assert.Equal($"CUSTOMER_TYPE_CANNOT_BE_CHANGED: {CustomerServiceErrors.CustomerTypeCannotBeChanged(customerId).Message}", result.Error);
 		await _customerRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
 	}
 
 	[Fact]
-	public async Task UpdateAsync_WithIncompatibleRequestType_ShouldThrowInvalidOperationException()
+	public async Task UpdateAsync_WithIncompatibleRequestType_ShouldReturnFailureResult()
 	{
 		// Arrange
 		var customerId = 1L;
@@ -206,11 +201,12 @@ public class CustomerServiceTests
 		_customerRepository.GetByIdAsync(customerId, Arg.Any<CancellationToken>())
 			.Returns(existingCustomer);
 
-		// Act & Assert
-		var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-			_customerService.UpdateAsync(customerId, updateRequest, _cancellationToken));
+		// Act
+		var result = await _customerService.UpdateAsync(customerId, updateRequest, _cancellationToken);
 
-		Assert.Equal("Não é possível alterar o tipo do cliente após a criação", exception.Message);
+		// Assert
+		Assert.True(result.IsFailure);
+		Assert.Equal($"CUSTOMER_TYPE_CANNOT_BE_CHANGED: {CustomerServiceErrors.CustomerTypeCannotBeChanged(customerId).Message}", result.Error);
 		await _customerRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
 	}
 
@@ -247,12 +243,13 @@ public class CustomerServiceTests
 		var result = await _customerService.UpdateAsync(customerId, updateRequest, _cancellationToken);
 
 		// Assert
-		Assert.NotNull(result);
-		Assert.Equal("João Carlos", result.FirstName);
-		Assert.Equal("Silva Santos", result.LastName);
-		Assert.Null(result.Email);
-		Assert.Null(result.PhoneNumber);
-		Assert.Null(result.Address);
+		Assert.True(result.IsSuccess);
+		Assert.NotNull(result.Value);
+		Assert.Equal("João Carlos", result.Value.FirstName);
+		Assert.Equal("Silva Santos", result.Value.LastName);
+		Assert.Null(result.Value.Email);
+		Assert.Null(result.Value.PhoneNumber);
+		Assert.Null(result.Value.Address);
 
 		// Verificar que o customer foi atualizado com valores null
 		Assert.Null(existingCustomer.Email);
@@ -291,11 +288,12 @@ public class CustomerServiceTests
 		var result = await _customerService.UpdateAsync(customerId, updateRequest, _cancellationToken);
 
 		// Assert
-		Assert.NotNull(result);
-		Assert.Equal("Empresa ABC Ltda", result.Company);
-		Assert.Null(result.Email);
-		Assert.Null(result.PhoneNumber);
-		Assert.Null(result.Address);
+		Assert.True(result.IsSuccess);
+		Assert.NotNull(result.Value);
+		Assert.Equal("Empresa ABC Ltda", result.Value.Company);
+		Assert.Null(result.Value.Email);
+		Assert.Null(result.Value.PhoneNumber);
+		Assert.Null(result.Value.Address);
 
 		// Verificar que o customer foi atualizado com valores null
 		Assert.Null(existingCustomer.Email);
@@ -335,12 +333,13 @@ public class CustomerServiceTests
 		var result = await _customerService.UpdateAsync(customerId, updateRequest, _cancellationToken);
 
 		// Assert
-		Assert.NotNull(result);
-		Assert.Equal("João Carlos", result.FirstName);
-		Assert.Equal("Silva Santos", result.LastName);
-		Assert.Equal("", result.Email);
-		Assert.Equal("", result.PhoneNumber);
-		Assert.Equal("", result.Address);
+		Assert.True(result.IsSuccess);
+		Assert.NotNull(result.Value);
+		Assert.Equal("João Carlos", result.Value.FirstName);
+		Assert.Equal("Silva Santos", result.Value.LastName);
+		Assert.Equal("", result.Value.Email);
+		Assert.Equal("", result.Value.PhoneNumber);
+		Assert.Equal("", result.Value.Address);
 
 		// Verificar que o customer foi atualizado com strings vazias
 		Assert.Equal("", existingCustomer.Email);
@@ -351,7 +350,7 @@ public class CustomerServiceTests
 	[Theory]
 	[InlineData(CustomerType.NaturalPerson, Domain.Models.Enums.CustomerType.LegalCompany)]
 	[InlineData(CustomerType.LegalCompany, Domain.Models.Enums.CustomerType.NaturalPerson)]
-	public async Task UpdateAsync_WithMismatchedCustomerTypes_ShouldThrowInvalidOperationException(
+	public async Task UpdateAsync_WithMismatchedCustomerTypes_ShouldReturnFailureResult(
 		CustomerType requestType,
 		Domain.Models.Enums.CustomerType existingType)
 	{
@@ -373,12 +372,48 @@ public class CustomerServiceTests
 		_customerRepository.GetByIdAsync(customerId, Arg.Any<CancellationToken>())
 			.Returns(existingCustomer);
 
+		// Act
+		var result = await _customerService.UpdateAsync(customerId, updateRequest, _cancellationToken);
+
+		// Assert
+		Assert.True(result.IsFailure);
+		Assert.Equal($"CUSTOMER_TYPE_CANNOT_BE_CHANGED: {CustomerServiceErrors.CustomerTypeCannotBeChanged(customerId).Message}", result.Error);
+		await _customerRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+	}
+
+	[Fact]
+	public async Task UpdateAsync_WithRepositoryException_ShouldThrowException()
+	{
+		// Arrange
+		var customerId = 1L;
+		var existingCustomer = new NaturalPerson(
+			OWNER_ID,
+			"João", "Silva", "12345678901",
+			"11999999999", "Rua A, 123", "joao@email.com");
+
+		existingCustomer.SetPrivatePropertyBackingField("Id", customerId);
+
+		var updateRequest = new CreateNaturalPersonRequest
+		{
+			FirstName = "João Carlos",
+			LastName = "Silva Santos",
+			Email = "joao.carlos@email.com",
+			PhoneNumber = "11888888888",
+			Address = "Rua B, 456",
+			Cpf = "12345678901"
+		};
+
+		_customerRepository.GetByIdAsync(customerId, Arg.Any<CancellationToken>())
+			.Returns(existingCustomer);
+
+		_customerRepository.SaveChangesAsync(Arg.Any<CancellationToken>())
+			.ThrowsAsync(new InvalidOperationException("Database error"));
+
 		// Act & Assert
 		var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
 			_customerService.UpdateAsync(customerId, updateRequest, _cancellationToken));
 
-		Assert.Equal("Não é possível alterar o tipo do cliente após a criação", exception.Message);
-		await _customerRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+		Assert.Equal("Database error", exception.Message);
 	}
 
 	#endregion

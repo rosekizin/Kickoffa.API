@@ -1,7 +1,10 @@
 using Kickoffa.API.Application.Interfaces;
+using Kickoffa.API.Application.MessageErrors;
 using Kickoffa.API.Contracts.Customer;
 using Kickoffa.API.Domain.Interfaces.Models.Customer;
+using Kickoffa.API.Domain.Interfaces.ProcessResult;
 using Kickoffa.API.Domain.Models.FreelancerCustomer;
+using Kickoffa.API.Domain.ProcessResult;
 using Kickoffa.API.Domain.Repositories;
 
 namespace Kickoffa.API.Application.Services
@@ -69,50 +72,38 @@ namespace Kickoffa.API.Application.Services
 		}
 
 		/// <inheritdoc />
-		public async Task<CustomerResponse?> UpdateAsync(long id, CreateCustomerRequest request, CancellationToken cancellationToken)
+		public async Task<IResult<CustomerResponse>> UpdateAsync(long id, CreateCustomerRequest request, CancellationToken cancellationToken)
 		{
-			ArgumentNullException.ThrowIfNull(request);
-
-			// Buscar customer existente
 			var existingCustomer = await _customerRepository.GetByIdAsync(id, cancellationToken);
-			if (existingCustomer is null)
-				return null;
 
-			// Verificar se o tipo do customer não mudou (não permitido)
+			if (existingCustomer is null)
+				return Result<CustomerResponse>.Failure(CustomerServiceErrors.CustomerNotFound(id));
+
 			if (existingCustomer.Type != (Domain.Models.Enums.CustomerType)request.Type)
 			{
-				throw new InvalidOperationException("Não é possível alterar o tipo do cliente após a criação");
+				return Result<CustomerResponse>.Failure(CustomerServiceErrors.CustomerTypeCannotBeChanged(id));
 			}
 
-			// Atualizar baseado no tipo
-			switch (existingCustomer)
+			if (existingCustomer is NaturalPerson naturalPerson && request is CreateNaturalPersonRequest naturalPersonRequest)
 			{
-				case NaturalPerson naturalPerson when request is CreateNaturalPersonRequest naturalPersonRequest:
-					naturalPerson.UpdateBasicInfo(
-						naturalPersonRequest.FirstName,
-						naturalPersonRequest.LastName,
-						naturalPersonRequest.PhoneNumber,
-						naturalPersonRequest.Address,
-						naturalPersonRequest.Email);
-					break;
-
-				case LegalPerson legalPerson when request is CreateLegalPersonRequest legalPersonRequest:
-					legalPerson.UpdateBasicInfo(
-						legalPersonRequest.Company,
-						legalPersonRequest.PhoneNumber,
-						legalPersonRequest.Address,
-						legalPersonRequest.Email);
-					break;
-
-				default:
-					throw new InvalidOperationException($"Tipo de request incompatível com o tipo do customer existente");
+				naturalPerson.UpdateBasicInfo(
+					naturalPersonRequest.FirstName,
+					naturalPersonRequest.LastName,
+					naturalPersonRequest.PhoneNumber,
+					naturalPersonRequest.Address,
+					naturalPersonRequest.Email);
+			}
+			else if (existingCustomer is LegalPerson legalPerson && request is CreateLegalPersonRequest legalPersonRequest)
+			{
+				legalPerson.UpdateBasicInfo(
+					legalPersonRequest.Company,
+					legalPersonRequest.PhoneNumber,
+					legalPersonRequest.Address,
+					legalPersonRequest.Email);
 			}
 
-			// Salvar alterações
 			await _customerRepository.SaveChangesAsync(cancellationToken);
-
-			// Retornar response atualizado
-			return MapToResponse(existingCustomer);
+			return Result<CustomerResponse>.Success(MapToResponse(existingCustomer));
 		}
 
 		/// <inheritdoc />

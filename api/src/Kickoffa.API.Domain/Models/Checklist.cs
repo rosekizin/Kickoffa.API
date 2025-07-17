@@ -46,6 +46,7 @@ namespace Kickoffa.API.Domain.Models
 		// Relacionamentos
 		public virtual Customer Customer { get; private set; }
 		ICustomer  IChecklist.Customer => Customer;
+
 		public virtual ICollection<Section> Sections { get; private set; }
 		IEnumerable<ISection> IChecklist.Sections => Sections;
 
