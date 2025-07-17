@@ -1,6 +1,6 @@
 using Kickoffa.API.Application.Interfaces;
 using Kickoffa.API.Contracts.Customer;
-using Kickoffa.API.Domain.Interfaces.Models;
+using Kickoffa.API.Domain.Interfaces.Models.Customer;
 using Kickoffa.API.Domain.Models.FreelancerCustomer;
 using Kickoffa.API.Domain.Repositories;
 
@@ -71,8 +71,48 @@ namespace Kickoffa.API.Application.Services
 		/// <inheritdoc />
 		public async Task<CustomerResponse?> UpdateAsync(long id, CreateCustomerRequest request, CancellationToken cancellationToken)
 		{
-			// TODO: Implementar lógica de atualização quando a entidade Customer tiver métodos de update apropriados
-			throw new NotImplementedException("Método UpdateAsync ainda não implementado");
+			ArgumentNullException.ThrowIfNull(request);
+
+			// Buscar customer existente
+			var existingCustomer = await _customerRepository.GetByIdAsync(id, cancellationToken);
+			if (existingCustomer is null)
+				return null;
+
+			// Verificar se o tipo do customer não mudou (não permitido)
+			if (existingCustomer.Type != (Domain.Models.Enums.CustomerType)request.Type)
+			{
+				throw new InvalidOperationException("Não é possível alterar o tipo do cliente após a criação");
+			}
+
+			// Atualizar baseado no tipo
+			switch (existingCustomer)
+			{
+				case NaturalPerson naturalPerson when request is CreateNaturalPersonRequest naturalPersonRequest:
+					naturalPerson.UpdateBasicInfo(
+						naturalPersonRequest.FirstName,
+						naturalPersonRequest.LastName,
+						naturalPersonRequest.PhoneNumber,
+						naturalPersonRequest.Address,
+						naturalPersonRequest.Email);
+					break;
+
+				case LegalPerson legalPerson when request is CreateLegalPersonRequest legalPersonRequest:
+					legalPerson.UpdateBasicInfo(
+						legalPersonRequest.Company,
+						legalPersonRequest.PhoneNumber,
+						legalPersonRequest.Address,
+						legalPersonRequest.Email);
+					break;
+
+				default:
+					throw new InvalidOperationException($"Tipo de request incompatível com o tipo do customer existente");
+			}
+
+			// Salvar alterações
+			await _customerRepository.SaveChangesAsync(cancellationToken);
+
+			// Retornar response atualizado
+			return MapToResponse(existingCustomer);
 		}
 
 		/// <inheritdoc />

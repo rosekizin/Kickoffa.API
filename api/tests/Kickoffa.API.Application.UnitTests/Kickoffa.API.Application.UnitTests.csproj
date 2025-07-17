@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Kickoffa.API.Application\Kickoffa.API.Application.csproj" />
+    <ProjectReference Include="..\Kickoffa.API.TestUtils\Kickoffa.API.TestUtils.csproj" />
   </ItemGroup>
 
   <ItemGroup>

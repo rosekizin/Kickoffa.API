@@ -1,6 +1,6 @@
 ﻿using Kickoffa.API.Domain.Models.Enums;
 
-namespace Kickoffa.API.Domain.Interfaces.Models
+namespace Kickoffa.API.Domain.Interfaces.Models.Customer
 {
 	public interface ICustomer : IBaseEntity
 	{

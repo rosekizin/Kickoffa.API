@@ -1,4 +1,4 @@
-using Kickoffa.API.Domain.Interfaces.Models;
+using Kickoffa.API.Domain.Interfaces.Models.Customer;
 using Kickoffa.API.Domain.Models.FreelancerCustomer;
 
 namespace Kickoffa.API.Domain.Repositories
