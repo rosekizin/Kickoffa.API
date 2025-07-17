@@ -1,6 +1,6 @@
 using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.Repositories.Base;
-using Kickoffa.API.Domain.Interfaces.Models;
+using Kickoffa.API.Domain.Interfaces.Models.Customer;
 using Kickoffa.API.Domain.Models.FreelancerCustomer;
 using Kickoffa.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;

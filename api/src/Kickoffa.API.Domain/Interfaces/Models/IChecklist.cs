@@ -1,4 +1,6 @@
-﻿namespace Kickoffa.API.Domain.Interfaces.Models
+﻿using Kickoffa.API.Domain.Interfaces.Models.Customer;
+
+namespace Kickoffa.API.Domain.Interfaces.Models
 {
 	public interface IChecklist : IBaseEntity
 	{

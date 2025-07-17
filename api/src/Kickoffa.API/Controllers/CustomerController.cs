@@ -1,4 +1,5 @@
 using Kickoffa.API.Application.Interfaces;
+using Kickoffa.API.AspNet.Infrastructure.ErrorHandling;
 using Kickoffa.API.Contracts.Customer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +15,14 @@ namespace Kickoffa.API.Controllers;
 [Authorize]
 public sealed class CustomerController : ControllerBase
 {
-    private readonly ICustomerService _customerService;
-    public CustomerController(ICustomerService customerService)
-    {
-        _customerService = customerService;
-    }
+	private readonly ICustomerService _customerService;
+	private readonly IActionResultErrorHandler _actionResultErrorHandler;
+
+	public CustomerController(ICustomerService customerService, IActionResultErrorHandler actionResultErrorHandler)
+	{
+		_customerService = customerService;
+		_actionResultErrorHandler = actionResultErrorHandler;
+	}
 
 	/// <summary>
 	/// Busca todos os customers
@@ -52,9 +56,9 @@ public sealed class CustomerController : ControllerBase
 	/// <param name="cancellationToken">Token de cancelamento</param>
 	/// <returns>Customer criado</returns>
 	[HttpPost]
-    public async Task<ActionResult<CustomerResponse>> CreateAsync([FromBody] CreateCustomerRequest request, CancellationToken cancellationToken)
-    {
-        var response = await _customerService.CreateAsync(request, cancellationToken);
+	public async Task<ActionResult<CustomerResponse>> CreateAsync([FromBody] CreateCustomerRequest request, CancellationToken cancellationToken)
+	{
+		var response = await _customerService.CreateAsync(request, cancellationToken);
 		return Created($"/api/customer/{response.Id}", response);
 	}
 
@@ -68,8 +72,14 @@ public sealed class CustomerController : ControllerBase
 	[HttpPut("{id:long}")]
 	public async Task<ActionResult<CustomerResponse>> UpdateAsync([FromRoute] long id, [FromBody] CreateCustomerRequest request, CancellationToken cancellationToken)
 	{
-		var response = await _customerService.UpdateAsync(id, request, cancellationToken);
-		return response is null ? NotFound() : Ok(response);
+		var result = await _customerService.UpdateAsync(id, request, cancellationToken);
+
+		if (result.IsFailure)
+		{
+			return (ActionResult)_actionResultErrorHandler.GetActionResultFromError(result.ErrorObject!);
+		}
+
+		return Ok(result.Value);
 	}
 
 	/// <summary>

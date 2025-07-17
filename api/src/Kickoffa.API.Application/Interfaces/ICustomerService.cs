@@ -1,4 +1,5 @@
 using Kickoffa.API.Contracts.Customer;
+using Kickoffa.API.Domain.Interfaces.ProcessResult;
 
 namespace Kickoffa.API.Application.Interfaces
 {
@@ -36,8 +37,8 @@ namespace Kickoffa.API.Application.Interfaces
 		/// <param name="id">ID do cliente</param>
 		/// <param name="request">Dados atualizados do cliente</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
-		/// <returns>Cliente atualizado</returns>
-		Task<CustomerResponse?> UpdateAsync(long id, CreateCustomerRequest request, CancellationToken cancellationToken);
+		/// <returns>Result contendo o cliente atualizado ou erro</returns>
+		Task<IResult<CustomerResponse>> UpdateAsync(long id, CreateCustomerRequest request, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Remove um cliente

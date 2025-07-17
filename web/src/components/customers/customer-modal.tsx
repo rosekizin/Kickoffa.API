@@ -322,13 +322,22 @@ export function CustomerModal({ isOpen, onClose, onSave, customer }: CustomerMod
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {customerType === CustomerType.NaturalPerson ? 'CPF' : 'CNPJ'}
+              {customer && (
+                <span className="text-xs text-gray-500 ml-1">(não editável)</span>
+              )}
             </label>
             {customerType === CustomerType.NaturalPerson ? (
               <input
                 type="text"
                 value={formData.cpf ? formatCpfInput(formData.cpf) : ''}
                 onChange={(e) => handleInputChange('cpf', e.target.value.replace(/\D/g, ''))}
-                className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                readOnly={!!customer}
+                disabled={!!customer}
+                className={`w-full px-3 py-2 border rounded-md text-sm ${
+                  customer
+                    ? 'bg-gray-100 cursor-not-allowed text-gray-600'
+                    : 'focus:outline-none focus:ring-2 focus:ring-blue-500'
+                } ${
                   errors.cpf ? 'border-red-300' : 'border-gray-300'
                 }`}
                 placeholder="000.000.000-00"
@@ -339,7 +348,13 @@ export function CustomerModal({ isOpen, onClose, onSave, customer }: CustomerMod
                 type="text"
                 value={formData.cnpj ? formatCnpjInput(formData.cnpj) : ''}
                 onChange={(e) => handleInputChange('cnpj', e.target.value.replace(/\D/g, ''))}
-                className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                readOnly={!!customer}
+                disabled={!!customer}
+                className={`w-full px-3 py-2 border rounded-md text-sm ${
+                  customer
+                    ? 'bg-gray-100 cursor-not-allowed text-gray-600'
+                    : 'focus:outline-none focus:ring-2 focus:ring-blue-500'
+                } ${
                   errors.cnpj ? 'border-red-300' : 'border-gray-300'
                 }`}
                 placeholder="00.000.000/0000-00"

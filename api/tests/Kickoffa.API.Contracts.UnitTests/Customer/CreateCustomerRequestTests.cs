@@ -371,7 +371,7 @@ public class CreateCustomerRequestTests
 		var request = new CreateLegalPersonRequest
 		{
 			Company = "Empresa Teste",
-			Cnpj = null
+			Cnpj = null!
 		};
 
 		// Act
@@ -408,7 +408,7 @@ public class CreateCustomerRequestTests
 		type.GetProperty(nameof(CreateLegalPersonRequest.Address))!.AssertPropertyName("address").AssertRequired(Required.Default);
 		type.GetProperty(nameof(CreateLegalPersonRequest.Type))!.AssertPropertyName("type").AssertRequired(Required.Always);
 		type.GetProperty(nameof(CreateLegalPersonRequest.Company))!.AssertPropertyName("company").AssertRequired(Required.Default);
-		type.GetProperty(nameof(CreateLegalPersonRequest.Cnpj))!.AssertPropertyName("cnpj").AssertRequired(Required.Default);
+		type.GetProperty(nameof(CreateLegalPersonRequest.Cnpj))!.AssertPropertyName("cnpj").AssertRequired(Required.Always);
 	}
 
 	#endregion

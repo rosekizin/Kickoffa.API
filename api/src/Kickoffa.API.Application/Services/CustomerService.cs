@@ -1,7 +1,10 @@
 using Kickoffa.API.Application.Interfaces;
+using Kickoffa.API.Application.MessageErrors;
 using Kickoffa.API.Contracts.Customer;
-using Kickoffa.API.Domain.Interfaces.Models;
+using Kickoffa.API.Domain.Interfaces.Models.Customer;
+using Kickoffa.API.Domain.Interfaces.ProcessResult;
 using Kickoffa.API.Domain.Models.FreelancerCustomer;
+using Kickoffa.API.Domain.ProcessResult;
 using Kickoffa.API.Domain.Repositories;
 
 namespace Kickoffa.API.Application.Services
@@ -69,10 +72,38 @@ namespace Kickoffa.API.Application.Services
 		}
 
 		/// <inheritdoc />
-		public async Task<CustomerResponse?> UpdateAsync(long id, CreateCustomerRequest request, CancellationToken cancellationToken)
+		public async Task<IResult<CustomerResponse>> UpdateAsync(long id, CreateCustomerRequest request, CancellationToken cancellationToken)
 		{
-			// TODO: Implementar lógica de atualização quando a entidade Customer tiver métodos de update apropriados
-			throw new NotImplementedException("Método UpdateAsync ainda não implementado");
+			var existingCustomer = await _customerRepository.GetByIdAsync(id, cancellationToken);
+
+			if (existingCustomer is null)
+				return Result<CustomerResponse>.Failure(CustomerServiceErrors.CustomerNotFound(id));
+
+			if (existingCustomer.Type != (Domain.Models.Enums.CustomerType)request.Type)
+			{
+				return Result<CustomerResponse>.Failure(CustomerServiceErrors.CustomerTypeCannotBeChanged(id));
+			}
+
+			if (existingCustomer is NaturalPerson naturalPerson && request is CreateNaturalPersonRequest naturalPersonRequest)
+			{
+				naturalPerson.UpdateBasicInfo(
+					naturalPersonRequest.FirstName,
+					naturalPersonRequest.LastName,
+					naturalPersonRequest.PhoneNumber,
+					naturalPersonRequest.Address,
+					naturalPersonRequest.Email);
+			}
+			else if (existingCustomer is LegalPerson legalPerson && request is CreateLegalPersonRequest legalPersonRequest)
+			{
+				legalPerson.UpdateBasicInfo(
+					legalPersonRequest.Company,
+					legalPersonRequest.PhoneNumber,
+					legalPersonRequest.Address,
+					legalPersonRequest.Email);
+			}
+
+			await _customerRepository.SaveChangesAsync(cancellationToken);
+			return Result<CustomerResponse>.Success(MapToResponse(existingCustomer));
 		}
 
 		/// <inheritdoc />

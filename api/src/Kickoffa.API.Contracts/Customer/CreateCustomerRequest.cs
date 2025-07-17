@@ -157,8 +157,8 @@ namespace Kickoffa.API.Contracts.Customer
 		[JsonProperty(PropertyName = "company", Required = Required.Default)]
 		public required string Company { get; init; } // Razão Social
 
-		[JsonProperty(PropertyName = "cnpj", Required = Required.Default)]
-		public string? Cnpj { get; init; }
+		[JsonProperty(PropertyName = "cnpj", Required = Required.Always)]
+		public string Cnpj { get; init; } = string.Empty;
 
 		public CreateLegalPersonRequest()
 		{

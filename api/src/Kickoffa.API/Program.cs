@@ -1,4 +1,5 @@
 using Kickoffa.API.AspNet.Infrastructure.Configuration.Data;
+using Kickoffa.API.AspNet.Infrastructure.ExceptionHandling;
 using Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection;
 using Kickoffa.API.AspNet.Infrastructure.Wrappers;
 using Kickoffa.API.Contracts.Newtonsoft;
@@ -11,7 +12,11 @@ var configurationWrapper = new ConfigurationWrapper(builder.Configuration);
 
 // JWT removido - ASP.NET Core Identity gerencia autenticação
 
-builder.Services.AddControllers()
+builder.Services
+	.AddControllers(options =>
+	{
+		options.Filters.Add<ExceptionFilter>();
+	})
 	.AddNewtonsoftJson(options =>
 	{
 		options.SerializerSettings.Converters.Add(new StringEnumConverter());
@@ -50,7 +55,8 @@ builder.Services.AddApplicationServices();
 // JWT service removido - ASP.NET Core Identity gerencia autenticação automaticamente
 
 // Handlers
-
+builder.Services.AddErrorHandlers();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 // Factories
 
