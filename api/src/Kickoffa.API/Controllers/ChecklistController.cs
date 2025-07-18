@@ -48,6 +48,44 @@ namespace Kickoffa.API.Controllers
 		}
 
 		/// <summary>
+		/// Busca checklists com paginação e filtros
+		/// </summary>
+		/// <param name="search">Termo de busca (título ou cliente)</param>
+		/// <param name="page">Número da página (baseado em 1)</param>
+		/// <param name="pageSize">Tamanho da página (máximo 100)</param>
+		/// <param name="sortBy">Campo para ordenação</param>
+		/// <param name="sortDirection">Direção da ordenação (asc/desc)</param>
+		/// <param name="cancellationToken">Token de cancelamento</param>
+		/// <returns>Response paginada com checklists</returns>
+		[HttpGet("search")]
+		public async Task<ActionResult<ChecklistPagedResponse>> GetPagedAsync(
+			[FromQuery] string? search = null,
+			[FromQuery] int page = 1,
+			[FromQuery] int pageSize = 10,
+			[FromQuery] string? sortBy = "createdDateUtc",
+			[FromQuery] string? sortDirection = "desc",
+			CancellationToken cancellationToken = default)
+		{
+			var userId = GetCurrentUserId();
+			if (userId == null)
+			{
+				return Unauthorized("Usuário não autenticado");
+			}
+
+			var searchRequest = new ChecklistSearchRequest
+			{
+				Search = search,
+				Page = page,
+				PageSize = pageSize,
+				SortBy = sortBy,
+				SortDirection = sortDirection
+			};
+
+			var result = await _checklistService.GetPagedAsync(userId.Value, searchRequest, cancellationToken);
+			return Ok(result);
+		}
+
+		/// <summary>
 		/// Busca um checklist por ID
 		/// </summary>
 		/// <param name="id">ID do checklist</param>

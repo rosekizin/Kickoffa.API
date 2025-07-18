@@ -14,7 +14,9 @@ import {
   CreateCustomerRequestUnion,
   LoginRequest,
   FileTypesSearchResponse,
-  FileTypeCategory
+  FileTypeCategory,
+  ChecklistSearchRequest,
+  ChecklistPagedResponse
 } from '@/types'
 
 // Checklists (para freelancers autenticados)
@@ -25,6 +27,28 @@ export const useChecklists = () => {
       const response = await api.get<Checklist[]>('/api/checklist')
       return response.data
     }
+  })
+}
+
+// Hook para busca paginada de checklists
+export const useChecklistsPaged = (searchParams: ChecklistSearchRequest) => {
+  return useQuery({
+    queryKey: ['checklists-paged', searchParams],
+    queryFn: async () => {
+      const params = new URLSearchParams()
+
+      if (searchParams.search) params.append('search', searchParams.search)
+      if (searchParams.page) params.append('page', searchParams.page.toString())
+      if (searchParams.pageSize) params.append('pageSize', searchParams.pageSize.toString())
+      if (searchParams.sortBy) params.append('sortBy', searchParams.sortBy)
+      if (searchParams.sortDirection) params.append('sortDirection', searchParams.sortDirection)
+
+      const response = await api.get<ChecklistPagedResponse>(`/api/checklist/search?${params.toString()}`)
+      return response.data
+    },
+    enabled: AuthService.isAuthenticated(),
+    staleTime: 30000, // Considera dados válidos por 30 segundos
+    refetchOnWindowFocus: false // Não recarrega ao focar na janela
   })
 }
 

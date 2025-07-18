@@ -83,5 +83,14 @@ namespace Kickoffa.API.Application.Interfaces.Checkilists
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Novo token de acesso ou null se não encontrado</returns>
 		Task<string?> RegenerateAccessTokenAsync(long id, long ownerId, CancellationToken cancellationToken);
+
+		/// <summary>
+		/// Busca checklists com paginação e filtros
+		/// </summary>
+		/// <param name="ownerId">ID do proprietário</param>
+		/// <param name="searchRequest">Parâmetros de busca e paginação</param>
+		/// <param name="cancellationToken">Token de cancelamento</param>
+		/// <returns>Response paginada com checklists</returns>
+		Task<ChecklistPagedResponse> GetPagedAsync(long ownerId, ChecklistSearchRequest searchRequest, CancellationToken cancellationToken);
 	}
 }

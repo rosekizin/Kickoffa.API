@@ -1,7 +1,6 @@
 using Kickoffa.API.Application.Interfaces.Checkilists;
 using Kickoffa.API.Contracts.Checklist;
 using Kickoffa.API.Domain.Repositories;
-using System.Diagnostics;
 
 namespace Kickoffa.API.Application.Services.Checklists
 {
@@ -114,6 +113,41 @@ namespace Kickoffa.API.Application.Services.Checklists
 			checklist.RegenerateAccessToken();
 			await _unitOfWork.SaveChangesAsync(cancellationToken);
 			return checklist.AccessToken;
+		}
+
+		/// <inheritdoc />
+		public async Task<ChecklistPagedResponse> GetPagedAsync(long ownerId, ChecklistSearchRequest searchRequest, CancellationToken cancellationToken)
+		{
+			// Validar parâmetros
+			var page = Math.Max(1, searchRequest.Page);
+			var pageSize = Math.Min(100, Math.Max(1, searchRequest.PageSize)); // Máximo 100 itens por página
+
+			// Buscar dados paginados
+			var (checklists, totalCount) = await _checklistRepository.GetPagedAsync(
+				ownerId,
+				searchRequest.Search,
+				page,
+				pageSize,
+				searchRequest.SortBy,
+				searchRequest.SortDirection,
+				cancellationToken);
+
+			// Mapear para response
+			var checklistResponses = checklists.Select(_mapChecklistToResponse.MapToResponse);
+
+			// Calcular informações de paginação
+			var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+			return new ChecklistPagedResponse
+			{
+				Data = checklistResponses,
+				TotalCount = totalCount,
+				Page = page,
+				PageSize = pageSize,
+				TotalPages = totalPages,
+				HasPreviousPage = page > 1,
+				HasNextPage = page < totalPages
+			};
 		}
 	}
 }

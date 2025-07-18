@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { Button } from '@/components/ui/button'
-import { useChecklists } from '@/hooks/use-api'
+import { useChecklistsPaged } from '@/hooks/use-api'
 import { CustomerService } from '@/services/customer.service'
-import { CustomerType } from '@/types'
+import { CustomerType, ChecklistSearchRequest, ChecklistPagedResponse } from '@/types'
 import {
   Plus,
   Search,
@@ -23,77 +23,69 @@ import {
   FileText
 } from 'lucide-react'
 
+
 export default function ChecklistsPage() {
   const router = useRouter()
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchInput, setSearchInput] = useState('') // Input do usuário
+  const [searchTerm, setSearchTerm] = useState('') // Termo usado na API (com debounce)
   const [statusFilter, setStatusFilter] = useState('all')
-  const [sortBy, setSortBy] = useState('recent')
+  const [sortBy, setSortBy] = useState('createdDateUtc')
+  const [sortDirection, setSortDirection] = useState('desc')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [previousData, setPreviousData] = useState<ChecklistPagedResponse | undefined>(undefined)
 
-  // Buscar checklists da API
-  const { data: checklists = [], isLoading, error } = useChecklists()
+  // Debounce para busca - atualiza searchTerm 500ms após parar de digitar
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchTerm(searchInput)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
+  // Parâmetros de busca
+  const searchParams: ChecklistSearchRequest = {
+    search: searchTerm || undefined,
+    page: currentPage,
+    pageSize: pageSize,
+    sortBy: sortBy,
+    sortDirection: sortDirection
+  }
+
+  // Buscar checklists da API com paginação
+  const { data: checklistsResponse, isLoading, error, isFetching } = useChecklistsPaged(searchParams)
+
+  // Manter dados anteriores durante carregamento para evitar "piscar"
+  useEffect(() => {
+    if (checklistsResponse && !isFetching) {
+      setPreviousData(checklistsResponse)
+    }
+  }, [checklistsResponse, isFetching])
+
+  // Definir isRefetching primeiro
+  const isRefetching = isFetching && previousData
+
+  // Usar dados anteriores se estiver carregando e houver dados anteriores
+  const displayData: ChecklistPagedResponse | undefined = isRefetching ? previousData : checklistsResponse
 
   const handleNewChecklist = () => {
     router.push('/checklists/new')
   }
 
+  // Reset para primeira página quando busca ou filtros mudam (mas não pageSize)
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, statusFilter, sortBy, sortDirection])
+
   // Função para determinar status baseado nos dados do checklist
-  const getChecklistStatus = (checklist: any) => {
+  const getChecklistStatus = (checklist: { isPublished: boolean }) => {
     if (!checklist.isPublished) return 'draft'
     // Aqui você pode adicionar mais lógica para determinar outros status
     return 'active'
   }
 
-  // Mock data para fallback durante desenvolvimento
-  const mockChecklists = [
-    {
-      id: '1',
-      title: 'Onboarding - Redesign Website',
-      client: 'Tech Startup Inc.',
-      status: 'active',
-      progress: 75,
-      deadline: '2024-01-15',
-      createdAt: '2024-01-01',
-      lastActivity: '2 horas atrás',
-      itemsTotal: 12,
-      itemsCompleted: 9
-    },
-    {
-      id: '2',
-      title: 'Briefing - App Mobile',
-      client: 'E-commerce Solutions',
-      status: 'completed',
-      progress: 100,
-      deadline: '2024-01-10',
-      createdAt: '2023-12-20',
-      lastActivity: '1 dia atrás',
-      itemsTotal: 8,
-      itemsCompleted: 8
-    },
-    {
-      id: '3',
-      title: 'Coleta de Assets - Branding',
-      client: 'Restaurant Chain',
-      status: 'draft',
-      progress: 0,
-      deadline: '2024-01-20',
-      createdAt: '2024-01-05',
-      lastActivity: '3 dias atrás',
-      itemsTotal: 15,
-      itemsCompleted: 0
-    },
-    {
-      id: '4',
-      title: 'Documentação - Sistema ERP',
-      client: 'Manufacturing Corp',
-      status: 'active',
-      progress: 45,
-      deadline: '2024-01-25',
-      createdAt: '2024-01-03',
-      lastActivity: '5 horas atrás',
-      itemsTotal: 20,
-      itemsCompleted: 9
-    }
-  ]
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -115,20 +107,105 @@ export default function ChecklistsPage() {
     }
   }
 
-  const filteredChecklists = checklists.filter(checklist => {
-    const searchLower = searchTerm.toLowerCase()
-    const titleMatches = checklist.title.toLowerCase().includes(searchLower)
-    const customerMatches = checklist.customer ?
-      CustomerService.matchesSearchTerm(checklist.customer, searchTerm) : false
+  // Dados dos checklists vêm do servidor já filtrados e paginados
+  const checklists = displayData?.data || []
+  const totalCount = displayData?.totalCount || 0
+  const totalPages = displayData?.totalPages || 0
+  const hasPreviousPage = displayData?.hasPreviousPage || false
+  const hasNextPage = displayData?.hasNextPage || false
 
-    const matchesSearch = titleMatches || customerMatches
+  // Lógica de paginação inteligente
+  // Usar dados do backend quando disponíveis, senão calcular baseado nos dados atuais
+
+  const effectiveTotalCount = totalCount > 0 ? totalCount : checklists.length
+  const effectiveTotalPages = totalPages > 0 ? totalPages : Math.ceil(effectiveTotalCount / pageSize)
+
+  // Ajustar página atual quando pageSize muda
+  useEffect(() => {
+    // Quando pageSize muda, ajustar a página atual se necessário
+    const newTotalPages = Math.ceil(effectiveTotalCount / pageSize)
+    if (currentPage > newTotalPages && newTotalPages > 0) {
+      setCurrentPage(newTotalPages)
+    }
+  }, [pageSize, effectiveTotalCount, currentPage])
+
+  // Mostrar paginação quando há mais dados do que cabem em uma página
+  const shouldShowPagination = effectiveTotalCount > 0 && effectiveTotalPages >= 1
+
+
+
+
+
+  // Filtro de status é aplicado no frontend (não implementado no backend ainda)
+  const filteredChecklists = checklists.filter(checklist => {
     const checklistStatus = getChecklistStatus(checklist)
     const matchesStatus = statusFilter === 'all' || checklistStatus === statusFilter
-    return matchesSearch && matchesStatus
+    return matchesStatus
   })
 
-  // Loading state
-  if (isLoading) {
+  // Funções de paginação
+  const handlePreviousPage = () => {
+    if (hasPreviousPage || currentPage > 1) {
+      setCurrentPage(prev => prev - 1)
+    }
+  }
+
+  const handleNextPage = () => {
+    if (hasNextPage || currentPage < effectiveTotalPages) {
+      setCurrentPage(prev => prev + 1)
+    }
+  }
+
+  const handleSortChange = (newSortBy: string) => {
+    if (sortBy === newSortBy) {
+      // Se já está ordenando por este campo, inverte a direção
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
+    } else {
+      // Novo campo, usa direção padrão
+      setSortBy(newSortBy)
+      setSortDirection('desc')
+    }
+  }
+
+  // Função para gerar números de páginas para navegação
+  // Função para gerar números de páginas para navegação (memoizada para performance)
+  const pageNumbers = useMemo((): number[] => {
+    const pages: number[] = []
+    const maxVisiblePages = 5
+
+    // Se há apenas 1 página ou menos, não mostrar números
+    if (effectiveTotalPages <= 1) {
+      pages.push(1);
+      return pages
+    }
+
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
+    let endPage = Math.min(effectiveTotalPages, startPage + maxVisiblePages - 1)
+
+    // Ajustar startPage se estivermos próximos ao final
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1)
+      endPage = Math.min(effectiveTotalPages, startPage + maxVisiblePages - 1)
+    }
+
+    console.log("startPage: ", startPage, "endPage: ", endPage)
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i)
+    }
+
+    return pages
+  }, [effectiveTotalPages, currentPage])
+
+  const handlePageClick = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  // Distinguir entre carregamento inicial e refetch
+  const isInitialLoading = isLoading && !previousData
+
+  // Loading state inicial (primeira vez)
+  if (isInitialLoading) {
     return (
       <DashboardLayout>
         <div className="p-8">
@@ -193,8 +270,8 @@ export default function ChecklistsPage() {
                 <input
                   type="text"
                   placeholder="Buscar por título ou cliente..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -215,15 +292,27 @@ export default function ChecklistsPage() {
               
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                onChange={(e) => handleSortChange(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="recent">Mais Recentes</option>
+                <option value="createdDateUtc">Mais Recentes</option>
                 <option value="title">Título A-Z</option>
                 <option value="deadline">Prazo</option>
-                <option value="progress">Progresso</option>
+                <option value="lastUpdatedDateUtc">Última Atualização</option>
               </select>
-              
+
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value={10}>10 por página</option>
+                <option value={20}>20 por página</option>
+                <option value={30}>30 por página</option>
+                <option value={50}>50 por página</option>
+                <option value={100}>100 por página</option>
+              </select>
+
               <Button variant="outline">
                 <Filter className="h-4 w-4 mr-2" />
                 Filtros
@@ -233,8 +322,9 @@ export default function ChecklistsPage() {
         </div>
 
           {/* Checklists Table */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden relative">
+
+            <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -262,16 +352,39 @@ export default function ChecklistsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredChecklists.map((checklist) => (
-                  <tr key={checklist.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{checklist.title}</div>
-                        <div className="text-sm text-gray-500">
-                          {checklist.sections?.length || 0} seções
+                {filteredChecklists.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center">
+                      <div className="text-gray-500">
+                        <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                        <div className="flex items-center justify-center mb-2">
+                          <p className="text-lg font-medium text-gray-900">
+                            Nenhum checklist encontrado
+                          </p>
+                          {isRefetching && (
+                            <div className="ml-2 animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                          )}
                         </div>
+                        <p className="text-sm">
+                          {searchTerm
+                            ? `Nenhum registro para o termo de pesquisa "${searchTerm}" foi encontrado.`
+                            : 'Não há checklists para exibir com os filtros selecionados.'
+                          }
+                        </p>
                       </div>
                     </td>
+                  </tr>
+                ) : (
+                  filteredChecklists.map((checklist) => (
+                    <tr key={checklist.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{checklist.title}</div>
+                          <div className="text-sm text-gray-500">
+                            {checklist.sections?.length || 0} seções
+                          </div>
+                        </div>
+                      </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         {checklist.customer ? (
@@ -319,7 +432,7 @@ export default function ChecklistsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(checklist.updatedAt || checklist.createdAt).toLocaleDateString('pt-BR')}
+                      {new Date(checklist.lastUpdatedDateUtc || checklist.createdDateUtc).toLocaleDateString('pt-BR')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
@@ -345,27 +458,69 @@ export default function ChecklistsPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
-          </div>
+            </div>
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-700">
-            Mostrando <span className="font-medium">1</span> a <span className="font-medium">{filteredChecklists.length}</span> de{' '}
-            <span className="font-medium">{checklists.length}</span> resultados
-          </div>
-          <div className="flex space-x-2">
-            <Button variant="outline" size="sm" disabled>
-              Anterior
-            </Button>
-            <Button variant="outline" size="sm" disabled>
-              Próximo
-            </Button>
-          </div>
-        </div>
+          {shouldShowPagination && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-gray-700">
+                Mostrando <span className="font-medium">{((currentPage - 1) * pageSize) + 1}</span> a <span className="font-medium">{Math.min(currentPage * pageSize, effectiveTotalCount)}</span> de{' '}
+                <span className="font-medium">{effectiveTotalCount}</span> resultados
+              </div>
+
+              <div className="flex items-center space-x-1">
+                {/* Botão Anterior */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!(hasPreviousPage || currentPage > 1) || isInitialLoading}
+                  onClick={handlePreviousPage}
+                  className="px-3 py-1"
+                >
+                  Anterior
+                </Button>
+
+                {/* Números das páginas */}
+                <div className="flex items-center space-x-1">
+                  {pageNumbers.map((pageNum) => (
+                    <Button
+                      key={pageNum}
+                      variant={pageNum === currentPage ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handlePageClick(pageNum)}
+                      disabled={isInitialLoading}
+                      className="w-8 h-8 p-0"
+                    >
+                      {pageNum}
+                    </Button>
+                  ))}
+
+                  {/* Mostrar página atual se não há números */}
+                  {effectiveTotalPages > 1 && pageNumbers.length === 0 && (
+                    <span className="text-sm text-gray-600 px-2">
+                      Página {currentPage} de {effectiveTotalPages}
+                    </span>
+                  )}
+                </div>
+
+                {/* Botão Próximo */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!(hasNextPage || currentPage < effectiveTotalPages) || isInitialLoading}
+                  onClick={handleNextPage}
+                  className="px-3 py-1"
+                >
+                  Próximo
+                </Button>
+              </div>
+            </div>
+          )}
       </div>
       </div>
     </DashboardLayout>

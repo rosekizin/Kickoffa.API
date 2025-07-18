@@ -3,6 +3,8 @@ using Kickoffa.API.Data.Repositories.Base;
 using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models;
 using Kickoffa.API.Domain.Models.Components;
+using Kickoffa.API.Domain.Models.Enums;
+using Kickoffa.API.Domain.Models.FreelancerCustomer;
 using Kickoffa.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -67,7 +69,7 @@ namespace Kickoffa.API.Data.Repositories
 		public async Task<bool> ExistsBySlugAsync(string slug, long? excludeId, CancellationToken cancellationToken)
 		{
 			var query = _context.Checklists.Where(c => c.Slug == slug);
-			
+
 			if (excludeId.HasValue)
 			{
 				query = query.Where(c => c.Id != excludeId.Value);
@@ -272,6 +274,89 @@ namespace Kickoffa.API.Data.Repositories
 					.ThenInclude(s => ((ChecklistSection)s).Components)
 						.ThenInclude(comp => ((UploadComponent)comp).ComponentFiles)
 				.FirstOrDefaultAsync(c => c.AccessToken == accessToken, cancellationToken);
+		}
+
+		/// <summary>
+		/// Busca checklists com paginação e filtros
+		/// </summary>
+		public async Task<(IEnumerable<IChecklist> Checklists, int TotalCount)> GetPagedAsync(
+			long ownerId,
+			string? search,
+			int page,
+			int pageSize,
+			string? sortBy,
+			string? sortDirection,
+			CancellationToken cancellationToken)
+		{
+			var query = _context
+				.Checklists
+				.AsNoTracking()
+				.Include(c => c.Customer)
+				.Where(c => c.OwnerId == ownerId);
+
+			// Aplicar filtro de busca
+			if (!string.IsNullOrWhiteSpace(search))
+			{
+				var searchLower = search.ToLower();
+
+				query = query.Where(c =>
+					EF.Functions.ILike(c.Title, $"%{search}%") ||
+					(c.Customer != null && (
+						// Busca em NaturalPerson
+						(c.Customer.Type == CustomerType.NaturalPerson &&
+							(
+								EF.Functions.ILike(((NaturalPerson)c.Customer).FirstName, $"%{search}%") ||
+								EF.Functions.ILike(((NaturalPerson)c.Customer).LastName, $"%{search}%") ||
+								((NaturalPerson)c.Customer).Cpf != null && ((NaturalPerson)c.Customer).Cpf.Contains(search)
+							)
+						) ||
+
+						// Busca em LegalPerson
+						(c.Customer.Type == CustomerType.LegalCompany &&
+							(
+								EF.Functions.ILike(((LegalPerson)c.Customer).Company, $"%{search}%") ||
+								((LegalPerson)c.Customer).Cnpj != null && ((LegalPerson)c.Customer).Cnpj.Contains(search)
+							)
+						) ||
+
+						// Busca em email (comum a ambos)
+						EF.Functions.ILike(c.Customer.Email!, $"%{search}%")
+					))
+				);
+			}
+
+			// Contar total de registros
+			var totalCount = await query.CountAsync(cancellationToken);
+
+			// Aplicar ordenação
+			query = ApplySorting(query, sortBy, sortDirection);
+
+			// Aplicar paginação
+			var offset = (page - 1) * pageSize;
+			var checklists = await query
+				.Skip(offset)
+				.Take(pageSize)
+				.ToListAsync(cancellationToken);
+
+			return (checklists, totalCount);
+		}
+
+		/// <summary>
+		/// Aplica ordenação à query
+		/// </summary>
+		private IQueryable<Checklist> ApplySorting(IQueryable<Checklist> query, string? sortBy, string? sortDirection)
+		{
+			var isDescending = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
+
+			return sortBy?.ToLower() switch
+			{
+				"title" => isDescending ? query.OrderByDescending(c => c.Title) : query.OrderBy(c => c.Title),
+				"createddateutc" or "createdat" => isDescending ? query.OrderByDescending(c => c.CreatedDateUtc) : query.OrderBy(c => c.CreatedDateUtc),
+				"lastupdateddateutc" or "updatedat" => isDescending ? query.OrderByDescending(c => c.LastUpdatedDateUtc) : query.OrderBy(c => c.LastUpdatedDateUtc),
+				"deadline" => isDescending ? query.OrderByDescending(c => c.DueDate) : query.OrderBy(c => c.DueDate),
+				"ispublished" => isDescending ? query.OrderByDescending(c => c.IsPublished) : query.OrderBy(c => c.IsPublished),
+				_ => query.OrderByDescending(c => c.CreatedDateUtc) // Default: mais recentes primeiro
+			};
 		}
 	}
 }

@@ -82,6 +82,26 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <returns>Checklist com hierarquia completa ou null</returns>
 		Task<IChecklist?> GetByAccessTokenWithFullHierarchyAsync(string accessToken, CancellationToken cancellationToken);
 
+		/// <summary>
+		/// Busca checklists com paginação e filtros
+		/// </summary>
+		/// <param name="ownerId">ID do proprietário</param>
+		/// <param name="search">Termo de busca (título ou cliente)</param>
+		/// <param name="page">Número da página (baseado em 1)</param>
+		/// <param name="pageSize">Tamanho da página</param>
+		/// <param name="sortBy">Campo para ordenação</param>
+		/// <param name="sortDirection">Direção da ordenação (asc/desc)</param>
+		/// <param name="cancellationToken">Token de cancelamento</param>
+		/// <returns>Tupla com lista de checklists e total de registros</returns>
+		Task<(IEnumerable<IChecklist> Checklists, int TotalCount)> GetPagedAsync(
+			long ownerId,
+			string? search,
+			int page,
+			int pageSize,
+			string? sortBy,
+			string? sortDirection,
+			CancellationToken cancellationToken);
+
 		/*
 		/// <summary>
 		/// OTIMIZADO: Busca checklist com carregamento manual em etapas para máxima performance

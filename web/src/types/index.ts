@@ -105,8 +105,8 @@ export interface Checklist {
   customerId: number
   customer?: CustomerUnion
   sections: Section[]
-  createdAt: string
-  updatedAt: string
+  createdDateUtc: string
+  lastUpdatedDateUtc: string
 }
 
 export interface Section {
@@ -292,6 +292,25 @@ export interface PaginatedResponse<T> {
   pageNumber: number
   pageSize: number
   totalPages: number
+}
+
+// Tipos para paginação de checklists
+export interface ChecklistSearchRequest {
+  search?: string
+  page?: number
+  pageSize?: number
+  sortBy?: string
+  sortDirection?: string
+}
+
+export interface ChecklistPagedResponse {
+  data: Checklist[]
+  totalCount: number
+  page: number
+  pageSize: number
+  totalPages: number
+  hasPreviousPage: boolean
+  hasNextPage: boolean
 }
 
 // Tipos para FileType
