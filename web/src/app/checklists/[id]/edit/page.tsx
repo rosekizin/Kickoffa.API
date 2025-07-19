@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { BriefingEditor } from '@/components/briefing/briefing-editor'
@@ -22,6 +22,7 @@ import { CreateComponentRequest, CreateChecklistRequest, CreateSectionRequest, C
 import { useChecklist, useUpdateChecklist } from '@/hooks/use-api'
 import { useToast } from '@/components/providers/toast-provider'
 import { useApiError } from '@/hooks/use-api-error'
+import { useNavigationGuard } from '@/hooks/use-navigation-guard'
 import { CustomerService } from '@/services/customer.service'
 import { CustomerSelector } from '@/components/customers/customer-selector'
 import { CustomerModal } from '@/components/customers/customer-modal'
@@ -65,6 +66,29 @@ export default function EditChecklistPage() {
   const [sectionToDelete, setSectionToDelete] = useState<number | null>(null)
   const [showCustomerModal, setShowCustomerModal] = useState(false)
 
+  // Estados para controle de mudanças não salvas
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false)
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+
+  // Referências para valores iniciais
+  const initialDataRef = useRef<{
+    title: string
+    description: string
+    deadline: string
+    customerId: number | null
+    sections: Section[]
+  } | null>(null)
+
+  // Hook para interceptar navegação
+  const { navigate, forceNavigate } = useNavigationGuard({
+    shouldBlock: hasUnsavedChanges,
+    onNavigationAttempt: (targetPath) => {
+      setPendingNavigation(targetPath)
+      setShowUnsavedChangesModal(true)
+    }
+  })
+
 
 
   // Carregar dados do checklist quando disponível
@@ -90,9 +114,60 @@ export default function EditChecklistPage() {
       }))
       
       setSections(convertedSections)
+
+      // Armazenar dados iniciais para comparação
+      initialDataRef.current = {
+        title: checklist.title,
+        description: checklist.description || '',
+        deadline: checklist.deadline ? checklist.deadline.split('T')[0] : '',
+        customerId: checklist.customerId,
+        sections: convertedSections
+      }
+
       setIsInitialized(true)
     }
   }, [checklist, isInitialized])
+
+  // Função para detectar mudanças
+  const detectChanges = () => {
+    if (!initialDataRef.current) return false
+
+    const initial = initialDataRef.current
+    const current = {
+      title,
+      description,
+      deadline,
+      customerId,
+      sections
+    }
+
+    // Comparar dados básicos
+    if (
+      initial.title !== current.title ||
+      initial.description !== current.description ||
+      initial.deadline !== current.deadline ||
+      initial.customerId !== current.customerId
+    ) {
+      return true
+    }
+
+    // Comparar seções (comparação simples por JSON)
+    try {
+      const initialSectionsJson = JSON.stringify(initial.sections)
+      const currentSectionsJson = JSON.stringify(current.sections)
+      return initialSectionsJson !== currentSectionsJson
+    } catch {
+      return true // Em caso de erro na serialização, assumir que há mudanças
+    }
+  }
+
+  // Monitorar mudanças
+  useEffect(() => {
+    if (isInitialized) {
+      const hasChanges = detectChanges()
+      setHasUnsavedChanges(hasChanges)
+    }
+  }, [title, description, deadline, customerId, sections, isInitialized])
 
   // Tratar erro da API
   if (error) {
@@ -372,15 +447,44 @@ export default function EditChecklistPage() {
         description: 'O checklist foi atualizado com sucesso'
       })
 
+      // Atualizar dados iniciais após salvar com sucesso
+      if (initialDataRef.current) {
+        initialDataRef.current = {
+          title: title.trim(),
+          description: description.trim() || '',
+          deadline: deadline || '',
+          customerId: customerId,
+          sections: sections
+        }
+      }
+      setHasUnsavedChanges(false)
+
       // Redirecionar para a página de visualização
-      router.push(`/checklists/${result.id}`)
+      forceNavigate(`/checklists/${result.id}`)
     } catch (error) {
       // Usar o sistema de tratamento de erros
       handleApiError(error, 'Erro ao atualizar checklist')
     }
   }
 
+  // Funções para lidar com navegação e mudanças não salvas
+  const handleNavigation = (path: string) => {
+    navigate(path)
+  }
 
+  const handleDiscardChanges = () => {
+    setHasUnsavedChanges(false)
+    setShowUnsavedChangesModal(false)
+    if (pendingNavigation) {
+      forceNavigate(pendingNavigation)
+      setPendingNavigation(null)
+    }
+  }
+
+  const handleCancelNavigation = () => {
+    setShowUnsavedChangesModal(false)
+    setPendingNavigation(null)
+  }
 
   const handleCustomerSave = (customer: CustomerUnion) => {
     setCustomerId(customer.id)
@@ -409,7 +513,7 @@ export default function EditChecklistPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => router.push(`/checklists/${checklistId}`)}
+                  onClick={() => handleNavigation(`/checklists/${checklistId}`)}
                   className="text-gray-600 hover:text-gray-900"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
@@ -433,6 +537,14 @@ export default function EditChecklistPage() {
                         <span className="text-gray-300">•</span>
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           Editando
+                        </span>
+                      </>
+                    )}
+                    {hasUnsavedChanges && (
+                      <>
+                        <span className="text-gray-300">•</span>
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                          Alterações não salvas
                         </span>
                       </>
                     )}
@@ -711,7 +823,7 @@ export default function EditChecklistPage() {
                           onSave={(content) => handleBriefingSave(activeSecData.id, content)}
                           sectionId={activeSecData.id}
                           placeholder="Escreva o briefing desta seção..."
-                          isEditing={sectionEditingStates[activeSecData.id] ?? true}
+                          isEditing={sectionEditingStates[activeSecData.id] ?? false}
                           onEditingChange={(isEditing) => handleSectionEditingChange(activeSecData.id, isEditing)}
                         />
                       ) : (
@@ -831,6 +943,26 @@ export default function EditChecklistPage() {
           onSave={handleCustomerSave}
         />
       )}
+
+      {/* Modal de confirmação para mudanças não salvas */}
+      <Dialog open={showUnsavedChangesModal} onOpenChange={setShowUnsavedChangesModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Alterações não salvas</DialogTitle>
+            <DialogDescription>
+              Você tem alterações não salvas neste checklist. Deseja descartar as alterações e continuar?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelNavigation}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleDiscardChanges}>
+              Descartar alterações
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   )
 }

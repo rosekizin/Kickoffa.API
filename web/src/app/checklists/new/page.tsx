@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { BriefingEditor } from '@/components/briefing/briefing-editor'
@@ -9,11 +9,20 @@ import { SortableSectionList, type Section } from '@/components/sections/sortabl
 import { SortableChecklistComponents } from '@/components/checklist/sortable-checklist-components'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { ComponentPreview } from '@/components/preview/component-preview'
 import { CreateComponentRequest, CreateChecklistRequest, CreateSectionRequest, Customer } from '@/types'
 import { useCreateChecklist } from '@/hooks/use-api'
 import { useToast } from '@/components/providers/toast-provider'
 import { useApiError } from '@/hooks/use-api-error'
+import { useNavigationGuard } from '@/hooks/use-navigation-guard'
 import { CustomerModal } from '@/components/customers/customer-modal'
 import { CustomerSelector } from '@/components/customers/customer-selector'
 import {
@@ -52,6 +61,49 @@ export default function NewChecklistPage() {
   const [sectionsExpanded, setSectionsExpanded] = useState(true)
   const [showNewComponentEditor, setShowNewComponentEditor] = useState(false)
   const [editingComponentId, setEditingComponentId] = useState<number | null>(null)
+
+  // Estados para controle de mudanças não salvas
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false)
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+
+  // Hook para interceptar navegação
+  const { navigate, forceNavigate } = useNavigationGuard({
+    shouldBlock: hasUnsavedChanges,
+    onNavigationAttempt: (targetPath) => {
+      console.log('🚫 Navegação interceptada:', { targetPath, hasUnsavedChanges })
+      setPendingNavigation(targetPath)
+      setShowUnsavedChangesModal(true)
+    }
+  })
+
+
+
+  // Função para detectar mudanças
+  const detectChanges = () => {
+    // Considera que há mudanças se algum campo foi preenchido ou seções foram criadas
+    return (
+      title.trim() !== '' ||
+      description.trim() !== '' ||
+      deadline !== '' ||
+      selectedCustomerId !== null ||
+      sections.length > 0
+    )
+  }
+
+  // Monitorar mudanças
+  useEffect(() => {
+    const hasChanges = detectChanges()
+    console.log('🔍 Detectando mudanças:', {
+      hasChanges,
+      title: title.trim(),
+      description: description.trim(),
+      deadline,
+      selectedCustomerId,
+      sectionsLength: sections.length
+    })
+    setHasUnsavedChanges(hasChanges)
+  }, [title, description, deadline, selectedCustomerId, sections])
 
   const addSection = (type: 'briefing' | 'checklist') => {
     const newSection: Section = {
@@ -246,15 +298,35 @@ export default function NewChecklistPage() {
         description: 'O checklist foi criado com sucesso'
       })
 
+      // Limpar estado de mudanças não salvas após salvar com sucesso
+      setHasUnsavedChanges(false)
+
       // Redirecionar para a página de edição do checklist criado
-      router.push(`/checklists/${result.id}`)
+      forceNavigate(`/checklists/${result.id}`)
     } catch (error) {
       // Usar o sistema de tratamento de erros
       handleApiError(error, 'Erro ao salvar checklist')
     }
   }
 
+  // Funções para lidar com navegação e mudanças não salvas
+  const handleNavigation = (path: string) => {
+    navigate(path)
+  }
 
+  const handleDiscardChanges = () => {
+    setHasUnsavedChanges(false)
+    setShowUnsavedChangesModal(false)
+    if (pendingNavigation) {
+      forceNavigate(pendingNavigation)
+      setPendingNavigation(null)
+    }
+  }
+
+  const handleCancelNavigation = () => {
+    setShowUnsavedChangesModal(false)
+    setPendingNavigation(null)
+  }
 
   const handleCustomerSave = (customer: Customer) => {
     setSelectedCustomerId(customer.id)
@@ -300,6 +372,14 @@ export default function NewChecklistPage() {
                         <span className="text-gray-300">•</span>
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                           Rascunho
+                        </span>
+                      </>
+                    )}
+                    {hasUnsavedChanges && (
+                      <>
+                        <span className="text-gray-300">•</span>
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                          Alterações não salvas
                         </span>
                       </>
                     )}
@@ -654,6 +734,26 @@ export default function NewChecklistPage() {
           onSave={handleCustomerSave}
         />
       )}
+
+      {/* Modal de confirmação para mudanças não salvas */}
+      <Dialog open={showUnsavedChangesModal} onOpenChange={setShowUnsavedChangesModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Alterações não salvas</DialogTitle>
+            <DialogDescription>
+              Você tem alterações não salvas neste checklist. Deseja descartar as alterações e continuar?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelNavigation}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleDiscardChanges}>
+              Descartar alterações
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   )
 }
