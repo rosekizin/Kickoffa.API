@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { Button } from '@/components/ui/button'
+import { StatusDropdown } from '@/components/ui/status-dropdown'
+import { PageSizeDropdown } from '@/components/ui/page-size-dropdown'
 import { useChecklistsPaged } from '@/hooks/use-api'
 import { CustomerService } from '@/services/customer.service'
 import { CustomerType, ChecklistSearchRequest, ChecklistPagedResponse } from '@/types'
@@ -14,13 +16,13 @@ import {
   MoreHorizontal,
   Eye,
   Edit,
-  Copy,
-  Archive,
-  Trash2,
   Calendar,
   User,
   Building,
-  FileText
+  FileText,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown
 } from 'lucide-react'
 
 
@@ -29,8 +31,8 @@ export default function ChecklistsPage() {
   const [searchInput, setSearchInput] = useState('') // Input do usuário
   const [searchTerm, setSearchTerm] = useState('') // Termo usado na API (com debounce)
   const [statusFilter, setStatusFilter] = useState('all')
-  const [sortBy, setSortBy] = useState('createdDateUtc')
-  const [sortDirection, setSortDirection] = useState('desc')
+  const [sortBy, setSortBy] = useState<'title' | 'customer' | 'status' | 'progress' | 'deadline' | 'lastUpdatedDateUtc'>('lastUpdatedDateUtc')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [previousData, setPreviousData] = useState<ChecklistPagedResponse | undefined>(undefined)
@@ -44,13 +46,11 @@ export default function ChecklistsPage() {
     return () => clearTimeout(timer)
   }, [searchInput])
 
-  // Parâmetros de busca
+  // Parâmetros de busca (sem ordenação - será feita no frontend)
   const searchParams: ChecklistSearchRequest = {
     search: searchTerm || undefined,
     page: currentPage,
-    pageSize: pageSize,
-    sortBy: sortBy,
-    sortDirection: sortDirection
+    pageSize: pageSize
   }
 
   // Buscar checklists da API com paginação
@@ -73,10 +73,10 @@ export default function ChecklistsPage() {
     router.push('/checklists/new')
   }
 
-  // Reset para primeira página quando busca ou filtros mudam (mas não pageSize)
+  // Reset para primeira página quando busca ou filtros mudam (não incluir ordenação)
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchTerm, statusFilter, sortBy, sortDirection])
+  }, [searchTerm, statusFilter])
 
   // Função para determinar status baseado nos dados do checklist
   const getChecklistStatus = (checklist: { isPublished: boolean }) => {
@@ -143,6 +143,59 @@ export default function ChecklistsPage() {
     return matchesStatus
   })
 
+  // Ordenação aplicada no frontend
+  const sortedChecklists = useMemo(() => {
+    const sorted = [...filteredChecklists].sort((a, b) => {
+      let aValue: string | number
+      let bValue: string | number
+
+      switch (sortBy) {
+        case 'title':
+          aValue = a.title.toLowerCase()
+          bValue = b.title.toLowerCase()
+          break
+        case 'customer':
+          aValue = a.customer ? CustomerService.getDisplayName(a.customer).toLowerCase() : ''
+          bValue = b.customer ? CustomerService.getDisplayName(b.customer).toLowerCase() : ''
+          break
+        case 'status':
+          // Definir ordem lógica dos status: draft (0) -> active (1) -> completed (2) -> archived (3)
+          const getStatusOrder = (status: string) => {
+            switch (status) {
+              case 'draft': return 0
+              case 'active': return 1
+              case 'completed': return 2
+              case 'archived': return 3
+              default: return 4
+            }
+          }
+          aValue = getStatusOrder(getChecklistStatus(a))
+          bValue = getStatusOrder(getChecklistStatus(b))
+          break
+        case 'progress':
+          // Por enquanto, progresso é sempre 0%, mas preparado para futuras implementações
+          aValue = 0
+          bValue = 0
+          break
+        case 'deadline':
+          aValue = a.deadline ? new Date(a.deadline).getTime() : 0
+          bValue = b.deadline ? new Date(b.deadline).getTime() : 0
+          break
+        case 'lastUpdatedDateUtc':
+        default:
+          aValue = new Date(a.lastUpdatedDateUtc || a.createdDateUtc).getTime()
+          bValue = new Date(b.lastUpdatedDateUtc || b.createdDateUtc).getTime()
+          break
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1
+      return 0
+    })
+
+    return sorted
+  }, [filteredChecklists, sortBy, sortDirection])
+
   // Funções de paginação
   const handlePreviousPage = () => {
     if (hasPreviousPage || currentPage > 1) {
@@ -156,7 +209,7 @@ export default function ChecklistsPage() {
     }
   }
 
-  const handleSortChange = (newSortBy: string) => {
+  const handleSortChange = (newSortBy: 'title' | 'customer' | 'status' | 'progress' | 'deadline' | 'lastUpdatedDateUtc') => {
     if (sortBy === newSortBy) {
       // Se já está ordenando por este campo, inverte a direção
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
@@ -199,6 +252,42 @@ export default function ChecklistsPage() {
 
   const handlePageClick = (page: number) => {
     setCurrentPage(page)
+  }
+
+  // Componente para cabeçalho ordenável
+  const SortableHeader = ({
+    field,
+    children,
+    className = ""
+  }: {
+    field: 'title' | 'customer' | 'status' | 'progress' | 'deadline' | 'lastUpdatedDateUtc'
+    children: React.ReactNode
+    className?: string
+  }) => {
+    const isActive = sortBy === field
+    const isAsc = isActive && sortDirection === 'asc'
+
+    return (
+      <th
+        className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors ${className}`}
+        onClick={() => handleSortChange(field)}
+      >
+        <div className="flex items-center space-x-1">
+          <span>{children}</span>
+          <div className="flex flex-col">
+            {isActive ? (
+              isAsc ? (
+                <ChevronUp className="h-3 w-3 text-gray-700" />
+              ) : (
+                <ChevronDown className="h-3 w-3 text-gray-700" />
+              )
+            ) : (
+              <ChevronsUpDown className="h-3 w-3 text-gray-400" />
+            )}
+          </div>
+        </div>
+      </th>
+    )
   }
 
   // Distinguir entre carregamento inicial e refetch
@@ -278,40 +367,17 @@ export default function ChecklistsPage() {
             </div>
             
             <div className="flex gap-2">
-              <select
+              <StatusDropdown
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">Todos os Status</option>
-                <option value="draft">Rascunho</option>
-                <option value="active">Ativo</option>
-                <option value="completed">Concluído</option>
-                <option value="archived">Arquivado</option>
-              </select>
-              
-              <select
-                value={sortBy}
-                onChange={(e) => handleSortChange(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="createdDateUtc">Mais Recentes</option>
-                <option value="title">Título A-Z</option>
-                <option value="deadline">Prazo</option>
-                <option value="lastUpdatedDateUtc">Última Atualização</option>
-              </select>
+                onChange={setStatusFilter}
+                className="min-w-[180px]"
+              />
 
-              <select
+              <PageSizeDropdown
                 value={pageSize}
-                onChange={(e) => setPageSize(Number(e.target.value))}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value={10}>10 por página</option>
-                <option value={20}>20 por página</option>
-                <option value={30}>30 por página</option>
-                <option value={50}>50 por página</option>
-                <option value={100}>100 por página</option>
-              </select>
+                onChange={setPageSize}
+                className="min-w-[160px]"
+              />
 
               <Button variant="outline">
                 <Filter className="h-4 w-4 mr-2" />
@@ -328,31 +394,31 @@ export default function ChecklistsPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <SortableHeader field="title">
                     Checklist
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  </SortableHeader>
+                  <SortableHeader field="customer">
                     Cliente
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  </SortableHeader>
+                  <SortableHeader field="status">
                     Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  </SortableHeader>
+                  <SortableHeader field="progress">
                     Progresso
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  </SortableHeader>
+                  <SortableHeader field="deadline">
                     Prazo
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  </SortableHeader>
+                  <SortableHeader field="lastUpdatedDateUtc">
                     Última Atividade
-                  </th>
+                  </SortableHeader>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                     Ações
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredChecklists.length === 0 ? (
+                {sortedChecklists.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center">
                       <div className="text-gray-500">
@@ -375,7 +441,7 @@ export default function ChecklistsPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredChecklists.map((checklist) => (
+                  sortedChecklists.map((checklist) => (
                     <tr key={checklist.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
