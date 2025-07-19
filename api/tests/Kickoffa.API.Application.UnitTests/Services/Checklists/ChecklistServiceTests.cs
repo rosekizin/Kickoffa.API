@@ -129,8 +129,8 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			await _checklistRepository.Received(1).GetByIdAsync(checklistId, Arg.Any<CancellationToken>());
 			_checklistRepository.Received(1).Remove(checklist);
 			await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
-			_currentUserService.Received(1).UserId.Returns(ownerId);
-		}
+            _ = _currentUserService.Received(1).UserId;
+        }
 
 		[Fact]
 		public async Task DeleteAsync_ShouldReturnFalse_WhenChecklistDoesNotExist()
@@ -153,8 +153,8 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			await _checklistRepository.Received(1).GetByIdAsync(checklistId, Arg.Any<CancellationToken>());
 			_checklistRepository.DidNotReceive().Remove(Arg.Any<Checklist>());
 			await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
-			_currentUserService.Received(1).UserId.Returns(ownerId);
-		}
+            _ = _currentUserService.Received(0).UserId;
+        }
 
 		[Fact]
 		public async Task DeleteAsync_ShouldReturnFalse_WhenChecklistDoesNotBelongToUser()
@@ -179,7 +179,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			await _checklistRepository.Received(1).GetByIdAsync(checklistId, Arg.Any<CancellationToken>());
 			_checklistRepository.DidNotReceive().Remove(Arg.Any<Checklist>());
 			await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
-			_currentUserService.Received(1).UserId.Returns(ownerId);
+			_ = _currentUserService.Received(1).UserId;
 		}
 
 		[Fact]
@@ -203,8 +203,8 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 
 			await _checklistRepository.Received(1).GetByIdAsync(checklistId, Arg.Any<CancellationToken>());
 			await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
-			_currentUserService.Received(1).UserId.Returns(ownerId);
-		}
+            _ = _currentUserService.Received(1).UserId;
+        }
 
 		[Fact]
 		public async Task RegenerateAccessTokenAsync_ShouldReturnNewToken_WhenChecklistExistsAndBelongsToUser()
@@ -228,8 +228,8 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 
 			await _checklistRepository.Received(1).GetByIdAsync(checklistId, Arg.Any<CancellationToken>());
 			await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
-			_currentUserService.Received(1).UserId.Returns(ownerId);
-		}
+            _ = _currentUserService.Received(1).UserId;
+        }
 
 		#region Helper Methods
 

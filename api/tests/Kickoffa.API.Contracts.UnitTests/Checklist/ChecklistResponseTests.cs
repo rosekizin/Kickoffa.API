@@ -216,7 +216,7 @@ public class ChecklistResponseTests
         Assert.Contains("\"description\":", json);
         Assert.Contains("\"deadline\":", json);
         Assert.Contains("\"accessToken\":", json);
-        Assert.Contains("\"isPublished\":", json);
+        Assert.Contains("\"status\":", json);
         Assert.Contains("\"sections\":", json);
         Assert.Contains("\"createdDateUtc\":", json);
         Assert.Contains("\"lastUpdatedDateUtc\":", json);
