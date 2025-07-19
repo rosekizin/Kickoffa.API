@@ -94,7 +94,7 @@ namespace Kickoffa.API.Contracts.Customer
 		public required string LastName { get; init; }
 
 		[JsonProperty(PropertyName = "cpf", Required = Required.Always)]
-		public string? Cpf { get; init; }
+		public string Cpf { get; init; } = string.Empty;
 
 		public CreateNaturalPersonRequest()
 		{

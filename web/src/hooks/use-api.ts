@@ -40,10 +40,10 @@ export const useChecklistsPaged = (searchParams: ChecklistSearchRequest) => {
       if (searchParams.search) params.append('search', searchParams.search)
       if (searchParams.page) params.append('page', searchParams.page.toString())
       if (searchParams.pageSize) params.append('pageSize', searchParams.pageSize.toString())
-      if (searchParams.sortBy) params.append('sortBy', searchParams.sortBy)
-      if (searchParams.sortDirection) params.append('sortDirection', searchParams.sortDirection)
 
-      const response = await api.get<ChecklistPagedResponse>(`/api/checklist/search?${params.toString()}`)
+      const body = searchParams.filters || {}
+
+      const response = await api.post<ChecklistPagedResponse>(`/api/checklist/search?${params.toString()}`, body)
       return response.data
     },
     enabled: AuthService.isAuthenticated(),

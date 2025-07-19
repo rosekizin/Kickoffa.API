@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { Button } from '@/components/ui/button'
-import { StatusDropdown } from '@/components/ui/status-dropdown'
+import { StatusFilterDropdown } from '@/components/ui/status-filter-dropdown'
 import { PageSizeDropdown } from '@/components/ui/page-size-dropdown'
 import { useChecklistsPaged } from '@/hooks/use-api'
 import { CustomerService } from '@/services/customer.service'
@@ -30,7 +30,7 @@ export default function ChecklistsPage() {
   const router = useRouter()
   const [searchInput, setSearchInput] = useState('') // Input do usuário
   const [searchTerm, setSearchTerm] = useState('') // Termo usado na API (com debounce)
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [selectedStatuses, setSelectedStatuses] = useState<ChecklistStatus[]>([])
   const [sortBy, setSortBy] = useState<'title' | 'customer' | 'status' | 'progress' | 'deadline' | 'lastUpdatedDateUtc'>('lastUpdatedDateUtc')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [currentPage, setCurrentPage] = useState(1)
@@ -50,7 +50,8 @@ export default function ChecklistsPage() {
   const searchParams: ChecklistSearchRequest = {
     search: searchTerm || undefined,
     page: currentPage,
-    pageSize: pageSize
+    pageSize: pageSize,
+    filters: selectedStatuses.length > 0 ? { statuses: selectedStatuses } : undefined
   }
 
   // Buscar checklists da API com paginação
@@ -76,7 +77,7 @@ export default function ChecklistsPage() {
   // Reset para primeira página quando busca ou filtros mudam (não incluir ordenação)
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchTerm, statusFilter])
+  }, [searchTerm, selectedStatuses])
 
   // Função para determinar status baseado nos dados do checklist
   const getChecklistStatus = (checklist: { status: string }): ChecklistStatus => {
@@ -135,16 +136,9 @@ export default function ChecklistsPage() {
 
 
 
-  // Filtro de status é aplicado no frontend (não implementado no backend ainda)
-  const filteredChecklists = checklists.filter(checklist => {
-    const checklistStatus = getChecklistStatus(checklist)
-    const matchesStatus = statusFilter === 'all' || checklistStatus === statusFilter
-    return matchesStatus
-  })
-
   // Ordenação aplicada no frontend
   const sortedChecklists = useMemo(() => {
-    const sorted = [...filteredChecklists].sort((a, b) => {
+    const sorted = [...checklists].sort((a, b) => {
       let aValue: string | number
       let bValue: string | number
 
@@ -193,7 +187,7 @@ export default function ChecklistsPage() {
     })
 
     return sorted
-  }, [filteredChecklists, sortBy, sortDirection])
+  }, [checklists, sortBy, sortDirection])
 
   // Funções de paginação
   const handlePreviousPage = () => {
@@ -366,9 +360,9 @@ export default function ChecklistsPage() {
             </div>
             
             <div className="flex gap-2">
-              <StatusDropdown
-                value={statusFilter}
-                onChange={setStatusFilter}
+              <StatusFilterDropdown
+                selectedStatuses={selectedStatuses}
+                onChange={setSelectedStatuses}
                 className="min-w-[180px]"
               />
 

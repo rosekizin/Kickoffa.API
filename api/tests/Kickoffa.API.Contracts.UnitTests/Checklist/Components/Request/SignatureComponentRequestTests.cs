@@ -356,7 +356,7 @@ public class SignatureComponentRequestTests
         var declaredProperties = type.GetProperties(System.Reflection.BindingFlags.DeclaredOnly | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
 
         // Assert - SignatureComponentRequest should not declare any additional properties beyond ComponentRequest
-        Assert.Empty(declaredProperties.Where(p => !p.Name.Contains("EqualityContract")));
+        Assert.DoesNotContain(declaredProperties, p => !p.Name.Contains("EqualityContract"));
 	}
 
 	[Fact]

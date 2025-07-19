@@ -1,5 +1,6 @@
 using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models;
+using Kickoffa.API.Domain.Models.Enums;
 
 namespace Kickoffa.API.Domain.Repositories
 {
@@ -27,7 +28,6 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <summary>
 		/// Busca todos checklists
 		/// </summary>
-		/// <param name="ownerId">ID do proprietário</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Lista de checklists do proprietário</returns>
 		new Task<IEnumerable<IChecklist>> GetAllAsync(CancellationToken cancellationToken);
@@ -85,21 +85,17 @@ namespace Kickoffa.API.Domain.Repositories
 		/// <summary>
 		/// Busca checklists com paginação e filtros
 		/// </summary>
-		/// <param name="ownerId">ID do proprietário</param>
 		/// <param name="search">Termo de busca (título ou cliente)</param>
 		/// <param name="page">Número da página (baseado em 1)</param>
 		/// <param name="pageSize">Tamanho da página</param>
-		/// <param name="sortBy">Campo para ordenação</param>
-		/// <param name="sortDirection">Direção da ordenação (asc/desc)</param>
+		/// <param name="statusFilter">Filtro de status para busca</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Tupla com lista de checklists e total de registros</returns>
 		Task<(IEnumerable<IChecklist> Checklists, int TotalCount)> GetPagedAsync(
-			long ownerId,
 			string? search,
 			int page,
 			int pageSize,
-			string? sortBy,
-			string? sortDirection,
+			IEnumerable<ChecklistStatus> statusFilter,
 			CancellationToken cancellationToken);
 
 		/*

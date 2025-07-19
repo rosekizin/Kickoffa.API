@@ -52,42 +52,6 @@ public sealed record ChecklistResponse
 }
 
 /// <summary>
-/// Request para busca paginada de checklists
-/// </summary>
-public sealed record ChecklistSearchRequest
-{
-	/// <summary>
-	/// Termo de busca (título do checklist ou nome/documento do cliente)
-	/// </summary>
-	[JsonProperty(PropertyName = "search", Required = Required.Default)]
-	public string? Search { get; init; }
-
-	/// <summary>
-	/// Número da página (baseado em 1)
-	/// </summary>
-	[JsonProperty(PropertyName = "page", Required = Required.Default)]
-	public int Page { get; init; } = 1;
-
-	/// <summary>
-	/// Tamanho da página (máximo 100)
-	/// </summary>
-	[JsonProperty(PropertyName = "pageSize", Required = Required.Default)]
-	public int PageSize { get; init; } = 10;
-
-	/// <summary>
-	/// Campo para ordenação
-	/// </summary>
-	[JsonProperty(PropertyName = "sortBy", Required = Required.Default)]
-	public string? SortBy { get; init; } = "createdDateUtc";
-
-	/// <summary>
-	/// Direção da ordenação (asc/desc)
-	/// </summary>
-	[JsonProperty(PropertyName = "sortDirection", Required = Required.Default)]
-	public string? SortDirection { get; init; } = "desc";
-}
-
-/// <summary>
 /// Response paginada para checklists
 /// </summary>
 public sealed record ChecklistPagedResponse

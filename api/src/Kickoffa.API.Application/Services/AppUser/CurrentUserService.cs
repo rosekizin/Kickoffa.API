@@ -25,7 +25,7 @@ namespace Kickoffa.API.Application.Services.AppUser
 
 		public IEnumerable<string> Roles => _httpContextAccessor.HttpContext?.User
 			?.FindAll(ClaimTypes.Role)
-			?.Select(c => c.Value) ?? Enumerable.Empty<string>();
+			?.Select(c => c.Value) ?? [];
 
 		public bool IsInRole(string role)
 		{

@@ -280,19 +280,16 @@ namespace Kickoffa.API.Data.Repositories
 		/// Busca checklists com paginação e filtros
 		/// </summary>
 		public async Task<(IEnumerable<IChecklist> Checklists, int TotalCount)> GetPagedAsync(
-			long ownerId,
 			string? search,
 			int page,
 			int pageSize,
-			string? sortBy,
-			string? sortDirection,
+			IEnumerable<ChecklistStatus> statusFilter,
 			CancellationToken cancellationToken)
 		{
-			var query = _context
+			IQueryable<Checklist> query = _context
 				.Checklists
 				.AsNoTracking()
-				.Include(c => c.Customer)
-				.Where(c => c.OwnerId == ownerId);
+				.Include(c => c.Customer);
 
 			// Aplicar filtro de busca
 			if (!string.IsNullOrWhiteSpace(search))
@@ -325,11 +322,14 @@ namespace Kickoffa.API.Data.Repositories
 				);
 			}
 
+			// Aplicar filtro de status
+			if (statusFilter.Any())
+			{
+				query = query.Where(c => statusFilter.Contains(c.Status));
+			}
+
 			// Contar total de registros
 			var totalCount = await query.CountAsync(cancellationToken);
-
-			// Aplicar ordenação
-			//query = ApplySorting(query, sortBy, sortDirection);
 
 			// Aplicar paginação
 			var offset = (page - 1) * pageSize;
@@ -339,24 +339,6 @@ namespace Kickoffa.API.Data.Repositories
 				.ToListAsync(cancellationToken);
 
 			return (checklists, totalCount);
-		}
-
-		/// <summary>
-		/// Aplica ordenação à query
-		/// </summary>
-		private IQueryable<Checklist> ApplySorting(IQueryable<Checklist> query, string? sortBy, string? sortDirection)
-		{
-			var isDescending = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
-
-			return sortBy?.ToLower() switch
-			{
-				"title" => isDescending ? query.OrderByDescending(c => c.Title) : query.OrderBy(c => c.Title),
-				"createddateutc" or "createdat" => isDescending ? query.OrderByDescending(c => c.CreatedDateUtc) : query.OrderBy(c => c.CreatedDateUtc),
-				"lastupdateddateutc" or "updatedat" => isDescending ? query.OrderByDescending(c => c.LastUpdatedDateUtc) : query.OrderBy(c => c.LastUpdatedDateUtc),
-				"deadline" => isDescending ? query.OrderByDescending(c => c.DueDate) : query.OrderBy(c => c.DueDate),
-				"ispublished" => isDescending ? query.OrderByDescending(c => c.Status) : query.OrderBy(c => c.Status),
-				_ => query.OrderByDescending(c => c.CreatedDateUtc) // Default: mais recentes primeiro
-			};
 		}
 	}
 }

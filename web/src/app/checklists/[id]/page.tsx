@@ -354,8 +354,26 @@ export default function ChecklistDetailPage() {
                           {checklist.description}
                         </p>
                       )}
+
+                      {/* Progress Bar */}
+                      <div className="max-w-md mx-auto">
+                        <div className="flex justify-between text-sm text-gray-600 mb-2">
+                          <span>Progresso</span>
+                          <span>0/{totalComponents} componentes</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3">
+                          <div
+                            className="bg-blue-600 h-3 rounded-full transition-all duration-500"
+                            style={{ width: '0%' }}
+                          />
+                        </div>
+                        <p className="text-sm text-gray-500 mt-2">
+                          0% concluído
+                        </p>
+                      </div>
+
                       {checklist.deadline && (
-                        <div className="flex items-center justify-center text-sm text-gray-500">
+                        <div className="flex items-center justify-center mt-4 text-sm text-gray-600">
                           <Calendar className="h-4 w-4 mr-1" />
                           Prazo: {new Date(checklist.deadline).toLocaleDateString('pt-BR')}
                         </div>

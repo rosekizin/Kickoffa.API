@@ -303,8 +303,11 @@ export interface ChecklistSearchRequest {
   search?: string
   page?: number
   pageSize?: number
-  sortBy?: string
-  sortDirection?: string
+  filters?: ChecklistFilters
+}
+
+export interface ChecklistFilters {
+  statuses?: ChecklistStatus[]
 }
 
 export interface ChecklistPagedResponse {

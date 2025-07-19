@@ -53,17 +53,15 @@ namespace Kickoffa.API.Controllers
 		/// <param name="search">Termo de busca (título ou cliente)</param>
 		/// <param name="page">Número da página (baseado em 1)</param>
 		/// <param name="pageSize">Tamanho da página (máximo 100)</param>
-		/// <param name="sortBy">Campo para ordenação</param>
-		/// <param name="sortDirection">Direção da ordenação (asc/desc)</param>
+		/// <param name="body">Filtros de busca enviados no body</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Response paginada com checklists</returns>
-		[HttpGet("search")]
+		[HttpPost("search")]
 		public async Task<ActionResult<ChecklistPagedResponse>> GetPagedAsync(
 			[FromQuery] string? search = null,
 			[FromQuery] int page = 1,
 			[FromQuery] int pageSize = 10,
-			[FromQuery] string? sortBy = "createdDateUtc",
-			[FromQuery] string? sortDirection = "desc",
+			[FromBody] ChecklistFilters? body = null,
 			CancellationToken cancellationToken = default)
 		{
 			var userId = GetCurrentUserId();
@@ -77,11 +75,10 @@ namespace Kickoffa.API.Controllers
 				Search = search,
 				Page = page,
 				PageSize = pageSize,
-				SortBy = sortBy,
-				SortDirection = sortDirection
+				Filters = body ?? new()
 			};
 
-			var result = await _checklistService.GetPagedAsync(userId.Value, searchRequest, cancellationToken);
+			var result = await _checklistService.GetPagedAsync(searchRequest, cancellationToken);
 			return Ok(result);
 		}
 
@@ -205,7 +202,7 @@ namespace Kickoffa.API.Controllers
 					return BadRequest(ModelState);
 				}
 
-				var checklist = await _checklistService.UpdateAsync(id, userId.Value, request, cancellationToken);
+				var checklist = await _checklistService.UpdateAsync(id, request, cancellationToken);
 
 				if (checklist == null)
 				{
@@ -240,7 +237,7 @@ namespace Kickoffa.API.Controllers
 					return Unauthorized("Usuário não autenticado");
 				}
 
-				var success = await _checklistService.DeleteAsync(id, userId.Value, cancellationToken);
+				var success = await _checklistService.DeleteAsync(id, cancellationToken);
 
 				if (!success)
 				{
@@ -275,7 +272,7 @@ namespace Kickoffa.API.Controllers
 					return Unauthorized("Usuário não autenticado");
 				}
 
-				var success = await _checklistService.PublishAsync(id, userId.Value, cancellationToken);
+				var success = await _checklistService.PublishAsync(id, cancellationToken);
 
 				if (!success)
 				{
@@ -310,7 +307,7 @@ namespace Kickoffa.API.Controllers
 					return Unauthorized("Usuário não autenticado");
 				}
 
-				var success = await _checklistService.UnpublishAsync(id, userId.Value, cancellationToken);
+				var success = await _checklistService.UnpublishAsync(id, cancellationToken);
 
 				if (!success)
 				{
@@ -345,7 +342,7 @@ namespace Kickoffa.API.Controllers
 					return Unauthorized("Usuário não autenticado");
 				}
 
-				var newToken = await _checklistService.RegenerateAccessTokenAsync(id, userId.Value, cancellationToken);
+				var newToken = await _checklistService.RegenerateAccessTokenAsync(id, cancellationToken);
 
 				if (newToken == null)
 				{
