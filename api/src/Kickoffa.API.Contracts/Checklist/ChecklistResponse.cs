@@ -37,8 +37,8 @@ public sealed record ChecklistResponse
 	[JsonProperty(PropertyName = "accessToken", Required = Required.Default)]
 	public string? AccessToken { get; init; }
 
-	[JsonProperty(PropertyName = "isPublished", Required = Required.Always)]
-	public required bool IsPublished { get; init; }
+	[JsonProperty(PropertyName = "status", Required = Required.Always)]
+	public required ChecklistStatus Status { get; init; }
 
 	[JsonProperty(PropertyName = "sections", Required = Required.Always)]
 	[JsonConverter(typeof(SectionResponseCollectionConverter))]
@@ -49,4 +49,52 @@ public sealed record ChecklistResponse
 
 	[JsonProperty(PropertyName = "lastUpdatedDateUtc", Required = Required.Always)]
 	public required DateTime LastUpdatedDateUtc { get; init; }
+}
+
+/// <summary>
+/// Response paginada para checklists
+/// </summary>
+public sealed record ChecklistPagedResponse
+{
+	/// <summary>
+	/// Lista de checklists da página atual
+	/// </summary>
+	[JsonProperty(PropertyName = "data", Required = Required.Always)]
+	public required IEnumerable<ChecklistResponse> Data { get; init; }
+
+	/// <summary>
+	/// Número total de registros
+	/// </summary>
+	[JsonProperty(PropertyName = "totalCount", Required = Required.Always)]
+	public required int TotalCount { get; init; }
+
+	/// <summary>
+	/// Número da página atual
+	/// </summary>
+	[JsonProperty(PropertyName = "page", Required = Required.Always)]
+	public required int Page { get; init; }
+
+	/// <summary>
+	/// Tamanho da página
+	/// </summary>
+	[JsonProperty(PropertyName = "pageSize", Required = Required.Always)]
+	public required int PageSize { get; init; }
+
+	/// <summary>
+	/// Número total de páginas
+	/// </summary>
+	[JsonProperty(PropertyName = "totalPages", Required = Required.Always)]
+	public required int TotalPages { get; init; }
+
+	/// <summary>
+	/// Indica se há página anterior
+	/// </summary>
+	[JsonProperty(PropertyName = "hasPreviousPage", Required = Required.Always)]
+	public required bool HasPreviousPage { get; init; }
+
+	/// <summary>
+	/// Indica se há próxima página
+	/// </summary>
+	[JsonProperty(PropertyName = "hasNextPage", Required = Required.Always)]
+	public required bool HasNextPage { get; init; }
 }

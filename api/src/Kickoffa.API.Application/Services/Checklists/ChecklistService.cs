@@ -1,7 +1,7 @@
 using Kickoffa.API.Application.Interfaces.Checkilists;
 using Kickoffa.API.Contracts.Checklist;
 using Kickoffa.API.Domain.Repositories;
-using System.Diagnostics;
+using Kickoffa.API.Domain.Services;
 
 namespace Kickoffa.API.Application.Services.Checklists
 {
@@ -11,6 +11,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 	public sealed class ChecklistService : IChecklistService
 	{
 		private readonly IUnitOfWork _unitOfWork;
+		private readonly ICurrentUserService _currentUserService;
 		private readonly IChecklistRepository _checklistRepository;
 		private readonly IUpdateChecklistService _updateChecklistService;
 		private readonly IMapChecklistToResponse _mapChecklistToResponse;
@@ -24,11 +25,13 @@ namespace Kickoffa.API.Application.Services.Checklists
 		/// <param name="mapChecklistToResponse">Serviço de mapeamento</param>
 		public ChecklistService(
 			IUnitOfWork unitOfWork,
+			ICurrentUserService currentUserService,
 			IChecklistRepository checklistRepository,
 			IUpdateChecklistService updateChecklistService,
 			IMapChecklistToResponse mapChecklistToResponse)
 		{
 			_unitOfWork = unitOfWork;
+			_currentUserService = currentUserService;
 			_checklistRepository = checklistRepository;
 			_updateChecklistService = updateChecklistService;
 			_mapChecklistToResponse = mapChecklistToResponse;
@@ -63,16 +66,16 @@ namespace Kickoffa.API.Application.Services.Checklists
 		}
 
 		/// <inheritdoc />
-		public async Task<ChecklistResponse?> UpdateAsync(long id, long ownerId, ChecklistRequest request, CancellationToken cancellationToken)
+		public async Task<ChecklistResponse?> UpdateAsync(long id, ChecklistRequest request, CancellationToken cancellationToken)
 		{
-			return await _updateChecklistService.UpdateAsync(id, ownerId, request, cancellationToken);
+			return await _updateChecklistService.UpdateAsync(id, request, cancellationToken);
 		}
 
 		/// <inheritdoc />
-		public async Task<bool> DeleteAsync(long id, long ownerId, CancellationToken cancellationToken)
+		public async Task<bool> DeleteAsync(long id, CancellationToken cancellationToken)
 		{
 			var checklist = await _checklistRepository.GetByIdAsync(id, cancellationToken);
-			if (checklist == null || checklist.OwnerId != ownerId)
+			if (checklist == null || checklist.OwnerId != _currentUserService.UserId)
 				return false;
 
 			_checklistRepository.Remove(checklist);
@@ -81,10 +84,10 @@ namespace Kickoffa.API.Application.Services.Checklists
 		}
 
 		/// <inheritdoc />
-		public async Task<bool> PublishAsync(long id, long ownerId, CancellationToken cancellationToken)
+		public async Task<bool> PublishAsync(long id, CancellationToken cancellationToken)
 		{
 			var checklist = await _checklistRepository.GetByIdAsync(id, cancellationToken);
-			if (checklist == null || checklist.OwnerId != ownerId)
+			if (checklist == null || checklist.OwnerId != _currentUserService.UserId)
 				return false;
 
 			checklist.Publish();
@@ -93,10 +96,10 @@ namespace Kickoffa.API.Application.Services.Checklists
 		}
 
 		/// <inheritdoc />
-		public async Task<bool> UnpublishAsync(long id, long ownerId, CancellationToken cancellationToken)
+		public async Task<bool> UnpublishAsync(long id, CancellationToken cancellationToken)
 		{
 			var checklist = await _checklistRepository.GetByIdAsync(id, cancellationToken);
-			if (checklist == null || checklist.OwnerId != ownerId)
+			if (checklist == null || checklist.OwnerId != _currentUserService.UserId)
 				return false;
 
 			checklist.Unpublish();
@@ -105,15 +108,48 @@ namespace Kickoffa.API.Application.Services.Checklists
 		}
 
 		/// <inheritdoc />
-		public async Task<string?> RegenerateAccessTokenAsync(long id, long ownerId, CancellationToken cancellationToken)
+		public async Task<string?> RegenerateAccessTokenAsync(long id, CancellationToken cancellationToken)
 		{
 			var checklist = await _checklistRepository.GetByIdAsync(id, cancellationToken);
-			if (checklist == null || checklist.OwnerId != ownerId)
+			if (checklist == null || checklist.OwnerId != _currentUserService.UserId)
 				return null;
 
 			checklist.RegenerateAccessToken();
 			await _unitOfWork.SaveChangesAsync(cancellationToken);
 			return checklist.AccessToken;
+		}
+
+		/// <inheritdoc />
+		public async Task<ChecklistPagedResponse> GetPagedAsync(ChecklistSearchRequest searchRequest, CancellationToken cancellationToken)
+		{
+			// Validar parâmetros
+			var page = Math.Max(1, searchRequest.Page);
+			var pageSize = Math.Min(100, Math.Max(1, searchRequest.PageSize)); // Máximo 100 itens por página
+
+			// Buscar dados paginados
+			var (checklists, totalCount) = await _checklistRepository.GetPagedAsync(
+				searchRequest.Search,
+				page,
+				pageSize,
+				searchRequest.Filters.Statuses.Select(x => (Domain.Models.Enums.ChecklistStatus)x),
+				cancellationToken);
+
+			// Mapear para response
+			var checklistResponses = checklists.Select(_mapChecklistToResponse.MapToResponse);
+
+			// Calcular informações de paginação
+			var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+			return new ChecklistPagedResponse
+			{
+				Data = checklistResponses,
+				TotalCount = totalCount,
+				Page = page,
+				PageSize = pageSize,
+				TotalPages = totalPages,
+				HasPreviousPage = page > 1,
+				HasNextPage = page < totalPages
+			};
 		}
 	}
 }

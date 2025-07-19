@@ -52,11 +52,11 @@ namespace Kickoffa.API.Application.Services.Checklists
 		}
 
 		/// <inheritdoc />
-		public async Task<ChecklistResponse?> UpdateAsync(long id, long ownerId, ChecklistRequest request, CancellationToken cancellationToken)
+		public async Task<ChecklistResponse?> UpdateAsync(long id, ChecklistRequest request, CancellationToken cancellationToken)
 		{
 			// Buscar checklist existente
 			var checklist = await _checklistRepository.GetByIdWithCompleteHierarchyAsync(id, cancellationToken);
-			if (checklist == null || checklist.OwnerId != ownerId)
+			if (checklist == null)
 				return null;
 
 			// Atualizar propriedades básicas do checklist

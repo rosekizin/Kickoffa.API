@@ -48,8 +48,12 @@ export const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) 
 }
 
 export const DialogContent: React.FC<DialogContentProps> = ({ children, className = '' }) => {
+  // Se className contém max-w-*, não aplicar max-w-md padrão
+  const hasMaxWidth = className.includes('max-w-')
+  const defaultMaxWidth = hasMaxWidth ? '' : 'max-w-md'
+
   return (
-    <div className={`relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 animate-in fade-in-0 zoom-in-95 duration-300 ${className}`}>
+    <div className={`relative bg-white rounded-lg shadow-xl ${defaultMaxWidth} w-full mx-4 animate-in fade-in-0 zoom-in-95 duration-300 ${className}`}>
       {children}
     </div>
   )

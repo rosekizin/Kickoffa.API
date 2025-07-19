@@ -17,7 +17,7 @@ public class ChecklistResponseTests
         var customerId = 3L;
         var title = "Test Checklist";
         var slug = "test-checklist";
-        var isPublished = true;
+        var status = ChecklistStatus.Active;
         var createdDate = DateTime.UtcNow;
         var lastUpdatedDate = DateTime.UtcNow;
         var sections = new List<SectionResponse>();
@@ -30,7 +30,7 @@ public class ChecklistResponseTests
             CustomerId = customerId,
             Title = title,
             Slug = slug,
-            IsPublished = isPublished,
+            Status =  status,
             Sections = sections,
             CreatedDateUtc = createdDate,
             LastUpdatedDateUtc = lastUpdatedDate
@@ -42,7 +42,7 @@ public class ChecklistResponseTests
         Assert.Equal(customerId, response.CustomerId);
         Assert.Equal(title, response.Title);
         Assert.Equal(slug, response.Slug);
-        Assert.Equal(isPublished, response.IsPublished);
+        Assert.Equal(status, response.Status);
         Assert.Equal(sections, response.Sections);
         Assert.Equal(createdDate, response.CreatedDateUtc);
         Assert.Equal(lastUpdatedDate, response.LastUpdatedDateUtc);
@@ -65,8 +65,8 @@ public class ChecklistResponseTests
         var description = "Test description";
         var deadline = DateTime.UtcNow.AddDays(7);
         var accessToken = "test-access-token";
-        var isPublished = false;
-        var sections = new List<SectionResponse> { CreateSectionResponse(1) };
+		var status = ChecklistStatus.Active;
+		var sections = new List<SectionResponse> { CreateSectionResponse(1) };
         var createdDate = DateTime.UtcNow;
         var lastUpdatedDate = DateTime.UtcNow;
 
@@ -82,7 +82,7 @@ public class ChecklistResponseTests
             Description = description,
             Deadline = deadline,
             AccessToken = accessToken,
-            IsPublished = isPublished,
+            Status = status,
             Sections = sections,
             CreatedDateUtc = createdDate,
             LastUpdatedDateUtc = lastUpdatedDate
@@ -98,7 +98,7 @@ public class ChecklistResponseTests
         Assert.Equal(description, response.Description);
         Assert.Equal(deadline, response.Deadline);
         Assert.Equal(accessToken, response.AccessToken);
-        Assert.Equal(isPublished, response.IsPublished);
+        Assert.Equal(status, response.Status);
         Assert.Equal(sections, response.Sections);
         Assert.Equal(createdDate, response.CreatedDateUtc);
         Assert.Equal(lastUpdatedDate, response.LastUpdatedDateUtc);
@@ -119,7 +119,7 @@ public class ChecklistResponseTests
             CustomerId = 3L,
             Title = "Test Checklist",
             Slug = "test-checklist",
-            IsPublished = true,
+            Status = ChecklistStatus.Active,
             Sections = sections,
             CreatedDateUtc = createdDate,
             LastUpdatedDateUtc = lastUpdatedDate
@@ -132,7 +132,7 @@ public class ChecklistResponseTests
             CustomerId = 3L,
             Title = "Test Checklist",
             Slug = "test-checklist",
-            IsPublished = true,
+            Status = ChecklistStatus.Active,
             Sections = sections,
             CreatedDateUtc = createdDate,
             LastUpdatedDateUtc = lastUpdatedDate
@@ -159,7 +159,7 @@ public class ChecklistResponseTests
             CustomerId = 3L,
             Title = "Test Checklist",
             Slug = "test-checklist",
-            IsPublished = true,
+            Status = ChecklistStatus.Active,
             Sections = sections,
             CreatedDateUtc = createdDate,
             LastUpdatedDateUtc = lastUpdatedDate
@@ -172,7 +172,7 @@ public class ChecklistResponseTests
             CustomerId = 3L,
             Title = "Test Checklist",
             Slug = "test-checklist",
-            IsPublished = true,
+            Status = ChecklistStatus.Active,
             Sections = sections,
             CreatedDateUtc = createdDate,
             LastUpdatedDateUtc = lastUpdatedDate
@@ -198,8 +198,8 @@ public class ChecklistResponseTests
             Description = "Test description",
             Deadline = new DateTime(2024, 12, 31, 23, 59, 59, DateTimeKind.Utc),
             AccessToken = "test-token",
-            IsPublished = true,
-            Sections = new List<SectionResponse>(),
+            Status = ChecklistStatus.Active,
+            Sections = [],
             CreatedDateUtc = new DateTime(2024, 1, 1, 12, 0, 0, DateTimeKind.Utc),
             LastUpdatedDateUtc = new DateTime(2024, 1, 2, 12, 0, 0, DateTimeKind.Utc)
         };
@@ -216,7 +216,7 @@ public class ChecklistResponseTests
         Assert.Contains("\"description\":", json);
         Assert.Contains("\"deadline\":", json);
         Assert.Contains("\"accessToken\":", json);
-        Assert.Contains("\"isPublished\":", json);
+        Assert.Contains("\"status\":", json);
         Assert.Contains("\"sections\":", json);
         Assert.Contains("\"createdDateUtc\":", json);
         Assert.Contains("\"lastUpdatedDateUtc\":", json);
@@ -235,7 +235,7 @@ public class ChecklistResponseTests
             ""description"": ""Test description"",
             ""deadline"": ""2024-12-31T23:59:59Z"",
             ""accessToken"": ""test-token"",
-            ""isPublished"": true,
+            ""status"": 1,
             ""sections"": [],
             ""createdDateUtc"": ""2024-01-01T12:00:00Z"",
             ""lastUpdatedDateUtc"": ""2024-01-02T12:00:00Z""
@@ -254,7 +254,7 @@ public class ChecklistResponseTests
         Assert.Equal("Test description", response.Description);
         Assert.Equal(new DateTime(2024, 12, 31, 23, 59, 59, DateTimeKind.Utc), response.Deadline);
         Assert.Equal("test-token", response.AccessToken);
-        Assert.True(response.IsPublished);
+        Assert.Equal(ChecklistStatus.Active, response.Status);
         Assert.NotNull(response.Sections);
         Assert.Empty(response.Sections);
         Assert.Equal(new DateTime(2024, 1, 1, 12, 0, 0, DateTimeKind.Utc), response.CreatedDateUtc);
@@ -274,7 +274,7 @@ public class ChecklistResponseTests
             Customer = customer,
             Title = "Test Checklist",
             Slug = "test-checklist",
-            IsPublished = false,
+            Status = ChecklistStatus.Draft,
             Sections = new List<SectionResponse>(),
             CreatedDateUtc = DateTime.UtcNow,
             LastUpdatedDateUtc = DateTime.UtcNow
@@ -290,9 +290,11 @@ public class ChecklistResponseTests
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void ChecklistResponse_WithDifferentPublishedStates_ShouldSetCorrectly(bool isPublished)
+    [InlineData(ChecklistStatus.Draft)]
+    [InlineData(ChecklistStatus.Active)]
+    [InlineData(ChecklistStatus.Archived)]
+    [InlineData(ChecklistStatus.Completed)]
+    public void ChecklistResponse_WithDifferentPublishedStates_ShouldSetCorrectly(ChecklistStatus status)
     {
         // Arrange & Act
         var response = new ChecklistResponse
@@ -302,14 +304,14 @@ public class ChecklistResponseTests
             CustomerId = 3L,
             Title = "Test Checklist",
             Slug = "test-checklist",
-            IsPublished = isPublished,
-            Sections = new List<SectionResponse>(),
+            Status = status,
+            Sections = [],
             CreatedDateUtc = DateTime.UtcNow,
             LastUpdatedDateUtc = DateTime.UtcNow
         };
 
         // Assert
-        Assert.Equal(isPublished, response.IsPublished);
+        Assert.Equal(status, response.Status);
     }
 
     [Fact]
@@ -330,7 +332,7 @@ public class ChecklistResponseTests
             CustomerId = 3L,
             Title = "Test Checklist",
             Slug = "test-checklist",
-            IsPublished = true,
+            Status = ChecklistStatus.Active,
             Sections = sections,
             CreatedDateUtc = DateTime.UtcNow,
             LastUpdatedDateUtc = DateTime.UtcNow
@@ -356,8 +358,8 @@ public class ChecklistResponseTests
             Description = null,
             Deadline = null,
             AccessToken = null,
-            IsPublished = false,
-            Sections = new List<SectionResponse>(),
+            Status = ChecklistStatus.Draft,
+            Sections = [],
             CreatedDateUtc = DateTime.UtcNow,
             LastUpdatedDateUtc = DateTime.UtcNow
         };
@@ -386,7 +388,7 @@ public class ChecklistResponseTests
 		type.GetProperty(nameof(ChecklistResponse.Description))!.AssertPropertyName("description").AssertRequired(Required.Default);
 		type.GetProperty(nameof(ChecklistResponse.Deadline))!.AssertPropertyName("deadline").AssertRequired(Required.Default);
 		type.GetProperty(nameof(ChecklistResponse.AccessToken))!.AssertPropertyName("accessToken").AssertRequired(Required.Default);
-		type.GetProperty(nameof(ChecklistResponse.IsPublished))!.AssertPropertyName("isPublished").AssertRequired(Required.Always);
+		type.GetProperty(nameof(ChecklistResponse.Status))!.AssertPropertyName("status").AssertRequired(Required.Always);
 		type.GetProperty(nameof(ChecklistResponse.Sections))!.AssertPropertyName("sections").AssertRequired(Required.Always);
 		type.GetProperty(nameof(ChecklistResponse.CreatedDateUtc))!.AssertPropertyName("createdDateUtc").AssertRequired(Required.Always);
 		type.GetProperty(nameof(ChecklistResponse.LastUpdatedDateUtc))!.AssertPropertyName("lastUpdatedDateUtc").AssertRequired(Required.Always);

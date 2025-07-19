@@ -89,11 +89,12 @@ export const BriefingEditor = ({
   onSave,
   sectionId,
   placeholder = 'Comece a escrever ou insira uma imagem...',
-  isEditing = true,
+  isEditing = false,
   onEditingChange
 }: BriefingEditorProps) => {
   const [headingDropdownOpen, setHeadingDropdownOpen] = useState(false)
   const [listDropdownOpen, setListDropdownOpen] = useState(false)
+  const [originalContent, setOriginalContent] = useState<string>('')
 
   // Fechar dropdowns quando clicar fora
   useEffect(() => {
@@ -193,6 +194,13 @@ export const BriefingEditor = ({
     }
   }, [editor, initialContent, sectionId])
 
+  // Armazenar conteúdo inicial quando o editor for carregado
+  useEffect(() => {
+    if (editor && initialContent !== undefined && originalContent === '') {
+      setOriginalContent(initialContent || '')
+    }
+  }, [editor, initialContent, originalContent])
+
   // Função de salvar - definida após editor estar disponível
   const handleSave = useCallback(() => {
     if (!editor) return
@@ -224,7 +232,20 @@ export const BriefingEditor = ({
   }, [isEditing, editor, handleSave])
 
   const handleEdit = () => {
+    // Armazenar o conteúdo atual antes de iniciar a edição
+    if (editor) {
+      setOriginalContent(editor.getHTML())
+    }
     onEditingChange?.(true)
+  }
+
+  const handleCancel = () => {
+    // Restaurar o conteúdo original
+    if (editor && originalContent !== undefined) {
+      editor.commands.setContent(originalContent)
+    }
+    // Voltar para modo de visualização
+    onEditingChange?.(false)
   }
 
   const addImage = useCallback(() => {
@@ -655,9 +676,14 @@ export const BriefingEditor = ({
           )}
         </div>
         {isEditing ? (
-          <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
-            Salvar Briefing
-          </Button>
+          <div className="flex gap-3">
+            <Button onClick={handleCancel} variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
+              Cancelar
+            </Button>
+            <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
+              Salvar Briefing
+            </Button>
+          </div>
         ) : (
           <Button onClick={handleEdit} variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
             Editar Briefing

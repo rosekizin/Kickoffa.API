@@ -2,6 +2,7 @@
 using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Interfaces.Models.Customer;
 using Kickoffa.API.Domain.Models.Base;
+using Kickoffa.API.Domain.Models.Enums;
 using Kickoffa.API.Domain.Models.FreelancerCustomer;
 
 namespace Kickoffa.API.Domain.Models
@@ -19,7 +20,7 @@ namespace Kickoffa.API.Domain.Models
 			Slug = slug ?? throw new ArgumentNullException(nameof(slug));
 			Description = description;
 			DueDate = CalculateDueDate(dueDate);
-			IsPublished = false;
+			Status = ChecklistStatus.Draft;
 			AccessToken = GenerateAccessToken();
 			Sections = [];
 		}
@@ -41,7 +42,7 @@ namespace Kickoffa.API.Domain.Models
 		public string? Description { get; private set; }
 		public DateTime? DueDate { get; private set; }
 		public string? AccessToken { get; private set; } // Token único para compartilhar
-		public bool IsPublished { get; private set; }
+		public ChecklistStatus Status { get; private set; }
 
 		// Relacionamentos
 		public virtual Customer Customer { get; private set; }
@@ -81,17 +82,49 @@ namespace Kickoffa.API.Domain.Models
 			UpdateLastUpdatedDate();
 		}
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Publica o checklist, tornando-o ativo
+		/// </summary>
 		public void Publish()
 		{
-			IsPublished = true;
+			Status = ChecklistStatus.Active;
 			UpdateLastUpdatedDate();
 		}
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Despublica o checklist, retornando-o para rascunho
+		/// </summary>
 		public void Unpublish()
 		{
-			IsPublished = false;
+			Status = ChecklistStatus.Draft;
+			UpdateLastUpdatedDate();
+		}
+
+		/// <summary>
+		/// Marca o checklist como concluído
+		/// </summary>
+		public void MarkAsCompleted()
+		{
+			Status = ChecklistStatus.Completed;
+			UpdateLastUpdatedDate();
+		}
+
+		/// <summary>
+		/// Arquiva o checklist
+		/// </summary>
+		public void Archive()
+		{
+			Status = ChecklistStatus.Archived;
+			UpdateLastUpdatedDate();
+		}
+
+		/// <summary>
+		/// Atualiza o status do checklist
+		/// </summary>
+		/// <param name="status">Novo status</param>
+		public void UpdateStatus(ChecklistStatus status)
+		{
+			Status = status;
 			UpdateLastUpdatedDate();
 		}
 

@@ -42,46 +42,49 @@ namespace Kickoffa.API.Application.Interfaces.Checkilists
 		/// Atualiza um checklist existente
 		/// </summary>
 		/// <param name="id">ID do checklist</param>
-		/// <param name="ownerId">ID do proprietário (para validação de autorização)</param>
 		/// <param name="request">Dados atualizados do checklist</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Checklist atualizado ou null se não encontrado</returns>
-		Task<ChecklistResponse?> UpdateAsync(long id, long ownerId, ChecklistRequest request, CancellationToken cancellationToken);
+		Task<ChecklistResponse?> UpdateAsync(long id, ChecklistRequest request, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Remove um checklist
 		/// </summary>
 		/// <param name="id">ID do checklist</param>
-		/// <param name="ownerId">ID do proprietário (para validação de autorização)</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>True se removido com sucesso</returns>
-		Task<bool> DeleteAsync(long id, long ownerId, CancellationToken cancellationToken);
+		Task<bool> DeleteAsync(long id, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Publica um checklist
 		/// </summary>
 		/// <param name="id">ID do checklist</param>
-		/// <param name="ownerId">ID do proprietário (para validação de autorização)</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>True se publicado com sucesso</returns>
-		Task<bool> PublishAsync(long id, long ownerId, CancellationToken cancellationToken);
+		Task<bool> PublishAsync(long id, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Despublica um checklist
 		/// </summary>
 		/// <param name="id">ID do checklist</param>
-		/// <param name="ownerId">ID do proprietário (para validação de autorização)</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>True se despublicado com sucesso</returns>
-		Task<bool> UnpublishAsync(long id, long ownerId, CancellationToken cancellationToken);
+		Task<bool> UnpublishAsync(long id, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Regenera o token de acesso de um checklist
 		/// </summary>
 		/// <param name="id">ID do checklist</param>
-		/// <param name="ownerId">ID do proprietário (para validação de autorização)</param>
 		/// <param name="cancellationToken">Token de cancelamento</param>
 		/// <returns>Novo token de acesso ou null se não encontrado</returns>
-		Task<string?> RegenerateAccessTokenAsync(long id, long ownerId, CancellationToken cancellationToken);
+		Task<string?> RegenerateAccessTokenAsync(long id, CancellationToken cancellationToken);
+
+		/// <summary>
+		/// Busca checklists com paginação e filtros
+		/// </summary>
+		/// <param name="searchRequest">Parâmetros de busca e paginação</param>
+		/// <param name="cancellationToken">Token de cancelamento</param>
+		/// <returns>Response paginada com checklists</returns>
+		Task<ChecklistPagedResponse> GetPagedAsync(ChecklistSearchRequest searchRequest, CancellationToken cancellationToken);
 	}
 }

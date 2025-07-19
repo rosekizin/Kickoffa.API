@@ -2,6 +2,7 @@ using Kickoffa.API.Data.EntityFramework.Context;
 using Kickoffa.API.Data.Repositories;
 using Kickoffa.API.Data.UnitTests.Repositories.DbContext;
 using Kickoffa.API.Domain.Models;
+using Kickoffa.API.Domain.Models.Enums;
 using Kickoffa.API.Domain.Models.FreelancerCustomer;
 using Microsoft.EntityFrameworkCore;
 
@@ -100,8 +101,8 @@ public class ChecklistRepositoryTests : IClassFixture<KickoffaDbContextFixture>
 		// Assert
 		var checklists = result.ToList();
 		Assert.Single(checklists);
-		Assert.All(checklists, c => Assert.True(c.IsPublished));
 		Assert.All(checklists, c => Assert.Equal(1, c.OwnerId));
+		Assert.All(checklists, c => Assert.Equal(ChecklistStatus.Active, c.Status));
 	}
 
 	[Theory]

@@ -5,6 +5,7 @@ using Kickoffa.API.Contracts.Checklist;
 using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models;
 using Kickoffa.API.Domain.Repositories;
+using Kickoffa.API.Domain.Services;
 using NSubstitute;
 
 namespace Kickoffa.API.Application.UnitTests.Services.Checklists
@@ -14,6 +15,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 		private readonly IUnitOfWork _unitOfWork;
 		private readonly ChecklistService _checklistService;
 		private readonly CancellationToken _cancellationToken;
+		private readonly ICurrentUserService _currentUserService;
 		private readonly IChecklistRepository _checklistRepository;
 		private readonly IUpdateChecklistService _updateChecklistService;
 		private readonly IMapChecklistToResponse _mapChecklistToResponse;
@@ -22,10 +24,11 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 		{
 			_cancellationToken = new();
 			_unitOfWork = Substitute.For<IUnitOfWork>();
+			_currentUserService = Substitute.For<ICurrentUserService>();
 			_checklistRepository = Substitute.For<IChecklistRepository>();
 			_updateChecklistService = Substitute.For<IUpdateChecklistService>();
 			_mapChecklistToResponse = Substitute.For<IMapChecklistToResponse>();
-			_checklistService = new ChecklistService(_unitOfWork, _checklistRepository, _updateChecklistService, _mapChecklistToResponse);
+			_checklistService = new ChecklistService(_unitOfWork, _currentUserService, _checklistRepository, _updateChecklistService, _mapChecklistToResponse);
 		}
 
 		[Fact]
@@ -115,8 +118,10 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			_checklistRepository.GetByIdAsync(checklistId, Arg.Any<CancellationToken>())
 				.Returns(checklist);
 
+			_currentUserService.UserId.Returns(ownerId);
+
 			// Act
-			var result = await _checklistService.DeleteAsync(checklistId, ownerId, _cancellationToken);
+			var result = await _checklistService.DeleteAsync(checklistId, _cancellationToken);
 
 			// Assert
 			Assert.True(result);
@@ -124,7 +129,8 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			await _checklistRepository.Received(1).GetByIdAsync(checklistId, Arg.Any<CancellationToken>());
 			_checklistRepository.Received(1).Remove(checklist);
 			await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
-		}
+            _ = _currentUserService.Received(1).UserId;
+        }
 
 		[Fact]
 		public async Task DeleteAsync_ShouldReturnFalse_WhenChecklistDoesNotExist()
@@ -136,8 +142,10 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			_checklistRepository.GetByIdAsync(checklistId, Arg.Any<CancellationToken>())
 				.Returns((Checklist?)null);
 
+			_currentUserService.UserId.Returns(ownerId);
+
 			// Act
-			var result = await _checklistService.DeleteAsync(checklistId, ownerId, _cancellationToken);
+			var result = await _checklistService.DeleteAsync(checklistId, _cancellationToken);
 
 			// Assert
 			Assert.False(result);
@@ -145,7 +153,8 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			await _checklistRepository.Received(1).GetByIdAsync(checklistId, Arg.Any<CancellationToken>());
 			_checklistRepository.DidNotReceive().Remove(Arg.Any<Checklist>());
 			await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
-		}
+            _ = _currentUserService.Received(0).UserId;
+        }
 
 		[Fact]
 		public async Task DeleteAsync_ShouldReturnFalse_WhenChecklistDoesNotBelongToUser()
@@ -159,8 +168,10 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			_checklistRepository.GetByIdAsync(checklistId, Arg.Any<CancellationToken>())
 				.Returns(checklist);
 
+			_currentUserService.UserId.Returns(ownerId);
+
 			// Act
-			var result = await _checklistService.DeleteAsync(checklistId, ownerId, _cancellationToken);
+			var result = await _checklistService.DeleteAsync(checklistId, _cancellationToken);
 
 			// Assert
 			Assert.False(result);
@@ -168,6 +179,7 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			await _checklistRepository.Received(1).GetByIdAsync(checklistId, Arg.Any<CancellationToken>());
 			_checklistRepository.DidNotReceive().Remove(Arg.Any<Checklist>());
 			await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+			_ = _currentUserService.Received(1).UserId;
 		}
 
 		[Fact]
@@ -181,15 +193,18 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			_checklistRepository.GetByIdAsync(checklistId, Arg.Any<CancellationToken>())
 				.Returns(checklist);
 
+			_currentUserService.UserId.Returns(ownerId);
+
 			// Act
-			var result = await _checklistService.PublishAsync(checklistId, ownerId, _cancellationToken);
+			var result = await _checklistService.PublishAsync(checklistId, _cancellationToken);
 
 			// Assert
 			Assert.True(result);
 
 			await _checklistRepository.Received(1).GetByIdAsync(checklistId, Arg.Any<CancellationToken>());
 			await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
-		}
+            _ = _currentUserService.Received(1).UserId;
+        }
 
 		[Fact]
 		public async Task RegenerateAccessTokenAsync_ShouldReturnNewToken_WhenChecklistExistsAndBelongsToUser()
@@ -202,8 +217,10 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 			_checklistRepository.GetByIdAsync(checklistId, Arg.Any<CancellationToken>())
 				.Returns(checklist);
 
+			_currentUserService.UserId.Returns(ownerId);
+
 			// Act
-			var result = await _checklistService.RegenerateAccessTokenAsync(checklistId, ownerId, _cancellationToken);
+			var result = await _checklistService.RegenerateAccessTokenAsync(checklistId, _cancellationToken);
 
 			// Assert
 			Assert.NotNull(result);
@@ -211,7 +228,8 @@ namespace Kickoffa.API.Application.UnitTests.Services.Checklists
 
 			await _checklistRepository.Received(1).GetByIdAsync(checklistId, Arg.Any<CancellationToken>());
 			await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
-		}
+            _ = _currentUserService.Received(1).UserId;
+        }
 
 		#region Helper Methods
 

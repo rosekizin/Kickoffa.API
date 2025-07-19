@@ -3,6 +3,8 @@ using Kickoffa.API.Data.Repositories.Base;
 using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models;
 using Kickoffa.API.Domain.Models.Components;
+using Kickoffa.API.Domain.Models.Enums;
+using Kickoffa.API.Domain.Models.FreelancerCustomer;
 using Kickoffa.API.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -56,7 +58,7 @@ namespace Kickoffa.API.Data.Repositories
 		{
 			return await _context.Checklists
 				.Include(c => c.Sections)
-				.Where(c => c.OwnerId == ownerId && c.IsPublished)
+				.Where(c => c.OwnerId == ownerId && c.Status == ChecklistStatus.Active)
 				.OrderByDescending(c => c.CreatedDateUtc)
 				.ToListAsync(cancellationToken);
 		}
@@ -67,7 +69,7 @@ namespace Kickoffa.API.Data.Repositories
 		public async Task<bool> ExistsBySlugAsync(string slug, long? excludeId, CancellationToken cancellationToken)
 		{
 			var query = _context.Checklists.Where(c => c.Slug == slug);
-			
+
 			if (excludeId.HasValue)
 			{
 				query = query.Where(c => c.Id != excludeId.Value);
@@ -272,6 +274,71 @@ namespace Kickoffa.API.Data.Repositories
 					.ThenInclude(s => ((ChecklistSection)s).Components)
 						.ThenInclude(comp => ((UploadComponent)comp).ComponentFiles)
 				.FirstOrDefaultAsync(c => c.AccessToken == accessToken, cancellationToken);
+		}
+
+		/// <summary>
+		/// Busca checklists com paginação e filtros
+		/// </summary>
+		public async Task<(IEnumerable<IChecklist> Checklists, int TotalCount)> GetPagedAsync(
+			string? search,
+			int page,
+			int pageSize,
+			IEnumerable<ChecklistStatus> statusFilter,
+			CancellationToken cancellationToken)
+		{
+			IQueryable<Checklist> query = _context
+				.Checklists
+				.AsNoTracking()
+				.Include(c => c.Customer);
+
+			// Aplicar filtro de busca
+			if (!string.IsNullOrWhiteSpace(search))
+			{
+				var searchLower = search.ToLower();
+
+				query = query.Where(c =>
+					EF.Functions.ILike(c.Title, $"%{search}%") ||
+					(c.Customer != null && (
+						// Busca em NaturalPerson
+						(c.Customer.Type == CustomerType.NaturalPerson &&
+							(
+								EF.Functions.ILike(((NaturalPerson)c.Customer).FirstName, $"%{search}%") ||
+								EF.Functions.ILike(((NaturalPerson)c.Customer).LastName, $"%{search}%") ||
+								((NaturalPerson)c.Customer).Cpf != null && ((NaturalPerson)c.Customer).Cpf.Contains(search)
+							)
+						) ||
+
+						// Busca em LegalPerson
+						(c.Customer.Type == CustomerType.LegalCompany &&
+							(
+								EF.Functions.ILike(((LegalPerson)c.Customer).Company, $"%{search}%") ||
+								((LegalPerson)c.Customer).Cnpj != null && ((LegalPerson)c.Customer).Cnpj.Contains(search)
+							)
+						) ||
+
+						// Busca em email (comum a ambos)
+						EF.Functions.ILike(c.Customer.Email!, $"%{search}%")
+					))
+				);
+			}
+
+			// Aplicar filtro de status
+			if (statusFilter.Any())
+			{
+				query = query.Where(c => statusFilter.Contains(c.Status));
+			}
+
+			// Contar total de registros
+			var totalCount = await query.CountAsync(cancellationToken);
+
+			// Aplicar paginação
+			var offset = (page - 1) * pageSize;
+			var checklists = await query
+				.Skip(offset)
+				.Take(pageSize)
+				.ToListAsync(cancellationToken);
+
+			return (checklists, totalCount);
 		}
 	}
 }

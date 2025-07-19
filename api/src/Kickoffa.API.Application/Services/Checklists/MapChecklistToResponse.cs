@@ -30,7 +30,7 @@ namespace Kickoffa.API.Application.Services.Checklists
 				Description = checklist.Description,
 				Deadline = checklist.DueDate,
 				AccessToken = checklist.AccessToken,
-				IsPublished = checklist.IsPublished,
+				Status = (ChecklistStatus)checklist.Status,
 				Sections = checklist.Sections.OrderBy(s => s.Order).Select(MapSectionToResponse).ToList(),
 				CreatedDateUtc = checklist.CreatedDateUtc,
 				LastUpdatedDateUtc = checklist.LastUpdatedDateUtc

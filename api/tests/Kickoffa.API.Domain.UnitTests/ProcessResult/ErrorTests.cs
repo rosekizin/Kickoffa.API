@@ -237,7 +237,7 @@ public class ErrorTests
 
 		// Assert
 		Assert.Equal(metadata, error.Metadata);
-		Assert.Equal("value", error.Metadata["string"]);
+		Assert.Equal("value", error.Metadata!["string"]);
 		Assert.Equal(42, error.Metadata["int"]);
 		Assert.Equal(true, error.Metadata["bool"]);
 		Assert.IsType<DateTime>(error.Metadata["datetime"]);
@@ -259,7 +259,7 @@ public class ErrorTests
 
 		// Assert
 		Assert.Equal(metadata, error.Metadata);
-		Assert.Null(error.Metadata["nullValue"]);
+		Assert.Null(error.Metadata!["nullValue"]);
 		Assert.Equal("test", error.Metadata["stringValue"]);
 	}
 

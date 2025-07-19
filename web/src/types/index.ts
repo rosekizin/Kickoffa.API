@@ -93,6 +93,10 @@ export interface AuthUser {
   isAuthenticated: boolean
 }
 
+export type ChecklistStatus = 'draft' | 'active' | 'completed' | 'archived'
+// Tipo para aceitar tanto PascalCase (backend atual) quanto camelCase (futuro)
+export type ChecklistStatusFromAPI = ChecklistStatus | 'Draft' | 'Active' | 'Completed' | 'Archived'
+
 export interface Checklist {
   id: number
   title: string
@@ -100,13 +104,13 @@ export interface Checklist {
   deadline?: string
   slug: string
   accessToken: string
-  isPublished: boolean
+  status: ChecklistStatusFromAPI
   ownerId: number
   customerId: number
   customer?: CustomerUnion
   sections: Section[]
-  createdAt: string
-  updatedAt: string
+  createdDateUtc: string
+  lastUpdatedDateUtc: string
 }
 
 export interface Section {
@@ -292,6 +296,28 @@ export interface PaginatedResponse<T> {
   pageNumber: number
   pageSize: number
   totalPages: number
+}
+
+// Tipos para paginação de checklists
+export interface ChecklistSearchRequest {
+  search?: string
+  page?: number
+  pageSize?: number
+  filters?: ChecklistFilters
+}
+
+export interface ChecklistFilters {
+  statuses?: ChecklistStatus[]
+}
+
+export interface ChecklistPagedResponse {
+  data: Checklist[]
+  totalCount: number
+  page: number
+  pageSize: number
+  totalPages: number
+  hasPreviousPage: boolean
+  hasNextPage: boolean
 }
 
 // Tipos para FileType
