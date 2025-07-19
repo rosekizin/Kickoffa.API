@@ -8,7 +8,7 @@ import { StatusDropdown } from '@/components/ui/status-dropdown'
 import { PageSizeDropdown } from '@/components/ui/page-size-dropdown'
 import { useChecklistsPaged } from '@/hooks/use-api'
 import { CustomerService } from '@/services/customer.service'
-import { CustomerType, ChecklistSearchRequest, ChecklistPagedResponse } from '@/types'
+import { CustomerType, ChecklistSearchRequest, ChecklistPagedResponse, ChecklistStatus } from '@/types'
 import {
   Plus,
   Search,
@@ -79,10 +79,9 @@ export default function ChecklistsPage() {
   }, [searchTerm, statusFilter])
 
   // Função para determinar status baseado nos dados do checklist
-  const getChecklistStatus = (checklist: { isPublished: boolean }) => {
-    if (!checklist.isPublished) return 'draft'
-    // Aqui você pode adicionar mais lógica para determinar outros status
-    return 'active'
+  const getChecklistStatus = (checklist: { status: string }): ChecklistStatus => {
+    // Normalizar status (aceita PascalCase e camelCase)
+    return checklist.status.toLowerCase() as ChecklistStatus
   }
 
 

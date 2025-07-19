@@ -306,8 +306,8 @@ namespace Kickoffa.API.Controllers.UnitTests.Controllers
 				Description = "Test description",
 				Deadline = DateTime.UtcNow.AddDays(7),
 				AccessToken = "test-token",
-				IsPublished = false,
-				Sections = new List<SectionResponse>(),
+				Status = ChecklistStatus.Active,
+				Sections = [],
 				CreatedDateUtc = DateTime.UtcNow,
 				LastUpdatedDateUtc = DateTime.UtcNow
 			};

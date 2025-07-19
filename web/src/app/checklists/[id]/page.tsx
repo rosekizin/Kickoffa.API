@@ -1,16 +1,25 @@
 'use client'
 
+import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
 import { useChecklist } from '@/hooks/use-api'
 import { useApiError } from '@/hooks/use-api-error'
 import { CustomerService } from '@/services/customer.service'
+import { ChecklistStatus } from '@/types'
 import { Button } from '@/components/ui/button'
-import { 
-  ArrowLeft, 
-  Edit3, 
-  Share2, 
-  Eye, 
+import { ComponentPreview } from '@/components/preview/component-preview'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  ArrowLeft,
+  Edit3,
+  Share2,
+  Eye,
   Settings,
   Calendar,
   Clock,
@@ -25,8 +34,38 @@ export default function ChecklistDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { handleApiError } = useApiError()
-  
+
   const checklistId = params.id as string
+  const [showPreview, setShowPreview] = useState(false)
+
+  // Função para normalizar status (aceita PascalCase e camelCase)
+  const normalizeStatus = (status: string): ChecklistStatus => {
+    const normalized = status.toLowerCase() as ChecklistStatus
+    return normalized
+  }
+
+  // Funções para status
+  const getStatusColor = (status: string) => {
+    const normalizedStatus = normalizeStatus(status)
+    switch (normalizedStatus) {
+      case 'draft': return 'bg-yellow-100 text-yellow-800'
+      case 'active': return 'bg-green-100 text-green-800'
+      case 'completed': return 'bg-blue-100 text-blue-800'
+      case 'archived': return 'bg-gray-100 text-gray-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    const normalizedStatus = normalizeStatus(status)
+    switch (normalizedStatus) {
+      case 'draft': return 'Rascunho'
+      case 'active': return 'Ativo'
+      case 'completed': return 'Concluído'
+      case 'archived': return 'Arquivado'
+      default: return 'Desconhecido'
+    }
+  }
   const { data: checklist, isLoading, error } = useChecklist(checklistId)
 
   // Tratar erro da API
@@ -119,6 +158,17 @@ export default function ChecklistDetailPage() {
 
               <div className="flex items-center space-x-2">
                 <Button
+                  onClick={() => setShowPreview(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  title="Visualizar Preview"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Preview
+                </Button>
+
+                <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleEdit}
@@ -207,12 +257,8 @@ export default function ChecklistDetailPage() {
                   </div>
 
                   <div className="flex items-center">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      checklist.isPublished 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {checklist.isPublished ? 'Publicado' : 'Rascunho'}
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(checklist.status)}`}>
+                      {getStatusText(checklist.status)}
                     </span>
                   </div>
                 </div>
@@ -283,6 +329,85 @@ export default function ChecklistDetailPage() {
             ))}
           </div>
         </div>
+
+        {/* Modal de Preview */}
+        <Dialog open={showPreview} onOpenChange={setShowPreview}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
+            <DialogHeader className="px-6 py-4 border-b">
+              <DialogTitle className="text-xl font-semibold">
+                Preview do Checklist - Visão do Cliente
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="overflow-auto max-h-[calc(90vh-80px)]">
+              {/* Preview Mode - Cliente View */}
+              <div className="bg-gray-50">
+                {/* Header como na página do cliente */}
+                <header className="bg-white shadow-sm border-b">
+                  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <div className="text-center">
+                      <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                        {checklist.title}
+                      </h1>
+                      {checklist.description && (
+                        <p className="text-lg text-gray-600 mb-4">
+                          {checklist.description}
+                        </p>
+                      )}
+                      {checklist.deadline && (
+                        <div className="flex items-center justify-center text-sm text-gray-500">
+                          <Calendar className="h-4 w-4 mr-1" />
+                          Prazo: {new Date(checklist.deadline).toLocaleDateString('pt-BR')}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </header>
+
+                {/* Content */}
+                <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                  <div className="space-y-8">
+                    {checklist.sections.map((section) => (
+                      <div key={section.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                          <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                            {section.type === 'briefing' ? (
+                              <FileText className="h-5 w-5 mr-2 text-blue-600" />
+                            ) : (
+                              <CheckSquare className="h-5 w-5 mr-2 text-green-600" />
+                            )}
+                            {section.title}
+                          </h2>
+                        </div>
+
+                        <div className="p-6">
+                          {section.type === 'briefing' && section.contentHtml && (
+                            <div
+                              className="prose max-w-none"
+                              dangerouslySetInnerHTML={{ __html: section.contentHtml }}
+                            />
+                          )}
+
+                          {section.type === 'checklist' && (
+                            <div className="space-y-6">
+                              {section.components?.length ? (
+                                section.components.map((component, index) => (
+                                  <ComponentPreview key={component.id || index} component={component} />
+                                ))
+                              ) : (
+                                <p className="text-gray-500 italic">Nenhum componente adicionado ainda</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </main>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   )

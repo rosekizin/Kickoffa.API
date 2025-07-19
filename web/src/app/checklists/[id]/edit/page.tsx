@@ -32,7 +32,6 @@ import {
   Plus,
   FileText,
   CheckSquare,
-  Share2,
   Info,
   List,
   Clock,
@@ -381,14 +380,7 @@ export default function EditChecklistPage() {
     }
   }
 
-  const handlePublishChecklist = () => {
-    // TODO: Implementar publicação
-    showToast({
-      type: 'info',
-      title: 'Funcionalidade em desenvolvimento',
-      description: 'A publicação será implementada em breve.'
-    })
-  }
+
 
   const handleCustomerSave = (customer: CustomerUnion) => {
     setCustomerId(customer.id)
@@ -480,15 +472,7 @@ export default function EditChecklistPage() {
                   <Save className={`h-4 w-4 ${updateChecklistMutation.isPending ? 'animate-spin' : ''}`} />
                 </Button>
 
-                <Button
-                  onClick={handlePublishChecklist}
-                  disabled={!title.trim() || sections.length === 0}
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm disabled:opacity-50"
-                  title="Publicar Checklist"
-                >
-                  <Share2 className="h-4 w-4" />
-                </Button>
+
               </div>
             </div>
           </div>

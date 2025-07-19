@@ -37,8 +37,8 @@ public sealed record ChecklistResponse
 	[JsonProperty(PropertyName = "accessToken", Required = Required.Default)]
 	public string? AccessToken { get; init; }
 
-	[JsonProperty(PropertyName = "isPublished", Required = Required.Always)]
-	public required bool IsPublished { get; init; }
+	[JsonProperty(PropertyName = "status", Required = Required.Always)]
+	public required ChecklistStatus Status { get; init; }
 
 	[JsonProperty(PropertyName = "sections", Required = Required.Always)]
 	[JsonConverter(typeof(SectionResponseCollectionConverter))]

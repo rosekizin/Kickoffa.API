@@ -93,6 +93,10 @@ export interface AuthUser {
   isAuthenticated: boolean
 }
 
+export type ChecklistStatus = 'draft' | 'active' | 'completed' | 'archived'
+// Tipo para aceitar tanto PascalCase (backend atual) quanto camelCase (futuro)
+export type ChecklistStatusFromAPI = ChecklistStatus | 'Draft' | 'Active' | 'Completed' | 'Archived'
+
 export interface Checklist {
   id: number
   title: string
@@ -100,7 +104,7 @@ export interface Checklist {
   deadline?: string
   slug: string
   accessToken: string
-  isPublished: boolean
+  status: ChecklistStatusFromAPI
   ownerId: number
   customerId: number
   customer?: CustomerUnion

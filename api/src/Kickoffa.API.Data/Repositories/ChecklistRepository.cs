@@ -58,7 +58,7 @@ namespace Kickoffa.API.Data.Repositories
 		{
 			return await _context.Checklists
 				.Include(c => c.Sections)
-				.Where(c => c.OwnerId == ownerId && c.IsPublished)
+				.Where(c => c.OwnerId == ownerId && c.Status == ChecklistStatus.Active)
 				.OrderByDescending(c => c.CreatedDateUtc)
 				.ToListAsync(cancellationToken);
 		}
@@ -329,7 +329,7 @@ namespace Kickoffa.API.Data.Repositories
 			var totalCount = await query.CountAsync(cancellationToken);
 
 			// Aplicar ordenação
-			query = ApplySorting(query, sortBy, sortDirection);
+			//query = ApplySorting(query, sortBy, sortDirection);
 
 			// Aplicar paginação
 			var offset = (page - 1) * pageSize;
@@ -354,7 +354,7 @@ namespace Kickoffa.API.Data.Repositories
 				"createddateutc" or "createdat" => isDescending ? query.OrderByDescending(c => c.CreatedDateUtc) : query.OrderBy(c => c.CreatedDateUtc),
 				"lastupdateddateutc" or "updatedat" => isDescending ? query.OrderByDescending(c => c.LastUpdatedDateUtc) : query.OrderBy(c => c.LastUpdatedDateUtc),
 				"deadline" => isDescending ? query.OrderByDescending(c => c.DueDate) : query.OrderBy(c => c.DueDate),
-				"ispublished" => isDescending ? query.OrderByDescending(c => c.IsPublished) : query.OrderBy(c => c.IsPublished),
+				"ispublished" => isDescending ? query.OrderByDescending(c => c.Status) : query.OrderBy(c => c.Status),
 				_ => query.OrderByDescending(c => c.CreatedDateUtc) // Default: mais recentes primeiro
 			};
 		}

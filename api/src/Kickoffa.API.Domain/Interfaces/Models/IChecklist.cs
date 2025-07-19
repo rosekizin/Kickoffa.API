@@ -1,4 +1,5 @@
 ﻿using Kickoffa.API.Domain.Interfaces.Models.Customer;
+using Kickoffa.API.Domain.Models.Enums;
 
 namespace Kickoffa.API.Domain.Interfaces.Models
 {
@@ -11,7 +12,7 @@ namespace Kickoffa.API.Domain.Interfaces.Models
 		string? Description { get; }
 		DateTime? DueDate { get; }
 		string? AccessToken { get; } // Token único para compartilhar
-		bool IsPublished { get; }
+		ChecklistStatus Status { get; }
 
 		// Relacionamentos
 		ICustomer Customer { get; }
@@ -41,6 +42,21 @@ namespace Kickoffa.API.Domain.Interfaces.Models
 		/// Despublica o checklist
 		/// </summary>
 		void Unpublish();
+
+		/// <summary>
+		/// Marca o checklist como concluído
+		/// </summary>
+		void MarkAsCompleted();
+
+		/// <summary>
+		/// Arquiva o checklist
+		/// </summary>
+		void Archive();
+
+		/// <summary>
+		/// Atualiza o status do checklist
+		/// </summary>
+		void UpdateStatus(ChecklistStatus status);
 
 		/// <summary>
 		/// Regenera o token de acesso

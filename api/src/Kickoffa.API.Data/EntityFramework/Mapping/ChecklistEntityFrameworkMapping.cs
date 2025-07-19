@@ -1,4 +1,5 @@
 using Kickoffa.API.Domain.Models;
+using Kickoffa.API.Domain.Models.Enums;
 using Kickoffa.API.Domain.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -61,9 +62,10 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			entity.Property(c => c.AccessToken)
 				.HasMaxLength(100);
 
-			entity.Property(c => c.IsPublished)
+			entity.Property(c => c.Status)
 				.IsRequired()
-				.HasDefaultValue(false);
+				.HasDefaultValue(ChecklistStatus.Draft)
+				.HasConversion<int>(); // Armazenar como int no banco
 
 			entity.Property(c => c.CreatedDateUtc)
 				.IsRequired();
@@ -75,8 +77,8 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 			entity.HasIndex(c => new { c.OwnerId, c.CreatedDateUtc })
 				.HasDatabaseName("IX_Checklists_OwnerId_CreatedDateUtc");
 
-			entity.HasIndex(c => new { c.OwnerId, c.IsPublished })
-				.HasDatabaseName("IX_Checklists_OwnerId_IsPublished");
+			entity.HasIndex(c => new { c.OwnerId, c.Status })
+				.HasDatabaseName("IX_Checklists_OwnerId_Status");
 
 			entity.HasIndex(c => new { c.OwnerId, c.Slug })
 				.IsUnique()
@@ -89,10 +91,10 @@ namespace Kickoffa.API.Data.EntityFramework.Mapping
 				.IsUnique()
 				.HasDatabaseName("IX_Checklists_AccessToken");
 
-			// Índice filtrado para checklists publicados (consultas públicas)
+			// Índice filtrado para checklists ativos (consultas públicas)
 			entity.HasIndex(c => new { c.AccessToken, c.OwnerId })
 				.HasDatabaseName("IX_Checklists_AccessToken_OwnerId")
-				.HasFilter("\"IsPublished\" = true");
+				.HasFilter("\"Status\" = 1"); // 1 = ChecklistStatus.Active
 
 			// Relacionamentos
 			entity.HasOne(c => c.Customer)
