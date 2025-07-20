@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+  	<PackageReference Include="coverlet.collector">
+  		<PrivateAssets>all</PrivateAssets>
+  		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+  	</PackageReference>
+  	<PackageReference Include="Microsoft.NET.Test.Sdk" />
+  	<PackageReference Include="NSubstitute" />
+  	<PackageReference Include="xunit.analyzers">
+  		<PrivateAssets>all</PrivateAssets>
+  		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+  	</PackageReference>
+  	<PackageReference Include="xunit.runner.visualstudio">
+  		<PrivateAssets>all</PrivateAssets>
+  		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+  	</PackageReference>
+  	<PackageReference Include="xunit.v3" />
+  	<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+  
+  	<!-- Serilog para testes de integração -->
+  	<PackageReference Include="Serilog" />
+  	<PackageReference Include="Serilog.AspNetCore" />
+  </ItemGroup>
+  
+  <ItemGroup>
+  	<ProjectReference Include="..\..\src\Kickoffa.API\Kickoffa.API.csproj" />
+  	<ProjectReference Include="..\..\src\Kickoffa.API.Application\Kickoffa.API.Application.csproj" />
+  	<ProjectReference Include="..\..\src\Kickoffa.API.Domain\Kickoffa.API.Domain.csproj" />
+  	<ProjectReference Include="..\Kickoffa.API.TestUtils\Kickoffa.API.TestUtils.csproj" />
+  </ItemGroup>
+
+</Project>

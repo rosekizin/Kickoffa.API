@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using System.Security.Claims;
+using Xunit;
 
 namespace Kickoffa.API.Controllers.UnitTests.Controllers
 {

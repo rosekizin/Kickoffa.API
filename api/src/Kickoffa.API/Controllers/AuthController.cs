@@ -35,6 +35,8 @@ public sealed class AuthController : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<LoginResponse>> LoginAsync([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("🔐 Tentativa de login iniciada para email: {Email}", request.Email);
+
         try
         {
 			// SenhaSuperSegura123!
@@ -66,6 +68,7 @@ public sealed class AuthController : ControllerBase
             }
 
             // O ASP.NET Core Identity já gerencia cookies de autenticação automaticamente
+
             var response = new LoginResponse
             {
                 UserId = user.Id.ToString(),
@@ -81,7 +84,8 @@ public sealed class AuthController : ControllerBase
                 }
             };
 
-            _logger.LogInformation("Login realizado com sucesso para usuário: {Email}", user.Email);
+            _logger.LogInformation("✅ Login realizado com sucesso para usuário: {UserId} ({Email})",
+                user.Id, user.Email);
             return Ok(response);
         }
         catch (Exception ex)

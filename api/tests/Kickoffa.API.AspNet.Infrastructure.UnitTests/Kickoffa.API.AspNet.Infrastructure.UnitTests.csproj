@@ -26,16 +26,29 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+
+    <!-- Serilog para testes -->
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Kickoffa.API.AspNet.Infrastructure\Kickoffa.API.AspNet.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Kickoffa.API.Application\Kickoffa.API.Application.csproj" />
     <ProjectReference Include="..\..\src\Kickoffa.API.Domain\Kickoffa.API.Domain.csproj" />
+    <ProjectReference Include="..\Kickoffa.API.TestUtils\Kickoffa.API.TestUtils.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.test.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
