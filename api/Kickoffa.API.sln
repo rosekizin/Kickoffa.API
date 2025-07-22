@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kickoffa.API.TestUtils", "t
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kickoffa.API.Contracts.UnitTests", "tests\Kickoffa.API.Contracts.UnitTests\Kickoffa.API.Contracts.UnitTests.csproj", "{D2BB4A44-3A37-6559-D28E-27DBE91D264C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kickoffa.API.Integration.Tests", "tests\Kickoffa.API.Integration.Tests\Kickoffa.API.Integration.Tests.csproj", "{7957B67C-8745-4C76-BA0F-EF76C1D9EB8A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,10 @@ Global
 		{D2BB4A44-3A37-6559-D28E-27DBE91D264C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2BB4A44-3A37-6559-D28E-27DBE91D264C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2BB4A44-3A37-6559-D28E-27DBE91D264C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7957B67C-8745-4C76-BA0F-EF76C1D9EB8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7957B67C-8745-4C76-BA0F-EF76C1D9EB8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7957B67C-8745-4C76-BA0F-EF76C1D9EB8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7957B67C-8745-4C76-BA0F-EF76C1D9EB8A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -109,6 +115,7 @@ Global
 		{FFAE6CC8-B49C-431F-9AA0-890C88F1BB1F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{DC9C0DD3-1E8F-482E-8208-3198B9E83C5A} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{D2BB4A44-3A37-6559-D28E-27DBE91D264C} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{7957B67C-8745-4C76-BA0F-EF76C1D9EB8A} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A7C5E792-C2F9-4555-B6F4-C96CFFD01B6A}

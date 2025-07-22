@@ -37,5 +37,23 @@ namespace Kickoffa.API.TestUtils.InternalMember
 			
 			field!.SetValue(obj, value);
 		}
+
+		public static R GetPrivateFieldValue<T, R>(this T obj, string propertyName)
+		{
+			var type = obj!.GetType();			
+			var fieldName = propertyName;
+
+			FieldInfo? field = null;
+
+			while (type != null)
+			{
+				field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+				if (field != null) break;
+
+				type = type.BaseType;
+			}
+			
+			return (R)field!.GetValue(obj)!;
+		}
 	}
 }

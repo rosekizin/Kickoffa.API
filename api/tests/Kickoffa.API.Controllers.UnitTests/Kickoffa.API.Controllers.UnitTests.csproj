@@ -24,16 +24,17 @@
     </PackageReference>
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+
+    <!-- Serilog para testes de integração -->
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.AspNetCore" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Kickoffa.API\Kickoffa.API.csproj" />
     <ProjectReference Include="..\..\src\Kickoffa.API.Application\Kickoffa.API.Application.csproj" />
     <ProjectReference Include="..\..\src\Kickoffa.API.Domain\Kickoffa.API.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="Xunit" />
+    <ProjectReference Include="..\Kickoffa.API.TestUtils\Kickoffa.API.TestUtils.csproj" />
   </ItemGroup>
 
 </Project>

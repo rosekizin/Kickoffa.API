@@ -5,6 +5,7 @@ using Kickoffa.API.Contracts.Customer;
 using Kickoffa.API.Domain.ProcessResult;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
+using Xunit;
 
 namespace Kickoffa.API.Controllers.UnitTests.Controllers;
 

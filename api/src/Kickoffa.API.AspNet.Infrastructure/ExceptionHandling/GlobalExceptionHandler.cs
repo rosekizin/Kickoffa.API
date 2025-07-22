@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Kickoffa.API.AspNet.Infrastructure.ExceptionHandling
 {
@@ -30,13 +31,13 @@ namespace Kickoffa.API.AspNet.Infrastructure.ExceptionHandling
 
 			var problemDetails = _errorFactory.CreateInternalServerError();
 
-			httpContext.Response.StatusCode = problemDetails.Status!.Value;
+            httpContext.Response.StatusCode = problemDetails.Status ?? 500;
 
-			await httpContext
-				.Response
-				.WriteAsJsonAsync(problemDetails, cancellationToken);
+            httpContext.Response.ContentType = "application/json";
+            var json = JsonConvert.SerializeObject(problemDetails); // Newtonsoft
+            await httpContext.Response.WriteAsync(json, cancellationToken);
 
-			return true;
+            return true;
 		}
 	}
 }

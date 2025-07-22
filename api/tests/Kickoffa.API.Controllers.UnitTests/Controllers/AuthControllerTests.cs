@@ -1,10 +1,12 @@
-using Kickoffa.API.Application.Interfaces;
+﻿using Kickoffa.API.Application.Interfaces;
 using Kickoffa.API.Contracts.Authentication;
 using Kickoffa.API.Domain.Models.AppUser;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using Kickoffa.API.TestUtils.LoggerExtensions;
+using Xunit;
 
 namespace Kickoffa.API.Controllers.UnitTests.Controllers;
 
@@ -54,6 +56,9 @@ public class AuthControllerTests
         Assert.Equal(user.Email, response.Email);
         Assert.True(response.Success);
         Assert.NotNull(response.Session);
+
+        _logger.ShouldHaveLoggedContain(LogLevel.Information, $"🔐 Tentativa de login iniciada para email: {request.Email}", 1);
+        _logger.ShouldHaveLoggedContain(LogLevel.Information, $"✅ Login realizado com sucesso para usuário: {user.Id} ({user.Email})", 1);
     }
 
     [Fact]
@@ -75,6 +80,9 @@ public class AuthControllerTests
         // Assert
         var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result.Result);
         Assert.NotNull(unauthorizedResult.Value);
+
+        _logger.ShouldHaveLoggedContain(LogLevel.Information, $"🔐 Tentativa de login iniciada para email: {request.Email}", 1);
+        _logger.ShouldHaveLoggedContain(LogLevel.Warning, $"Tentativa de login com email inexistente: {request.Email}", 1);
     }
 
     [Fact]
@@ -98,6 +106,9 @@ public class AuthControllerTests
         // Assert
         var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result.Result);
         Assert.NotNull(unauthorizedResult.Value);
+
+        _logger.ShouldHaveLoggedContain(LogLevel.Information, $"🔐 Tentativa de login iniciada para email: {request.Email}", 1);
+        _logger.ShouldHaveLoggedContain(LogLevel.Warning, $"Tentativa de login inválida para email: {request.Email}. Motivo: {"Credenciais inválidas"}", 1);
     }
 
     [Fact]
