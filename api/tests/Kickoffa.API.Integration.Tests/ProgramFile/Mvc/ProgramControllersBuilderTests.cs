@@ -9,7 +9,7 @@ using Newtonsoft.Json.Converters;
 using System.Reflection;
 using Xunit;
 
-namespace Kickoffa.API.Integration.Tests.Mvc;
+namespace Kickoffa.API.Integration.Tests.ProgramFile.Mvc;
 
 /// <summary>
 /// Testes para verificar se o Program.cs está configurando corretamente os Controllers,

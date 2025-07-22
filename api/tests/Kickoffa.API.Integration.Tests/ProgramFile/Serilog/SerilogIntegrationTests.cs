@@ -4,11 +4,13 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Xunit;
 
-namespace Kickoffa.API.Integration.Tests.Serilog;
+namespace Kickoffa.API.Integration.Tests.ProgramFile.Serilog;
 
 /// <summary>
 /// Testes de integração para verificar se o Serilog está configurado corretamente na aplicação
 /// </summary>
+
+[Collection("Logging")]
 public class SerilogIntegrationTests : IClassFixture<WebApplicationFactory<Program>>, IDisposable
 {
     private readonly WebApplicationFactory<Program> _factory;

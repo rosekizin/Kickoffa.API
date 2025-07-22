@@ -5,11 +5,12 @@ using Kickoffa.API.AspNet.Infrastructure.Configuration.Logging;
 using Serilog;
 using Xunit;
 
-namespace Kickoffa.API.Integration.Tests.Serilog;
+namespace Kickoffa.API.Integration.Tests.ProgramFile.Serilog;
 
 /// <summary>
 /// Testes para verificar se o Program.cs está configurando o Serilog corretamente
 /// </summary>
+[Collection("Logging")]
 public class ProgramSerilogTests : IClassFixture<WebApplicationFactory<Program>>, IDisposable
 {
     private readonly WebApplicationFactory<Program> _factory;

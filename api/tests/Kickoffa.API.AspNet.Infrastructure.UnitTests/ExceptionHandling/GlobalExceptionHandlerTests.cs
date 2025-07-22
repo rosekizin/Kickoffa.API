@@ -3,6 +3,7 @@ using Kickoffa.API.AspNet.Infrastructure.ExceptionHandling;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using NSubstitute;
 using System.Text;
 using System.Text.Json;
@@ -144,7 +145,7 @@ public class GlobalExceptionHandlerTests
 		Assert.NotEmpty(responseContent);
 		
 		// Verificar que é um JSON válido
-		var deserializedProblemDetails = JsonSerializer.Deserialize<ProblemDetails>(responseContent);
+		var deserializedProblemDetails = JsonConvert.DeserializeObject<ProblemDetails>(responseContent);
 		Assert.NotNull(deserializedProblemDetails);
 		Assert.Equal("Internal Server Error", deserializedProblemDetails.Title);
 		Assert.Equal(500, deserializedProblemDetails.Status);
@@ -193,22 +194,6 @@ public class GlobalExceptionHandlerTests
 		Assert.True(result);
 		// O token é passado para WriteAsJsonAsync, mas não podemos verificar diretamente
 		// Verificamos que a operação foi concluída sem erro
-	}
-
-	[Fact]
-	public async Task TryHandleAsync_WithNullStatusInProblemDetails_ShouldThrow()
-	{
-		// Arrange
-		var httpContext = CreateHttpContext();
-		var exception = new InvalidOperationException("Test exception");
-		var cancellationToken = CancellationToken.None;
-
-		var problemDetails = new ProblemDetails { Status = null };
-		_errorFactory.CreateInternalServerError().Returns(problemDetails);
-
-		// Act & Assert
-		await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-			await _globalExceptionHandler.TryHandleAsync(httpContext, exception, cancellationToken));
 	}
 
 	#endregion

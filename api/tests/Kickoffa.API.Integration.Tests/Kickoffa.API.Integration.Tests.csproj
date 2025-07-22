@@ -28,9 +28,12 @@
   	<!-- Serilog para testes de integração -->
   	<PackageReference Include="Serilog" />
   	<PackageReference Include="Serilog.AspNetCore" />
+  	<PackageReference Include="Serilog.Sinks.TextWriter" />
+  	<PackageReference Include="Serilog.Sinks.TestCorrelator" />
   </ItemGroup>
   
   <ItemGroup>
+  	<ProjectReference Include="..\..\src\Kickoffa.API.Data\Kickoffa.API.Data.csproj" />
   	<ProjectReference Include="..\..\src\Kickoffa.API\Kickoffa.API.csproj" />
   	<ProjectReference Include="..\..\src\Kickoffa.API.Application\Kickoffa.API.Application.csproj" />
   	<ProjectReference Include="..\..\src\Kickoffa.API.Domain\Kickoffa.API.Domain.csproj" />

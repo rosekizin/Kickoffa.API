@@ -38,7 +38,7 @@ namespace Kickoffa.API
                 {
                     options.SerializerSettings.Converters.Add(new StringEnumConverter());
                     options.SerializerSettings.Converters.Add(new CustomerRequestConverter());
-                    //options.SerializerSettings.TypeNameHandling = TypeNameHandling.None; // ou Auto, se quiser polimorfismo com $type
+                    options.SerializerSettings.TypeNameHandling = TypeNameHandling.None; // ou Auto, se quiser polimorfismo com $type
                 });
 
             // Add Swagger (Swashbuckle)
@@ -57,19 +57,17 @@ namespace Kickoffa.API
                 });
             });
 
-            // Authentication & Authorization gerenciados pelo Identity
-
             // Register Database
             builder.Services.AddDatabase(new PostgreDbConfiguration(configurationWrapper));
             builder.Services.AddRepositories();
 
             // Configure Identity
+            // Authentication & Authorization gerenciados pelo Identity
+            // JWT service removido - ASP.NET Core Identity gerencia autenticação automaticamente
             builder.Services.AddIdentityConfiguration();
 
             // Register services
             builder.Services.AddApplicationServices();
-
-            // JWT service removido - ASP.NET Core Identity gerencia autenticação automaticamente
 
             // Handlers
             builder.Services.AddErrorHandlers();
@@ -80,8 +78,11 @@ namespace Kickoffa.API
 
             var app = builder.Build();
 
+            // precisa vir antes de qualquer middleware que possa gerar exceções, como:
+            // UseAuthentication(), UseAuthorization(), MapControllers()
+            app.UseExceptionHandler(options => { });
+
             if (hostEnvironmentWrapper.IsDevelopment())
-            //if (app.Environment.IsDevelopment())
             {
                 // Enable Swagger UI in dev
                 app.UseSwagger();
@@ -121,7 +122,6 @@ namespace Kickoffa.API
             {
                 Log.CloseAndFlush();
             }
-
         }
     }
 }
