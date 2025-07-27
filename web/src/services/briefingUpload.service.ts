@@ -34,26 +34,40 @@ export class BriefingUploadService {
           },
           onUploadProgress: (progressEvent) => {
             if (onProgress && progressEvent.total) {
+              // Limitar progresso do axios a 90% para reservar 10% para processamento do backend
+              const axiosPercentage = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+              const adjustedPercentage = Math.min(axiosPercentage * 0.9, 90)
+
               const progress: BriefingUploadProgress = {
                 loaded: progressEvent.loaded,
                 total: progressEvent.total,
-                percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total)
+                percentage: Math.round(adjustedPercentage)
               }
+
               onProgress(progress)
             }
           }
         }
       )
 
+      // Progresso final do backend (90% → 100%)
+      if (onProgress) {
+        onProgress({
+          loaded: file.size,
+          total: file.size,
+          percentage: 100
+        })
+      }
+
       return response.data
     } catch (error: any) {
       console.error('Erro no upload de imagem:', error)
-      
+
       // Extrair mensagem de erro da API
-      const errorMessage = error.apiErrorDetails?.message || 
-                          error.response?.data?.message || 
+      const errorMessage = error.apiErrorDetails?.message ||
+                          error.response?.data?.message ||
                           'Erro ao fazer upload da imagem'
-      
+
       throw new Error(errorMessage)
     }
   }
