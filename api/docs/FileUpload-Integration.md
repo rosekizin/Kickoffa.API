@@ -1,8 +1,10 @@
-# Integração de Upload de Arquivos com AWS S3
+# Integração de Upload de Briefing com AWS S3
 
 ## Visão Geral
 
-Este documento descreve como integrar o sistema de upload de arquivos com AWS S3 para resolver o problema de imagens blob no TipTap.
+Este documento descreve como integrar o sistema de upload de imagens de briefing com AWS S3 para resolver o problema de imagens blob no TipTap.
+
+**Nota:** Esta implementação é específica para uploads de briefing. Para uploads de cliente, consulte a documentação de expansão futura.
 
 ## Problema Resolvido
 
@@ -74,97 +76,42 @@ Authorization: Bearer {token}
 
 ## Integração com Frontend (TipTap)
 
-### 1. Configurar Plugin de Upload no TipTap
+### 1. Usar Serviços de Briefing
 
 ```typescript
-import { Node } from '@tiptap/core'
-import { Plugin, PluginKey } from 'prosemirror-plugin'
+// Importar serviços específicos para briefing
+import { BriefingUploadService } from '@/services/briefingUpload.service'
+import { useBriefingUpload } from '@/hooks/use-briefing-upload'
 
-const uploadImagePlugin = new Plugin({
-  key: new PluginKey('uploadImage'),
-  props: {
-    handlePaste(view, event, slice) {
-      const items = Array.from(event.clipboardData?.items || [])
-      
-      for (const item of items) {
-        if (item.type.indexOf('image') === 0) {
-          event.preventDefault()
-          const file = item.getAsFile()
-          if (file) {
-            uploadImage(file, view)
-          }
-          return true
-        }
-      }
-      return false
-    },
-    handleDrop(view, event, slice, moved) {
-      if (!moved && event.dataTransfer) {
-        const files = Array.from(event.dataTransfer.files)
-        const imageFiles = files.filter(file => file.type.indexOf('image') === 0)
-        
-        if (imageFiles.length > 0) {
-          event.preventDefault()
-          imageFiles.forEach(file => uploadImage(file, view))
-          return true
-        }
-      }
-      return false
-    }
-  }
-})
+// Hook para gerenciar upload
+const { uploadState, uploadImage, clearError } = useBriefingUpload()
 
-async function uploadImage(file: File, view: any) {
+// Upload manual via botão
+const handleImageUpload = async (file: File) => {
   try {
-    // Mostrar placeholder enquanto faz upload
-    const placeholderSrc = URL.createObjectURL(file)
-    const { tr } = view.state
-    const pos = view.state.selection.from
-    
-    // Inserir imagem temporária
-    tr.replaceSelectionWith(
-      view.state.schema.nodes.image.create({ src: placeholderSrc })
-    )
-    view.dispatch(tr)
-    
-    // Fazer upload para o backend
-    const formData = new FormData()
-    formData.append('file', file)
-    
-    const response = await fetch('/api/fileupload/image/briefing', {
-      method: 'POST',
-      body: formData,
-      credentials: 'include' // Para cookies de autenticação
-    })
-    
-    if (!response.ok) {
-      throw new Error('Erro no upload')
+    const result = await uploadImage(file)
+    if (result) {
+      // Inserir no editor TipTap
+      editor.chain().focus().setImage({
+        src: result.url,
+        alt: file.name
+      }).run()
     }
-    
-    const result = await response.json()
-    
-    // Substituir placeholder pela URL real
-    const newTr = view.state.tr
-    const doc = view.state.doc
-    
-    doc.descendants((node: any, pos: number) => {
-      if (node.type.name === 'image' && node.attrs.src === placeholderSrc) {
-        newTr.setNodeMarkup(pos, null, { ...node.attrs, src: result.url })
-        return false
-      }
-    })
-    
-    view.dispatch(newTr)
-    
-    // Limpar blob URL
-    URL.revokeObjectURL(placeholderSrc)
-    
   } catch (error) {
     console.error('Erro no upload:', error)
-    // Remover placeholder em caso de erro
-    // ... implementar lógica de erro
   }
 }
+
+// Upload automático via plugin (drag & drop, paste)
+import { createImageUploadPlugin } from './tiptap-upload-plugin'
+
+const uploadPlugin = createImageUploadPlugin({
+  onUploadStart: (file) => console.log('Upload iniciado:', file.name),
+  onUploadSuccess: (url, file) => console.log('Upload concluído:', url),
+  onUploadError: (error, file) => console.error('Erro:', error)
+})
+
+editor.registerPlugin(uploadPlugin)
 ```
 
 ### 2. Configurar Editor TipTap
@@ -237,6 +184,31 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
 </button>
 ```
 
+## Estrutura de Arquivos Frontend
+
+```
+web/src/
+├── services/
+│   └── briefingUpload.service.ts     # Serviço específico para briefing
+├── hooks/
+│   └── use-briefing-upload.ts        # Hook para gerenciar estado de upload
+├── components/briefing/
+│   ├── briefing-editor.tsx           # Editor TipTap com upload
+│   └── tiptap-upload-plugin.ts       # Plugin para drag&drop e paste
+```
+
+## Nomenclatura e Organização
+
+**Frontend (Específico por Contexto):**
+- `BriefingUploadService` - Para uploads de briefing
+- `useBriefingUpload` - Hook específico para briefing
+- Futuramente: `ClientUploadService` para uploads de cliente
+
+**Backend (Genérico e Extensível):**
+- `FileUploadController` - Controller genérico para todos os uploads
+- `ImageProxyController` - Proxy seguro para servir imagens
+- Endpoints organizados por contexto: `/briefing`, `/client`, etc.
+
 ## Configuração AWS S3
 
 ### Desenvolvimento (appsettings.Development.json)
@@ -250,7 +222,8 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
       "SecretKey": "your-secret-key",
       "BaseUrl": "https://kickoffa-dev-uploads.s3.us-east-1.amazonaws.com",
       "UseLocalStack": false,
-      "LocalStackUrl": "http://localhost:4566"
+      "LocalStackUrl": "http://localhost:4566",
+      "ApiBaseUrl": "http://localhost:5084"
     }
   }
 }
@@ -267,7 +240,8 @@ const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => 
       "SecretKey": "",
       "BaseUrl": "",
       "UseLocalStack": false,
-      "LocalStackUrl": ""
+      "LocalStackUrl": "",
+      "ApiBaseUrl": "https://api.kickoffa.com"
     }
   }
 }

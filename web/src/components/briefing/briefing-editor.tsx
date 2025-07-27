@@ -8,6 +8,7 @@ import TextAlign from '@tiptap/extension-text-align'
 import { useCallback, useState, useEffect } from 'react'
 import { createImageUploadPlugin, insertImageFromFile } from './tiptap-upload-plugin'
 import { useBriefingUpload } from '@/hooks/use-briefing-upload'
+import { UploadAreaExtension } from './tiptap-upload-extension'
 import { Button } from '@/components/ui/button'
 import {
   Bold,
@@ -168,7 +169,8 @@ export const BriefingEditor = ({
       }),
       Placeholder.configure({
         placeholder,
-      })
+      }),
+      UploadAreaExtension,
     ],
     // Adicionar plugin de upload
     editorProps: {
@@ -284,40 +286,7 @@ export const BriefingEditor = ({
     onEditingChange?.(false)
   }
 
-  const addImage = useCallback(async () => {
-    if (!editor) return
 
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = 'image/*'
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0]
-      if (file) {
-        try {
-          console.log('🚀 Iniciando upload via botão:', file.name)
-
-          // Fazer upload direto usando o hook
-          const result = await uploadImage(file)
-
-          if (result) {
-            console.log('✅ Upload concluído, inserindo imagem:', result.url)
-
-            // Inserir imagem diretamente no editor
-            editor.chain().focus().setImage({
-              src: result.url,
-              alt: file.name,
-              title: file.name
-            }).run()
-          } else {
-            console.error('❌ Upload falhou')
-          }
-        } catch (error) {
-          console.error('❌ Erro no upload:', error)
-        }
-      }
-    }
-    input.click()
-  }, [editor, uploadImage])
 
 
 
@@ -694,7 +663,12 @@ export const BriefingEditor = ({
           <Button
             variant="ghost"
             size="sm"
-            onClick={addImage}
+            onClick={() => {
+              if (editor) {
+                // Inserir área de upload em vez de abrir seletor de arquivo
+                editor.chain().focus().insertUploadArea().run()
+              }
+            }}
             disabled={uploadState.isUploading}
             className="h-8 w-8 p-0 text-gray-300 hover:text-white hover:bg-gray-700 disabled:opacity-50"
           >
