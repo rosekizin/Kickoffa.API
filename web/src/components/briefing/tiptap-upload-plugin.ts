@@ -1,6 +1,6 @@
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { EditorView } from '@tiptap/pm/view'
-import { FileUploadService } from '@/services/fileUpload.service'
+import { BriefingUploadService } from '@/services/briefingUpload.service'
 
 export interface UploadPluginOptions {
   onUploadStart?: (file: File) => void
@@ -78,13 +78,13 @@ async function handleImageUpload(
 ) {
   try {
     // Validar arquivo
-    FileUploadService.validateImageFile(file)
+    BriefingUploadService.validateImageFile(file)
 
     // Notificar início do upload
     options.onUploadStart?.(file)
 
     // Criar placeholder temporário
-    const placeholderSrc = FileUploadService.createPreviewUrl(file)
+    const placeholderSrc = BriefingUploadService.createPreviewUrl(file)
     const uploadId = `upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     
     // Armazenar informações do upload
@@ -106,7 +106,7 @@ async function handleImageUpload(
     view.dispatch(tr)
 
     // Fazer upload real
-    const result = await FileUploadService.uploadBriefingImage(
+    const result = await BriefingUploadService.uploadBriefingImage(
       file,
       (progress) => {
         options.onUploadProgress?.(progress.percentage)
@@ -144,7 +144,7 @@ async function handleImageUpload(
     }
 
     // Limpar recursos
-    FileUploadService.revokePreviewUrl(placeholderSrc)
+    BriefingUploadService.revokePreviewUrl(placeholderSrc)
     uploadingImages.delete(uploadId)
 
     // Notificar sucesso
@@ -165,7 +165,7 @@ async function handleImageUpload(
         view.dispatch(newTr)
         
         // Limpar blob URL
-        FileUploadService.revokePreviewUrl(node.attrs.src)
+        BriefingUploadService.revokePreviewUrl(node.attrs.src)
       }
     })
 
@@ -201,7 +201,7 @@ export function cancelAllUploads(view: EditorView) {
       
       // Limpar blob URL
       if (node.attrs.src.startsWith('blob:')) {
-        FileUploadService.revokePreviewUrl(node.attrs.src)
+        BriefingUploadService.revokePreviewUrl(node.attrs.src)
       }
     }
   })

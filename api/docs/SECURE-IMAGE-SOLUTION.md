@@ -182,6 +182,51 @@ curl http://localhost:5084/api/images/briefing/images/foto.jpg
 # Retorna: 401 Unauthorized (precisa estar logado)
 ```
 
+## 🔮 Expansão Futura - Uploads de Cliente
+
+O `FileUploadController` foi projetado para ser **genérico e extensível**. Para adicionar uploads de cliente:
+
+### **Novos Endpoints Sugeridos:**
+```csharp
+// Para imagens do cliente
+POST /api/fileupload/image/client
+POST /api/fileupload/avatar/client
+
+// Para documentos do cliente
+POST /api/fileupload/document/client
+POST /api/fileupload/contract/client
+```
+
+### **Estrutura de Pastas no S3:**
+```
+bucket-name/
+├── briefing/
+│   └── images/           # Imagens do briefing (atual)
+├── client/
+│   ├── images/          # Imagens do cliente
+│   ├── avatars/         # Avatars do cliente
+│   ├── documents/       # Documentos do cliente
+│   └── contracts/       # Contratos
+└── shared/
+    └── templates/       # Templates compartilhados
+```
+
+### **Frontend Específico:**
+```typescript
+// Para cliente - criar novo serviço
+ClientUploadService.uploadImage()
+ClientUploadService.uploadDocument()
+
+// Para briefing - serviço atual
+BriefingUploadService.uploadBriefingImage()
+```
+
+### **Vantagens da Arquitetura Atual:**
+- ✅ **Controller genérico** - Fácil de estender
+- ✅ **Proxy centralizado** - Segurança consistente
+- ✅ **Estrutura flexível** - Suporta diferentes tipos
+- ✅ **Nomenclatura clara** - Frontend específico por contexto
+
 ## 🚀 Próximos Passos
 
 1. ✅ **Teste a solução:** `http://localhost:3000/security-test`
@@ -190,4 +235,4 @@ curl http://localhost:5084/api/images/briefing/images/foto.jpg
 4. ✅ **Verifique logs** do backend para debug
 5. ✅ **Deploy em produção** quando estiver satisfeito
 
-A solução está **completa e segura**! 🎉
+A solução está **completa, segura e extensível**! 🎉

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileUploadService } from '@/services/fileUpload.service'
+import { BriefingUploadService } from '@/services/briefingUpload.service'
 
 interface SecurityTestResult {
   test: string
@@ -39,7 +39,7 @@ export const SecurityTest = () => {
       const testFile = new File([blob], 'security-test.png', { type: 'image/png' })
       
       console.log('🚀 Fazendo upload de teste...')
-      const uploadResult = await FileUploadService.uploadBriefingImage(testFile)
+      const uploadResult = await BriefingUploadService.uploadBriefingImage(testFile)
       setUploadedImageUrl(uploadResult.url)
 
       testResults.push({

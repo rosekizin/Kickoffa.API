@@ -7,7 +7,7 @@ import Placeholder from '@tiptap/extension-placeholder'
 import TextAlign from '@tiptap/extension-text-align'
 import { useCallback, useState, useEffect } from 'react'
 import { createImageUploadPlugin, insertImageFromFile } from './tiptap-upload-plugin'
-import { useImageUpload } from '@/hooks/use-image-upload'
+import { useBriefingUpload } from '@/hooks/use-briefing-upload'
 import { Button } from '@/components/ui/button'
 import {
   Bold,
@@ -101,7 +101,7 @@ export const BriefingEditor = ({
   const [originalContent, setOriginalContent] = useState<string>('')
 
   // Hook para gerenciar upload de imagens
-  const { uploadState, uploadImage, clearError } = useImageUpload()
+  const { uploadState, uploadImage, clearError } = useBriefingUpload()
 
   // Fechar dropdowns quando clicar fora
   useEffect(() => {

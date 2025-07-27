@@ -1,32 +1,32 @@
 import { useState, useCallback } from 'react'
-import { FileUploadService, FileUploadResponse, UploadProgress } from '@/services/fileUpload.service'
+import { BriefingUploadService, BriefingUploadResponse, BriefingUploadProgress } from '@/services/briefingUpload.service'
 
-export interface UploadState {
+export interface BriefingUploadState {
   isUploading: boolean
   progress: number
   error: string | null
-  uploadedFile: FileUploadResponse | null
+  uploadedFile: BriefingUploadResponse | null
 }
 
-export interface UseImageUploadReturn {
-  uploadState: UploadState
-  uploadImage: (file: File) => Promise<FileUploadResponse | null>
+export interface UseBriefingUploadReturn {
+  uploadState: BriefingUploadState
+  uploadImage: (file: File) => Promise<BriefingUploadResponse | null>
   resetUpload: () => void
   clearError: () => void
 }
 
-export const useImageUpload = (): UseImageUploadReturn => {
-  const [uploadState, setUploadState] = useState<UploadState>({
+export const useBriefingUpload = (): UseBriefingUploadReturn => {
+  const [uploadState, setUploadState] = useState<BriefingUploadState>({
     isUploading: false,
     progress: 0,
     error: null,
     uploadedFile: null
   })
 
-  const uploadImage = useCallback(async (file: File): Promise<FileUploadResponse | null> => {
+  const uploadImage = useCallback(async (file: File): Promise<BriefingUploadResponse | null> => {
     try {
       // Validar arquivo antes do upload
-      FileUploadService.validateImageFile(file)
+      BriefingUploadService.validateImageFile(file)
 
       // Resetar estado
       setUploadState({
@@ -37,9 +37,9 @@ export const useImageUpload = (): UseImageUploadReturn => {
       })
 
       // Fazer upload com callback de progresso
-      const result = await FileUploadService.uploadBriefingImage(
+      const result = await BriefingUploadService.uploadBriefingImage(
         file,
-        (progress: UploadProgress) => {
+        (progress: BriefingUploadProgress) => {
           setUploadState(prev => ({
             ...prev,
             progress: progress.percentage
@@ -95,27 +95,27 @@ export const useImageUpload = (): UseImageUploadReturn => {
 }
 
 // Hook para múltiplos uploads simultâneos
-export interface MultiUploadState {
-  [fileId: string]: UploadState
+export interface MultiBriefingUploadState {
+  [fileId: string]: BriefingUploadState
 }
 
-export interface UseMultiImageUploadReturn {
-  uploadStates: MultiUploadState
-  uploadImage: (file: File, fileId?: string) => Promise<FileUploadResponse | null>
+export interface UseMultiBriefingUploadReturn {
+  uploadStates: MultiBriefingUploadState
+  uploadImage: (file: File, fileId?: string) => Promise<BriefingUploadResponse | null>
   removeUpload: (fileId: string) => void
   clearAllErrors: () => void
   resetAll: () => void
 }
 
-export const useMultiImageUpload = (): UseMultiImageUploadReturn => {
-  const [uploadStates, setUploadStates] = useState<MultiUploadState>({})
+export const useMultiBriefingUpload = (): UseMultiBriefingUploadReturn => {
+  const [uploadStates, setUploadStates] = useState<MultiBriefingUploadState>({})
 
-  const uploadImage = useCallback(async (file: File, fileId?: string): Promise<FileUploadResponse | null> => {
+  const uploadImage = useCallback(async (file: File, fileId?: string): Promise<BriefingUploadResponse | null> => {
     const id = fileId || `upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
     try {
       // Validar arquivo
-      FileUploadService.validateImageFile(file)
+      BriefingUploadService.validateImageFile(file)
 
       // Inicializar estado do upload
       setUploadStates(prev => ({
@@ -129,9 +129,9 @@ export const useMultiImageUpload = (): UseMultiImageUploadReturn => {
       }))
 
       // Fazer upload
-      const result = await FileUploadService.uploadBriefingImage(
+      const result = await BriefingUploadService.uploadBriefingImage(
         file,
-        (progress: UploadProgress) => {
+        (progress: BriefingUploadProgress) => {
           setUploadStates(prev => ({
             ...prev,
             [id]: {

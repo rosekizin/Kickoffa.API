@@ -1,31 +1,31 @@
 import api from '@/lib/api'
 
-export interface FileUploadResponse {
+export interface BriefingUploadResponse {
   url: string
   fileName: string
   contentType: string
   size: number
 }
 
-export interface UploadProgress {
+export interface BriefingUploadProgress {
   loaded: number
   total: number
   percentage: number
 }
 
-export class FileUploadService {
+export class BriefingUploadService {
   /**
    * Upload de imagem para briefing (TipTap)
    */
   static async uploadBriefingImage(
     file: File,
-    onProgress?: (progress: UploadProgress) => void
-  ): Promise<FileUploadResponse> {
+    onProgress?: (progress: BriefingUploadProgress) => void
+  ): Promise<BriefingUploadResponse> {
     const formData = new FormData()
     formData.append('file', file)
 
     try {
-      const response = await api.post<FileUploadResponse>(
+      const response = await api.post<BriefingUploadResponse>(
         '/api/fileupload/image/briefing',
         formData,
         {
@@ -34,7 +34,7 @@ export class FileUploadService {
           },
           onUploadProgress: (progressEvent) => {
             if (onProgress && progressEvent.total) {
-              const progress: UploadProgress = {
+              const progress: BriefingUploadProgress = {
                 loaded: progressEvent.loaded,
                 total: progressEvent.total,
                 percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total)
@@ -59,18 +59,18 @@ export class FileUploadService {
   }
 
   /**
-   * Upload de arquivo genérico
+   * Upload de arquivo genérico para briefing
    */
   static async uploadFile(
     file: File,
     folder: string = 'uploads',
-    onProgress?: (progress: UploadProgress) => void
-  ): Promise<FileUploadResponse> {
+    onProgress?: (progress: BriefingUploadProgress) => void
+  ): Promise<BriefingUploadResponse> {
     const formData = new FormData()
     formData.append('file', file)
 
     try {
-      const response = await api.post<FileUploadResponse>(
+      const response = await api.post<BriefingUploadResponse>(
         `/api/fileupload/file?folder=${encodeURIComponent(folder)}`,
         formData,
         {
@@ -79,7 +79,7 @@ export class FileUploadService {
           },
           onUploadProgress: (progressEvent) => {
             if (onProgress && progressEvent.total) {
-              const progress: UploadProgress = {
+              const progress: BriefingUploadProgress = {
                 loaded: progressEvent.loaded,
                 total: progressEvent.total,
                 percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total)
@@ -142,25 +142,11 @@ export class FileUploadService {
   }
 
   /**
-   * Cria uma URL de preview temporária para o arquivo
-   */
-  static createPreviewUrl(file: File): string {
-    return URL.createObjectURL(file)
-  }
-
-  /**
-   * Revoga uma URL de preview temporária
-   */
-  static revokePreviewUrl(url: string): void {
-    URL.revokeObjectURL(url)
-  }
-
-  /**
    * Testa se uma URL de imagem está acessível
    */
   static async testImageUrl(url: string): Promise<boolean> {
     try {
-      const response = await fetch(url, {
+      const response = await fetch(url, { 
         method: 'HEAD',
         credentials: 'include' // Incluir cookies de autenticação
       })
@@ -174,5 +160,19 @@ export class FileUploadService {
       console.error('❌ Erro ao testar URL:', url, error)
       return false
     }
+  }
+
+  /**
+   * Cria uma URL de preview temporária para o arquivo
+   */
+  static createPreviewUrl(file: File): string {
+    return URL.createObjectURL(file)
+  }
+
+  /**
+   * Revoga uma URL de preview temporária
+   */
+  static revokePreviewUrl(url: string): void {
+    URL.revokeObjectURL(url)
   }
 }
