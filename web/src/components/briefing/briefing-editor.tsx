@@ -6,6 +6,8 @@ import Image from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
 import TextAlign from '@tiptap/extension-text-align'
 import { useCallback, useState, useEffect } from 'react'
+import { createImageUploadPlugin, insertImageFromFile } from './tiptap-upload-plugin'
+import { useImageUpload } from '@/hooks/use-image-upload'
 import { Button } from '@/components/ui/button'
 import {
   Bold,
@@ -25,6 +27,8 @@ import {
   AlignCenter,
   AlignRight,
   AlignJustify,
+  Loader2,
+  AlertCircle,
 
 } from 'lucide-react'
 
@@ -96,6 +100,9 @@ export const BriefingEditor = ({
   const [listDropdownOpen, setListDropdownOpen] = useState(false)
   const [originalContent, setOriginalContent] = useState<string>('')
 
+  // Hook para gerenciar upload de imagens
+  const { uploadState, uploadImage, clearError } = useImageUpload()
+
   // Fechar dropdowns quando clicar fora
   useEffect(() => {
     const handleClickOutside = () => {
@@ -151,6 +158,8 @@ export const BriefingEditor = ({
         HTMLAttributes: {
           class: 'max-w-full h-auto rounded-lg',
         },
+        allowBase64: true,
+        inline: false,
       }),
       TextAlign.configure({
         types: ['heading', 'paragraph'],
@@ -161,6 +170,12 @@ export const BriefingEditor = ({
         placeholder,
       })
     ],
+    // Adicionar plugin de upload
+    editorProps: {
+      attributes: {
+        class: 'min-h-[350px] p-4 focus:outline-none',
+      },
+    },
     content: initialContent,
     onUpdate: ({ editor }) => {
       // Opcional: auto-save
@@ -168,12 +183,33 @@ export const BriefingEditor = ({
       const html = editor.getHTML()
       console.log('Content updated', { json, html })
     },
-    editorProps: {
-      attributes: {
-        class: 'min-h-[350px] p-4 focus:outline-none',
-      },
-    },
   })
+
+  // Registrar plugin de upload quando o editor estiver pronto
+  useEffect(() => {
+    if (editor && isEditing) {
+      const uploadPlugin = createImageUploadPlugin({
+        onUploadStart: (file) => {
+          console.log('Upload automático iniciado:', file.name)
+        },
+        onUploadProgress: (progress) => {
+          console.log('Progresso do upload:', progress + '%')
+        },
+        onUploadSuccess: (url, file) => {
+          console.log('Upload automático concluído:', file.name, url)
+        },
+        onUploadError: (error, file) => {
+          console.error('Erro no upload automático:', file.name, error)
+        }
+      })
+
+      editor.registerPlugin(uploadPlugin)
+
+      return () => {
+        editor.unregisterPlugin('imageUpload')
+      }
+    }
+  }, [editor, isEditing])
 
   // Atualizar editabilidade do editor quando o estado muda
   useEffect(() => {
@@ -248,7 +284,7 @@ export const BriefingEditor = ({
     onEditingChange?.(false)
   }
 
-  const addImage = useCallback(() => {
+  const addImage = useCallback(async () => {
     if (!editor) return
 
     const input = document.createElement('input')
@@ -257,13 +293,31 @@ export const BriefingEditor = ({
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0]
       if (file) {
-        // TODO: Implementar upload real para o backend
-        const url = URL.createObjectURL(file)
-        editor.chain().focus().setImage({ src: url }).run()
+        try {
+          console.log('🚀 Iniciando upload via botão:', file.name)
+
+          // Fazer upload direto usando o hook
+          const result = await uploadImage(file)
+
+          if (result) {
+            console.log('✅ Upload concluído, inserindo imagem:', result.url)
+
+            // Inserir imagem diretamente no editor
+            editor.chain().focus().setImage({
+              src: result.url,
+              alt: file.name,
+              title: file.name
+            }).run()
+          } else {
+            console.error('❌ Upload falhou')
+          }
+        } catch (error) {
+          console.error('❌ Erro no upload:', error)
+        }
       }
     }
     input.click()
-  }, [editor])
+  }, [editor, uploadImage])
 
 
 
@@ -641,9 +695,14 @@ export const BriefingEditor = ({
             variant="ghost"
             size="sm"
             onClick={addImage}
-            className="h-8 w-8 p-0 text-gray-300 hover:text-white hover:bg-gray-700"
+            disabled={uploadState.isUploading}
+            className="h-8 w-8 p-0 text-gray-300 hover:text-white hover:bg-gray-700 disabled:opacity-50"
           >
-            <ImageIcon className="h-4 w-4" />
+            {uploadState.isUploading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ImageIcon className="h-4 w-4" />
+            )}
           </Button>
         </Tooltip>
         </div>
@@ -658,11 +717,37 @@ export const BriefingEditor = ({
             </span>
           </div>
         )}
+
+        {/* Indicador de upload */}
+        {uploadState.isUploading && (
+          <div className="absolute top-2 left-2 z-10">
+            <div className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200">
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Fazendo upload... {uploadState.progress}%
+            </div>
+          </div>
+        )}
+
+        {/* Indicador de erro */}
+        {uploadState.error && (
+          <div className="absolute top-2 left-2 z-10">
+            <div className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-red-100 text-red-800 border border-red-200">
+              <AlertCircle className="h-4 w-4 mr-2" />
+              {uploadState.error}
+              <button
+                onClick={clearError}
+                className="ml-2 text-red-600 hover:text-red-800"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
         <EditorContent
           editor={editor}
           className={`min-h-[350px] focus:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[350px] ${
             !isEditing ? '[&_.ProseMirror]:cursor-default' : ''
-          }`}
+          } [&_img[data-uploading="true"]]:opacity-50 [&_img[data-uploading="true"]]:animate-pulse [&_img[data-uploading="true"]]:border-2 [&_img[data-uploading="true"]]:border-blue-300 [&_img[data-uploading="true"]]:border-dashed`}
         />
       </div>
 
