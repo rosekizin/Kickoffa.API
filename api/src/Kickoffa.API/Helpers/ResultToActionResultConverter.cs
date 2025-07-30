@@ -7,6 +7,7 @@ namespace Kickoffa.API.Helpers
     public interface IResultToActionResultConverter
     {
         IActionResult Convert<T>(IResult<T> result);
+        IActionResult ConvertFailure<T>(IResult<T> result);
     }
 
     public class ResultToActionResultConverter : IResultToActionResultConverter
@@ -24,6 +25,11 @@ namespace Kickoffa.API.Helpers
                 return (ActionResult)_actionResultErrorHandler.GetActionResultFromError(result.ErrorObject!);
 
             return new OkObjectResult(result.Value);
+        }
+
+        public IActionResult ConvertFailure<T>(IResult<T> result)
+        {
+            return (ActionResult)_actionResultErrorHandler.GetActionResultFromError(result.ErrorObject!);
         }
     }
 }
