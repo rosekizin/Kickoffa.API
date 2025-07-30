@@ -7,8 +7,11 @@ namespace Kickoffa.API.AspNet.Infrastructure.ErrorHandling
 	public interface IErrorFactory
 	{
 		ProblemDetails CreateNotFound(IError error);
+		ProblemDetails CreateNotFound(string error);
 
 		ProblemDetails CreateBadRequest(IError error);
+
+		ProblemDetails CreateBadRequest(string error);
 		
 		ProblemDetails CreateInternalServerError(IError error);
 
@@ -20,6 +23,18 @@ namespace Kickoffa.API.AspNet.Infrastructure.ErrorHandling
 		private const string NOT_FOUND = "Not Found";
 		private const string BAD_REQUEST = "Bad Request";
 		private const string INTERNAL_SERVER_ERROR = "Internal Server Error";
+
+		public ProblemDetails CreateBadRequest(string error)
+		{
+			var problemDetails = new ProblemDetails
+			{
+				Title = BAD_REQUEST,
+				Status = (int)HttpStatusCode.BadRequest,
+				Detail = error
+            };
+
+			return problemDetails;
+		}
 
 		public ProblemDetails CreateBadRequest(IError error)
 		{
@@ -45,6 +60,18 @@ namespace Kickoffa.API.AspNet.Infrastructure.ErrorHandling
 			};
 
 			AddExtensions(problemDetails, error);
+
+			return problemDetails;
+		}
+
+		public ProblemDetails CreateNotFound(string error)
+		{
+			var problemDetails = new ProblemDetails
+			{
+				Title = NOT_FOUND,
+				Status = (int)HttpStatusCode.NotFound,
+				Detail = error
+            };
 
 			return problemDetails;
 		}

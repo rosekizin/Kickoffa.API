@@ -2,6 +2,9 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Kickoffa.API.Application.Configuration;
 using Kickoffa.API.Application.Interfaces;
+using Kickoffa.API.Application.MessageErrors;
+using Kickoffa.API.Domain.Interfaces.ProcessResult;
+using Kickoffa.API.Domain.ProcessResult;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
@@ -22,20 +25,20 @@ namespace Kickoffa.API.Application.Services
 			IOptions<AwsS3Configuration> s3Config,
 			ILogger<ImageProxyService> logger)
 		{
-			_s3Client = s3Client ?? throw new ArgumentNullException(nameof(s3Client));
-			_s3Config = s3Config?.Value ?? throw new ArgumentNullException(nameof(s3Config));
-			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
+			_s3Client = s3Client;
+			_s3Config = s3Config.Value;
+			_logger = logger;
 		}
 
 		/// <inheritdoc/>
-		public async Task<ImageStreamResult?> GetImageStreamAsync(string fileKey, CancellationToken cancellationToken = default)
+		public async Task<IResult<ImageStreamResult>> GetImageStreamAsync(string fileKey, CancellationToken cancellationToken)
 		{
 			try
 			{
 				if (string.IsNullOrWhiteSpace(fileKey))
 				{
 					_logger.LogWarning("Chave do arquivo está vazia");
-					return null;
+					return Result<ImageStreamResult>.Failure(ImageProxyServiceErrors.FileKeyEmpty());
 				}
 
 				_logger.LogInformation("Obtendo imagem do S3: {FileKey}", fileKey);
@@ -50,9 +53,8 @@ namespace Kickoffa.API.Application.Services
 
 				if (response.HttpStatusCode != HttpStatusCode.OK)
 				{
-					_logger.LogWarning("Arquivo não encontrado no S3: {FileKey}, Status: {Status}", 
-						fileKey, response.HttpStatusCode);
-					return null;
+					_logger.LogWarning("Arquivo não encontrado no S3: {FileKey}, Status: {Status}",	fileKey, response.HttpStatusCode);
+					return Result<ImageStreamResult>.Failure(ImageProxyServiceErrors.FileNotFound(fileKey));
 				}
 
 				var result = new ImageStreamResult
@@ -64,30 +66,29 @@ namespace Kickoffa.API.Application.Services
 					ETag = response.ETag?.Trim('"')
 				};
 
-				_logger.LogInformation("Imagem obtida com sucesso: {FileKey}, Size: {Size} bytes", 
-					fileKey, result.ContentLength);
+				_logger.LogInformation("Imagem obtida com sucesso: {FileKey}, Size: {Size} bytes", fileKey, result.ContentLength);
 
-				return result;
+				return Result<ImageStreamResult>.Success(result);
 			}
 			catch (AmazonS3Exception ex) when (ex.StatusCode == HttpStatusCode.NotFound)
 			{
 				_logger.LogWarning("Arquivo não encontrado no S3: {FileKey}", fileKey);
-				return null;
+				return Result<ImageStreamResult>.Failure(ImageProxyServiceErrors.FileNotFound(fileKey));
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Erro ao obter imagem do S3: {FileKey}", fileKey);
-				throw;
+				return Result<ImageStreamResult>.Failure(ImageProxyServiceErrors.StreamError(fileKey, ex));
 			}
 		}
 
 		/// <inheritdoc/>
-		public async Task<bool> FileExistsAsync(string fileKey, CancellationToken cancellationToken = default)
+		public async Task<IResult<bool>> FileExistsAsync(string fileKey, CancellationToken cancellationToken)
 		{
 			try
 			{
 				if (string.IsNullOrWhiteSpace(fileKey))
-					return false;
+					return Result<bool>.Failure(ImageProxyServiceErrors.FileKeyEmpty());
 
 				var request = new GetObjectMetadataRequest
 				{
@@ -96,37 +97,40 @@ namespace Kickoffa.API.Application.Services
 				};
 
 				await _s3Client.GetObjectMetadataAsync(request, cancellationToken);
-				return true;
+				return Result<bool>.Success(true);
 			}
 			catch (AmazonS3Exception ex) when (ex.StatusCode == HttpStatusCode.NotFound)
 			{
-				return false;
+				return Result<bool>.Success(false);
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Erro ao verificar existência do arquivo: {FileKey}", fileKey);
-				return false;
+				return Result<bool>.Failure(ImageProxyServiceErrors.FileExistsError(fileKey, ex));
 			}
 		}
 
 		/// <inheritdoc/>
-		public string? ExtractFileKeyFromUrl(string url)
+		public IResult<string> ExtractFileKeyFromUrl(string url)
 		{
 			try
 			{
+				string fileKey;
+
 				if (string.IsNullOrWhiteSpace(url))
-					return null;
+					return Result<string>.Failure(ImageProxyServiceErrors.InvalidUrl(url ?? "null"));
 
 				// Se for uma URL do proxy, extrair a chave do parâmetro
 				if (url.Contains("/api/images/"))
 				{
 					var uri = new Uri(url);
 					var segments = uri.Segments;
-					
+
 					// Formato esperado: /api/images/{fileKey}
 					if (segments.Length >= 3 && segments[1] == "api/" && segments[2] == "images/")
 					{
-						return string.Join("", segments.Skip(3)).TrimEnd('/');
+						fileKey = string.Join("", segments.Skip(3)).TrimEnd('/');
+						return Result<string>.Success(fileKey);
 					}
 				}
 
@@ -134,25 +138,27 @@ namespace Kickoffa.API.Application.Services
 				var baseUrl = _s3Config.BaseUrl?.TrimEnd('/');
 				if (!string.IsNullOrEmpty(baseUrl) && url.StartsWith(baseUrl))
 				{
-					return url.Substring(baseUrl.Length + 1);
+					fileKey = url.Substring(baseUrl.Length + 1);
+					return Result<string>.Success(fileKey);
 				}
 
 				// Tentar extrair de URL padrão do S3
 				var s3Uri = new Uri(url);
-				return s3Uri.AbsolutePath.TrimStart('/');
+				fileKey = s3Uri.AbsolutePath.TrimStart('/');
+				return Result<string>.Success(fileKey);
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Erro ao extrair chave da URL: {Url}", url);
-				return null;
+				return Result<string>.Failure(ImageProxyServiceErrors.ExtractFileKeyFromUrlError(url));
 			}
 		}
 
 		/// <inheritdoc/>
-		public string GenerateProxyUrl(string fileKey)
+		public IResult<string> GenerateProxyUrl(string fileKey)
 		{
 			if (string.IsNullOrWhiteSpace(fileKey))
-				throw new ArgumentException("Chave do arquivo não pode estar vazia", nameof(fileKey));
+				return Result<string>.Failure(ImageProxyServiceErrors.FileKeyEmpty());
 
 			// Remover barras iniciais se houver
 			fileKey = fileKey.TrimStart('/');
@@ -163,7 +169,7 @@ namespace Kickoffa.API.Application.Services
 
 			_logger.LogInformation("URL do proxy gerada: {ProxyUrl} para chave: {FileKey}", proxyUrl, fileKey);
 
-			return proxyUrl;
+			return Result<string>.Success(proxyUrl);
 		}
 	}
 }

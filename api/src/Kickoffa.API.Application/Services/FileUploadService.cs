@@ -2,6 +2,10 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Kickoffa.API.Application.Configuration;
 using Kickoffa.API.Application.Interfaces;
+using Kickoffa.API.Application.MessageErrors;
+using Kickoffa.API.Domain.Interfaces.ProcessResult;
+using Kickoffa.API.Domain.ProcessResult;
+using Kickoffa.API.Domain.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,46 +20,58 @@ namespace Kickoffa.API.Application.Services
 	{
 		private readonly IAmazonS3 _s3Client;
 		private readonly AwsS3Configuration _s3Config;
+		private readonly ICurrentUserService _currentUserService;
 		private readonly ILogger<FileUploadService> _logger;
 
-		private readonly string[] _allowedImageExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg" };
-		private readonly string[] _allowedImageContentTypes = { "image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml" };
+		private readonly string[] _allowedImageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"];
+		private readonly string[] _allowedImageContentTypes = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"];
 
 		public FileUploadService(
 			IAmazonS3 s3Client,
 			IOptions<AwsS3Configuration> s3Config,
+			ICurrentUserService currentUserService,
 			ILogger<FileUploadService> logger)
 		{
-			_s3Client = s3Client ?? throw new ArgumentNullException(nameof(s3Client));
-			_s3Config = s3Config?.Value ?? throw new ArgumentNullException(nameof(s3Config));
-			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
+			_s3Client = s3Client;
+			_s3Config = s3Config.Value;
+			_currentUserService = currentUserService;
+			_logger = logger;
 		}
 
 		/// <inheritdoc/>
-		public async Task<string> UploadImageAsync(IFormFile file, string folder, CancellationToken cancellationToken = default)
+		public async Task<IResult<string>> UploadImageAsync(IFormFile file, string folder, CancellationToken cancellationToken)
 		{
-			ValidateImageFile(file);
+			var validationResult = ValidateImageFile(file);
+			if (validationResult.IsFailure)
+				return validationResult;
+
+			// Gerar caminho da pasta com userId para imagens de briefing
+			var userScopedFolder = GenerateUserScopedFolder(folder);
+
+			return await UploadFileInternalAsync(file, userScopedFolder, cancellationToken);
+		}
+
+		/// <inheritdoc/>
+		public async Task<IResult<string>> UploadFileAsync(IFormFile file, string folder, CancellationToken cancellationToken)
+		{
+			var validationResult = ValidateFile(file);
+			if (validationResult.IsFailure)
+				return validationResult;
+
 			return await UploadFileInternalAsync(file, folder, cancellationToken);
 		}
 
 		/// <inheritdoc/>
-		public async Task<string> UploadFileAsync(IFormFile file, string folder, CancellationToken cancellationToken = default)
-		{
-			ValidateFile(file);
-			return await UploadFileInternalAsync(file, folder, cancellationToken);
-		}
-
-		/// <inheritdoc/>
-		public async Task<bool> DeleteFileAsync(string fileUrl, CancellationToken cancellationToken = default)
+		public async Task<IResult<bool>> DeleteFileAsync(string fileUrl, CancellationToken cancellationToken = default)
 		{
 			try
 			{
 				if (string.IsNullOrWhiteSpace(fileUrl))
-					return false;
+					return Result<bool>.Success(false);
 
 				var fileKey = ExtractKeyFromUrl(fileUrl);
 				if (string.IsNullOrWhiteSpace(fileKey))
-					return false;
+					return Result<bool>.Success(false);
 
 				var deleteRequest = new DeleteObjectRequest
 				{
@@ -64,19 +80,20 @@ namespace Kickoffa.API.Application.Services
 				};
 
 				var response = await _s3Client.DeleteObjectAsync(deleteRequest, cancellationToken);
-				
+
 				_logger.LogInformation("Arquivo removido do S3: {FileKey}", fileKey);
-				return response.HttpStatusCode == HttpStatusCode.NoContent;
+				var success = response.HttpStatusCode == HttpStatusCode.NoContent;
+				return Result<bool>.Success(success);
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Erro ao remover arquivo do S3: {FileUrl}", fileUrl);
-				return false;
+				return Result<bool>.Failure(FileUploadServiceErrors.S3UploadError(fileUrl, ex));
 			}
 		}
 
 		/// <inheritdoc/>
-		public async Task<string> GeneratePresignedUrlAsync(string fileKey, int expirationMinutes = 60)
+		public async Task<IResult<string>> GeneratePresignedUrlAsync(string fileKey, int expirationMinutes = 60)
 		{
 			try
 			{
@@ -90,17 +107,17 @@ namespace Kickoffa.API.Application.Services
 
 				var url = await _s3Client.GetPreSignedURLAsync(request);
 				_logger.LogInformation("URL pré-assinada gerada para: {FileKey}", fileKey);
-				
-				return url;
+
+				return Result<string>.Success(url);
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Erro ao gerar URL pré-assinada para: {FileKey}", fileKey);
-				throw;
+				return Result<string>.Failure(FileUploadServiceErrors.PresignedUrlError(fileKey, ex));
 			}
 		}
 
-		private async Task<string> UploadFileInternalAsync(IFormFile file, string folder, CancellationToken cancellationToken)
+		private async Task<IResult<string>> UploadFileInternalAsync(IFormFile file, string folder, CancellationToken cancellationToken)
 		{
 			try
 			{
@@ -129,47 +146,78 @@ namespace Kickoffa.API.Application.Services
 				{
 					var fileUrl = $"{_s3Config.BaseUrl.TrimEnd('/')}/{fileKey}";
 					_logger.LogInformation("Arquivo enviado com sucesso para S3: {FileKey}", fileKey);
-					return fileUrl;
+					return Result<string>.Success(fileUrl);
 				}
 
-				throw new InvalidOperationException($"Falha no upload. Status: {response.HttpStatusCode}");
+				return Result<string>.Failure(FileUploadServiceErrors.UploadFailed(response.HttpStatusCode.ToString()));
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Erro ao fazer upload do arquivo: {FileName}", file.FileName);
-				throw;
+				return Result<string>.Failure(FileUploadServiceErrors.S3UploadError(file.FileName, ex));
 			}
 		}
 
-		private void ValidateImageFile(IFormFile file)
+		private Result<string> ValidateImageFile(IFormFile file)
 		{
-			ValidateFile(file);
+			var fileValidation = ValidateFile(file);
+			if (fileValidation.IsFailure)
+				return fileValidation;
 
 			var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
 			if (!_allowedImageExtensions.Contains(extension))
 			{
-				throw new ArgumentException($"Extensão de arquivo não permitida: {extension}. Extensões permitidas: {string.Join(", ", _allowedImageExtensions)}");
+				return Result<string>
+					.Failure(FileUploadServiceErrors.InvalidImageExtension(extension, string.Join(", ", _allowedImageExtensions)));
 			}
 
 			if (!_allowedImageContentTypes.Contains(file.ContentType.ToLowerInvariant()))
 			{
-				throw new ArgumentException($"Tipo de conteúdo não permitido: {file.ContentType}. Tipos permitidos: {string.Join(", ", _allowedImageContentTypes)}");
+				return Result<string>
+					.Failure(FileUploadServiceErrors.InvalidImageContentType(file.ContentType, string.Join(", ", _allowedImageContentTypes)));
 			}
+
+			return Result<string>.Success(string.Empty);
 		}
 
-		private static void ValidateFile(IFormFile file)
+		private static Result<string> ValidateFile(IFormFile file)
 		{
 			if (file == null)
-				throw new ArgumentNullException(nameof(file));
+				return Result<string>.Failure(FileUploadServiceErrors.FileNull());
 
 			if (file.Length == 0)
-				throw new ArgumentException("Arquivo está vazio", nameof(file));
+				return Result<string>.Failure(FileUploadServiceErrors.FileEmpty());
 
 			if (file.Length > 10 * 1024 * 1024) // 10MB
-				throw new ArgumentException("Arquivo muito grande. Tamanho máximo: 10MB", nameof(file));
+				return Result<string>.Failure(FileUploadServiceErrors.FileTooLarge(10));
 
 			if (string.IsNullOrWhiteSpace(file.FileName))
-				throw new ArgumentException("Nome do arquivo é obrigatório", nameof(file));
+				return Result<string>.Failure(FileUploadServiceErrors.FileNameRequired());
+
+			return Result<string>.Success(string.Empty);
+		}
+
+		/// <summary>
+		/// Gera caminho da pasta com escopo de usuário para organização por userId
+		/// </summary>
+		/// <param name="baseFolder">Pasta base (ex: "briefing/images")</param>
+		/// <returns>Caminho da pasta com userId (ex: "briefing/images/userId/123")</returns>
+		private string GenerateUserScopedFolder(string baseFolder)
+		{
+			// Se não há usuário autenticado, usar pasta genérica
+			if (!_currentUserService.IsAuthenticated || !_currentUserService.UserId.HasValue)
+			{
+				_logger.LogWarning("Upload sem usuário autenticado, usando pasta genérica");
+				return $"{baseFolder.Trim('/')}/anonymous";
+			}
+
+			var userId = _currentUserService.UserId.Value;
+			var userScopedPath = $"{baseFolder.Trim('/')}/userId/{userId}";
+
+			_logger.LogInformation("Pasta de upload gerada: {UserScopedPath} para usuário: {UserId}",
+				userScopedPath, userId);
+
+			return userScopedPath;
 		}
 
 		private static string GenerateUniqueFileName(string originalFileName)
@@ -178,7 +226,7 @@ namespace Kickoffa.API.Application.Services
 			var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(originalFileName);
 			var timestamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
 			var guid = Guid.NewGuid().ToString("N")[..8];
-			
+
 			return $"{fileNameWithoutExtension}_{timestamp}_{guid}{extension}";
 		}
 
