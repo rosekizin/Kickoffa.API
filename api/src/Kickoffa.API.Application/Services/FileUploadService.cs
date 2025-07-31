@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
+using System.Text;
 
 namespace Kickoffa.API.Application.Services
 {
@@ -227,10 +228,41 @@ namespace Kickoffa.API.Application.Services
 			var timestamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
 			var guid = Guid.NewGuid().ToString("N")[..8];
 
-			return $"{fileNameWithoutExtension}_{timestamp}_{guid}{extension}";
+			var normalizedFileNameWithoutExtension = ReplaceMultipleSpacesWithSingleDash(fileNameWithoutExtension);
+
+            return $"{normalizedFileNameWithoutExtension}_{timestamp}_{guid}{extension}";
 		}
 
-		private string ExtractKeyFromUrl(string fileUrl)
+        public static string ReplaceMultipleSpacesWithSingleDash(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return string.Empty;
+
+            var result = new StringBuilder(input.Length);
+            bool lastWasSpace = false;
+
+            foreach (var c in input)
+            {
+                if (c == ' ')
+                {
+                    if (!lastWasSpace)
+                    {
+                        result.Append('-');
+                        lastWasSpace = true;
+                    }
+                    // senão: ignora espaços consecutivos
+                }
+                else
+                {
+                    result.Append(c);
+                    lastWasSpace = false;
+                }
+            }
+
+            return result.ToString();
+        }
+
+        private string ExtractKeyFromUrl(string fileUrl)
 		{
 			try
 			{
