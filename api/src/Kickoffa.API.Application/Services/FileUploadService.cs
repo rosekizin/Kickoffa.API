@@ -63,15 +63,16 @@ namespace Kickoffa.API.Application.Services
 		}
 
 		/// <inheritdoc/>
-		public async Task<IResult<bool>> DeleteFileAsync(string fileUrl, CancellationToken cancellationToken = default)
+		public async Task<IResult<bool>> DeleteFileAsync(string s3FileKey, CancellationToken cancellationToken)
 		{
 			try
 			{
-				if (string.IsNullOrWhiteSpace(fileUrl))
+				if (string.IsNullOrWhiteSpace(s3FileKey))
 					return Result<bool>.Success(false);
 
-				var fileKey = ExtractKeyFromUrl(fileUrl);
-				if (string.IsNullOrWhiteSpace(fileKey))
+				var fileKey = s3FileKey;
+                //var fileKey = ExtractKeyFromUrl(fileUrl);
+                if (string.IsNullOrWhiteSpace(fileKey))
 					return Result<bool>.Success(false);
 
 				var deleteRequest = new DeleteObjectRequest
@@ -88,8 +89,8 @@ namespace Kickoffa.API.Application.Services
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Erro ao remover arquivo do S3: {FileUrl}", fileUrl);
-				return Result<bool>.Failure(FileUploadServiceErrors.S3UploadError(fileUrl, ex));
+				_logger.LogError(ex, "Erro ao remover arquivo do S3: {FileKey}", s3FileKey);
+				return Result<bool>.Failure(FileUploadServiceErrors.S3UploadError(s3FileKey, ex));
 			}
 		}
 
@@ -269,7 +270,7 @@ namespace Kickoffa.API.Application.Services
 				var baseUrl = _s3Config.BaseUrl.TrimEnd('/');
 				if (fileUrl.StartsWith(baseUrl))
 				{
-					return fileUrl.Substring(baseUrl.Length + 1);
+					return fileUrl[(baseUrl.Length + 1)..];
 				}
 
 				// Tentar extrair da URL do S3 padrão

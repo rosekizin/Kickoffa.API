@@ -26,13 +26,13 @@ namespace Kickoffa.API.Application.Interfaces
 		/// <returns>Result contendo a URL do arquivo no S3 ou erro</returns>
 		Task<IResult<string>> UploadFileAsync(IFormFile file, string folder, CancellationToken cancellationToken);
 
-		/// <summary>
-		/// Remove um arquivo do S3
-		/// </summary>
-		/// <param name="fileUrl">URL do arquivo no S3</param>
-		/// <param name="cancellationToken">Token de cancelamento</param>
-		/// <returns>Result indicando sucesso ou erro</returns>
-		Task<IResult<bool>> DeleteFileAsync(string fileUrl, CancellationToken cancellationToken);
+        /// <summary>
+        /// Remove um arquivo do S3
+        /// </summary>
+        /// <param name="s3FileKey">Chave do arquivo no S3</param>
+        /// <param name="cancellationToken">Token de cancelamento</param>
+        /// <returns>Result indicando sucesso ou erro</returns>
+        Task<IResult<bool>> DeleteFileAsync(string s3FileKey, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Gera uma URL pré-assinada para acesso temporário ao arquivo

@@ -5,6 +5,7 @@
 		long SectionId { get; }
 		string FileName { get; }
 		string StoragePath { get; }
+		string S3FileKey { get; }
 		string Url { get; }
 		string ContentType { get; }
 		long FileSize { get; }

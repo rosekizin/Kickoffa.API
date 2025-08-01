@@ -48,10 +48,14 @@ public static class ApplicationServiceCollectionExtensions
 		services.AddScoped<IFileTypeService, FileTypeService>();
 		services.AddScoped<IFileUploadService, FileUploadService>();
 		services.AddScoped<IImageProxyService, ImageProxyService>();
+		services.AddScoped<ITipTapContentParserService, TipTapContentParserService>();
 		services.AddScoped<IChecklistService, ChecklistService>();
 		services.AddScoped<ICreateChecklistService, CreateChecklistService>();
 		services.AddScoped<IUpdateChecklistService, UpdateChecklistService>();
 		services.AddScoped<IMapChecklistToResponse, MapChecklistToResponse>();
+        services.AddScoped<IAddBriefingMediaService, AddBriefingMediaService>();
+        services.AddScoped<IUpdateBriefingSectionService, UpdateBriefingSectionService>();
+		services.AddScoped<IUpdateChecklistSectionService, UpdateChecklistSectionService>();
 
 		// Register wrappers
 		services.AddScoped<IUserManagerWrapper, UserManagerWrapper>();

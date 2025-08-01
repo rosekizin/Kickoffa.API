@@ -1,4 +1,6 @@
 using Kickoffa.API.Application.Factories;
+using Kickoffa.API.Application.Interfaces;
+using Kickoffa.API.Application.Interfaces.Checkilists;
 using Kickoffa.API.Application.Interfaces.Factories;
 using Kickoffa.API.Contracts.Checklist.Sections;
 using Kickoffa.API.Domain.Interfaces.Models;
@@ -14,13 +16,17 @@ namespace Kickoffa.API.Application.UnitTests.Factories
 	{
 		private readonly IComponentFactory _componentFactory;
 		private readonly IBriefingMediaFactory _briefingMediaFactory;
+		private readonly IAddBriefingMediaService _addBriefingMediaService;
+		private readonly ITipTapContentParserService _tipTapContentParserService;
 		private readonly SectionFactory _sectionFactory;
 
 		public SectionFactoryTests()
 		{
 			_componentFactory = Substitute.For<IComponentFactory>();
 			_briefingMediaFactory = Substitute.For<IBriefingMediaFactory>();
-			_sectionFactory = new SectionFactory(_componentFactory, _briefingMediaFactory);
+            _addBriefingMediaService = Substitute.For<IAddBriefingMediaService>();
+            _tipTapContentParserService = Substitute.For<ITipTapContentParserService>();
+			_sectionFactory = new SectionFactory(_componentFactory, _briefingMediaFactory, _addBriefingMediaService, _tipTapContentParserService);
 		}
 
 		[Fact]

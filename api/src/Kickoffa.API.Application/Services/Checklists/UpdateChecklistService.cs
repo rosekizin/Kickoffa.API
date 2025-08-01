@@ -1,217 +1,291 @@
 using Kickoffa.API.Application.Interfaces.Checkilists;
 using Kickoffa.API.Application.Interfaces.Factories;
 using Kickoffa.API.Contracts.Checklist;
-using Kickoffa.API.Contracts.Checklist.Components.Request;
 using Kickoffa.API.Contracts.Checklist.Sections;
 using Kickoffa.API.Domain.Interfaces.Models;
 using Kickoffa.API.Domain.Models;
-using Kickoffa.API.Domain.Models.Components;
 using Kickoffa.API.Domain.Repositories;
-using Component = Kickoffa.API.Domain.Models.Components.Base.Component;
 
 namespace Kickoffa.API.Application.Services.Checklists
 {
-	/// <summary>
-	/// Serviço para atualização de checklists
-	/// </summary>
-	public class UpdateChecklistService : IUpdateChecklistService
-	{
-		private readonly IUnitOfWork _unitOfWork;
-		private readonly IChecklistRepository _checklistRepository;
-		private readonly IBriefingMediaRepository _briefingMediaRepository;
-		private readonly ISectionRepository _sectionRepository;
-		private readonly IComponentRepository _componentRepository;
-		private readonly ISectionFactory _sectionFactory;
-		private readonly IComponentFactory _componentFactory;
-		private readonly IMapChecklistToResponse _mapChecklistToResponse;
-		private readonly IFileTypeRepository _fileTypeRepository;
-		private readonly IUploadComponentFileTypeSizeRepository _uploadComponentFileTypeSizeRepository;
+    /// <summary>
+    /// Serviço para atualização de checklists
+    /// </summary>
+    public class UpdateChecklistService : IUpdateChecklistService
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IChecklistRepository _checklistRepository;
+        private readonly IBriefingMediaRepository _briefingMediaRepository;
+        private readonly ISectionRepository _sectionRepository;
+        private readonly IComponentRepository _componentRepository;
+        private readonly ISectionFactory _sectionFactory;
+        private readonly IComponentFactory _componentFactory;
+        private readonly IMapChecklistToResponse _mapChecklistToResponse;
+        private readonly IUpdateBriefingSectionService _updateBriefingSectionService;
+        private readonly IUpdateChecklistSectionService _updateChecklistSectionService;
 
-		public UpdateChecklistService(
-			IUnitOfWork unitOfWork,
-			IChecklistRepository checklistRepository,
-			ISectionRepository sectionRepository,
-			IComponentRepository componentRepository,
-			ISectionFactory sectionFactory,
-			IComponentFactory componentFactory,
-			IMapChecklistToResponse mapChecklistToResponse,
-			IBriefingMediaRepository briefingMediaRepository,
-			IFileTypeRepository fileTypeRepository,
-			IUploadComponentFileTypeSizeRepository uploadComponentFileTypeSizeRepository)
-		{
-			_unitOfWork = unitOfWork;
-			_checklistRepository = checklistRepository;
-			_sectionRepository = sectionRepository;
-			_componentRepository = componentRepository;
-			_sectionFactory = sectionFactory;
-			_componentFactory = componentFactory;
-			_mapChecklistToResponse = mapChecklistToResponse;
-			_briefingMediaRepository = briefingMediaRepository;
-			_fileTypeRepository = fileTypeRepository;
-			_uploadComponentFileTypeSizeRepository = uploadComponentFileTypeSizeRepository;
-		}
+        public UpdateChecklistService(
+            IUnitOfWork unitOfWork,
+            IChecklistRepository checklistRepository,
+            ISectionRepository sectionRepository,
+            IComponentRepository componentRepository,
+            ISectionFactory sectionFactory,
+            IComponentFactory componentFactory,
+            IMapChecklistToResponse mapChecklistToResponse,
+            IBriefingMediaRepository briefingMediaRepository,
+            IUpdateBriefingSectionService updateBriefingSectionService,
+            IUpdateChecklistSectionService updateChecklistSectionService)
+        {
+            _unitOfWork = unitOfWork;
+            _checklistRepository = checklistRepository;
+            _sectionRepository = sectionRepository;
+            _componentRepository = componentRepository;
+            _sectionFactory = sectionFactory;
+            _componentFactory = componentFactory;
+            _mapChecklistToResponse = mapChecklistToResponse;
+            _briefingMediaRepository = briefingMediaRepository;
+            _updateBriefingSectionService = updateBriefingSectionService;
+            _updateChecklistSectionService = updateChecklistSectionService;
+        }
 
-		/// <inheritdoc />
-		public async Task<ChecklistResponse?> UpdateAsync(long id, ChecklistRequest request, CancellationToken cancellationToken)
-		{
-			// Buscar checklist existente
-			var checklist = await _checklistRepository.GetByIdWithCompleteHierarchyAsync(id, cancellationToken);
-			if (checklist == null)
-				return null;
+        /// <inheritdoc />
+        public async Task<ChecklistResponse?> UpdateAsync(long id, ChecklistRequest request, CancellationToken cancellationToken)
+        {
+            // Buscar checklist existente
+            var checklist = await _checklistRepository.GetByIdWithCompleteHierarchyAsync(id, cancellationToken);
+            if (checklist == null)
+                return null;
 
-			// Atualizar propriedades básicas do checklist
-			checklist.UpdateTitle(request.Title);
-			checklist.UpdateDescription(request.Description);
-			checklist.UpdateDueDate(request.Deadline);
-			checklist.UpdateCustomer(request.CustomerId);
+            // Atualizar propriedades básicas do checklist
+            checklist.UpdateTitle(request.Title);
+            checklist.UpdateDescription(request.Description);
+            checklist.UpdateDueDate(request.Deadline);
+            checklist.UpdateCustomer(request.CustomerId);
 
-			// Atualizar seções
-			await UpdateSectionsAsync(checklist, request.Sections, cancellationToken);
+            // Atualizar seções
+            await UpdateSectionsAsync(checklist, request.Sections, cancellationToken);
 
-			// Salvar alterações
-			await _unitOfWork.SaveChangesAsync(cancellationToken);
+            // Salvar alterações
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-			// Retornar checklist atualizado
-			return _mapChecklistToResponse.MapToResponse(checklist);
-		}
+            // Retornar checklist atualizado
+            return _mapChecklistToResponse.MapToResponse(checklist);
+        }
 
+        /// <summary>
+        /// Atualiza as seções do checklist de forma inteligente, preservando dados existentes quando possível
+        /// </summary>
+        private async Task UpdateSectionsAsync(IChecklist checklist, IEnumerable<SectionRequest> requestSections, CancellationToken cancellationToken)
+        {
+            // Buscar seções existentes
+            //var existingSections = await _sectionRepository.GetByChecklistIdAsync(checklist.Id, cancellationToken);
+
+            var sectionsToAdd = new List<SectionRequest>();
+            var requestExistingSections = new List<SectionRequest>();
+
+            // Identificar seções para remover (existem no banco mas não no request)
+            foreach (var sectionRequest in requestSections)
+            {
+                // Identificar seções para adicionar (existem no request mas não no banco)
+                if (sectionRequest.Id == 0)
+                {
+                    sectionsToAdd.Add(sectionRequest);
+                }
+                else
+                {
+                    requestExistingSections.Add(sectionRequest);
+                }
+            }
+
+            var sectionsToRemove = checklist.Sections.Where(s => !requestExistingSections.Select(x => x.Id).Contains(s.Id));
+
+            // Identificar seções para atualizar (existem em ambos mas podem ter mudanças)
+            var sectionsToUpdate = checklist.Sections.Where(x => requestExistingSections.Select(x => x.Id).Contains(x.Id));
+
+            // Remover seções que não existem mais
+            foreach (var section in sectionsToRemove)
+            {
+                RemoveSection(section);
+            }
+
+            // Atualizar seções existentes
+            foreach (var existingSection in sectionsToUpdate)
+            {
+                var updatedSectionRequest = requestSections.First(x => x.Id == existingSection.Id);
+                await UpdateExistingSectionAsync(existingSection, updatedSectionRequest, cancellationToken);
+            }
+
+            // Adicionar novas seções
+            foreach (var sectionRequest in sectionsToAdd.OrderBy(s => s.Order))
+            {
+                await CreateNewSectionAsync(checklist.Id, sectionRequest, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// Cria uma nova seção
+        /// </summary>
+        private async Task CreateNewSectionAsync(long checklistId, SectionRequest sectionRequest, CancellationToken cancellationToken)
+        {
+            ISection newSection;
+
+            if (sectionRequest.Type == SectionTypeRequest.Briefing)
+            {
+                newSection = _sectionFactory.CreateBriefingSection(
+                    checklistId,
+                    sectionRequest);
+            }
+            else
+            {
+                newSection = _sectionFactory.CreateChecklistSection(
+                    checklistId,
+                    sectionRequest.Title,
+                    sectionRequest.Order);
+
+                var checklistSectionRequest = (ChecklistSectionRequest)sectionRequest;
+
+                if (checklistSectionRequest.Components != null)
+                {
+                    foreach (var componentRequest in checklistSectionRequest.Components.OrderBy(c => c.Order))
+                    {
+                        var component = await _componentFactory.CreateComponent(componentRequest, cancellationToken);
+                        ((ChecklistSection)newSection).AddComponent(component);
+                    }
+                }
+            }
+
+            await _sectionRepository.AddAsync(newSection, cancellationToken);
+        }
+
+        /// <summary>
+        /// Remove uma seção e todos os seus componentes
+        /// </summary>
+        private void RemoveSection(ISection section)
+        {
+            // Remover componentes da seção primeiro
+            if (section is ChecklistSection checklistSection)
+            {
+                foreach (var component in checklistSection.Components)
+                {
+                    _componentRepository.Remove(component);
+                }
+            }
+            else if (section is BriefingSection briefingSection)
+            {
+                foreach (var media in briefingSection.Media)
+                {
+                    _briefingMediaRepository.Remove(media);
+                }
+            }
+
+            // Remover a seção
+            _sectionRepository.Remove(section);
+        }
+
+        /// <summary>
+        /// Atualiza uma seção existente
+        /// </summary>
+        private async Task UpdateExistingSectionAsync(ISection existingSection, SectionRequest updatedSectionRequest, CancellationToken cancellationToken)
+        {
+            // Atualizar propriedades básicas da seção
+            existingSection.UpdateTitle(updatedSectionRequest.Title);
+            existingSection.UpdateOrder(updatedSectionRequest.Order);
+
+            // Se for seção de briefing, atualizar conteúdo
+            if (existingSection is BriefingSection briefingSection && updatedSectionRequest.Type == SectionTypeRequest.Briefing)
+            {
+                var updatedBriefingSectionRequest = (BriefingSectionRequest)updatedSectionRequest;
+
+                await _updateBriefingSectionService.UpdateAsync(briefingSection, updatedBriefingSectionRequest, cancellationToken);
+
+                // var updatedBriefingSectionRequest = (BriefingSectionRequest)updatedSectionRequest;
+
+                // Gerenciar mídias antes de atualizar o conteúdo
+                // await UpdateBriefingSectionMediaAsync(briefingSection, updatedBriefingSectionRequest.ContentJson, cancellationToken);
+
+                // briefingSection.UpdateContent(updatedBriefingSectionRequest.ContentJson, updatedBriefingSectionRequest.ContentHtml);
+            }
+            // Se for seção de checklist, atualizar componentes
+            else if (existingSection is ChecklistSection checklistSection && updatedSectionRequest.Type == SectionTypeRequest.Checklist)
+            {
+                var updatedChecklistSectionRequest = (ChecklistSectionRequest)updatedSectionRequest;
+
+                await _updateChecklistSectionService.UpdateAsync(checklistSection, updatedChecklistSectionRequest.Components ?? [], cancellationToken);
+
+                //await UpdateSectionComponentsAsync(checklistSection, updatedChecklistSectionRequest.Components ?? [], cancellationToken);
+            }
+        }
+
+        /*
 		/// <summary>
-		/// Atualiza as seções do checklist de forma inteligente, preservando dados existentes quando possível
-		/// </summary>
-		private async Task UpdateSectionsAsync(IChecklist checklist, IEnumerable<SectionRequest> requestSections, CancellationToken cancellationToken)
-		{
-			// Buscar seções existentes
-			//var existingSections = await _sectionRepository.GetByChecklistIdAsync(checklist.Id, cancellationToken);
+        /// Atualiza as mídias de uma seção de briefing baseado nas imagens do contentJson
+        /// </summary>
+        private async Task UpdateBriefingSectionMediaAsync(BriefingSection briefingSection, string? newContentJson, CancellationToken cancellationToken)
+        {
+            // Extrair URLs de imagens do novo conteúdo
+            var newImageUrls = _tipTapContentParserService.ExtractImageUrlsFromContentJson(newContentJson);
 
-			var sectionsToAdd = new List<SectionRequest>();
-			var requestExistingSections = new List<SectionRequest>();
+            // Obter URLs de imagens existentes na seção
+            var existingImageUrls = briefingSection.Media.Select(x => x.Url);
 
-			// Identificar seções para remover (existem no banco mas não no request)
-			foreach (var sectionRequest in requestSections)
-			{
-				// Identificar seções para adicionar (existem no request mas não no banco)
-				if (sectionRequest.Id == 0)
-				{
-					sectionsToAdd.Add(sectionRequest);
-				}
-				else
-				{
-					requestExistingSections.Add(sectionRequest);
-				}
-			}
+            // Comparar URLs para identificar o que adicionar e remover
+            var (urlsToAdd, urlsToRemove) = _tipTapContentParserService.CompareImageUrls(existingImageUrls, newImageUrls);
 
-			var sectionsToRemove = checklist.Sections.Where(s => !requestExistingSections.Select(x => x.Id).Contains(s.Id));
+            // Adicionar novas mídias
+            foreach (var urlToAdd in urlsToAdd)
+            {
+                try
+                {
+                    var fileName = _tipTapContentParserService.ExtractFileNameFromUrl(urlToAdd);
+                    var media = _briefingMediaFactory.CreateBriefingMedia(
+                        sectionId: briefingSection.Id,
+                        fileName: fileName,
+                        storagePath: urlToAdd,
+                        url: urlToAdd,
+                        contentType: "image/jpeg", // Tipo padrão, pode ser refinado
+                        fileSize: 0 // Tamanho desconhecido
+                    );
 
-			// Identificar seções para atualizar (existem em ambos mas podem ter mudanças)
-			var sectionsToUpdate = checklist.Sections.Where(x => requestExistingSections.Select(x => x.Id).Contains(x.Id));
+                    briefingSection.AddMedia(media);
+                }
+                catch (Exception)
+                {
+                    // Log do erro mas continua processando outras imagens
+                    // TODO: Adicionar logging apropriado
+                    continue;
+                }
+            }
 
-			// Remover seções que não existem mais
-			foreach (var section in sectionsToRemove)
-			{
-				RemoveSection(section);
-			}
+            // Remover mídias que não existem mais no conteúdo
+            var mediaToRemove = briefingSection.Media
+                .Where(m => urlsToRemove.Contains(m.Url))
+                .ToList();
 
-			// Atualizar seções existentes
-			foreach (var existingSection in sectionsToUpdate)
-			{
-				var updatedSectionRequest = requestSections.First(x => x.Id == existingSection.Id);
-				await UpdateExistingSectionAsync(existingSection, updatedSectionRequest, cancellationToken);
-			}
+            foreach (var media in mediaToRemove)
+            {
+                try
+                {
+                    // Remover arquivo do S3
+                    await _fileUploadService.DeleteFileAsync(media.Url, cancellationToken);
 
-			// Adicionar novas seções
-			foreach (var sectionRequest in sectionsToAdd.OrderBy(s => s.Order))
-			{
-				await CreateNewSectionAsync(checklist.Id, sectionRequest, cancellationToken);
-			}
-		}
+                    // Remover mídia da seção
+                    briefingSection.RemoveMedia(media);
+                }
+                catch (Exception)
+                {
+                    // Log do erro mas continua processando outras mídias
+                    // TODO: Adicionar logging apropriado
+                    continue;
+                }
+            }
+        }
+		*/
 
-		/// <summary>
-		/// Cria uma nova seção
-		/// </summary>
-		private async Task CreateNewSectionAsync(long checklistId, SectionRequest sectionRequest, CancellationToken cancellationToken)
-		{
-			ISection newSection;
-
-			if (sectionRequest.Type == SectionTypeRequest.Briefing)
-			{
-				newSection = _sectionFactory.CreateBriefingSection(
-					checklistId,
-					sectionRequest);
-			}
-			else
-			{
-				newSection = _sectionFactory.CreateChecklistSection(
-					checklistId,
-					sectionRequest.Title,
-					sectionRequest.Order);
-
-				var checklistSectionRequest = (ChecklistSectionRequest)sectionRequest;
-
-				if (checklistSectionRequest.Components != null)
-				{
-					foreach (var componentRequest in checklistSectionRequest.Components.OrderBy(c => c.Order))
-					{
-						var component = await _componentFactory.CreateComponent(componentRequest, cancellationToken);
-						((ChecklistSection)newSection).AddComponent(component);
-					}
-				}
-			}
-
-			await _sectionRepository.AddAsync(newSection, cancellationToken);
-		}
-
-		/// <summary>
-		/// Remove uma seção e todos os seus componentes
-		/// </summary>
-		private void RemoveSection(ISection section)
-		{
-			// Remover componentes da seção primeiro
-			if (section is ChecklistSection checklistSection)
-			{
-				foreach (var component in checklistSection.Components)
-				{
-					_componentRepository.Remove(component);
-				}
-			}
-			else if (section is BriefingSection briefingSection)
-			{
-				foreach (var media in briefingSection.Media)
-				{
-					_briefingMediaRepository.Remove(media);
-				}
-			}
-
-			// Remover a seção
-			_sectionRepository.Remove(section);
-		}
-
-		/// <summary>
-		/// Atualiza uma seção existente
-		/// </summary>
-		private async Task UpdateExistingSectionAsync(ISection existingSection, SectionRequest updatedSectionRequest, CancellationToken cancellationToken)
-		{
-			// Atualizar propriedades básicas da seção
-			existingSection.UpdateTitle(updatedSectionRequest.Title);
-			existingSection.UpdateOrder(updatedSectionRequest.Order);
-
-			// Se for seção de briefing, atualizar conteúdo
-			if (existingSection is BriefingSection briefingSection && updatedSectionRequest.Type == SectionTypeRequest.Briefing)
-			{
-				var updatedBriefingSectionRequest = (BriefingSectionRequest)updatedSectionRequest;
-				briefingSection.UpdateContent(updatedBriefingSectionRequest.ContentJson, updatedBriefingSectionRequest.ContentHtml);
-			}
-			// Se for seção de checklist, atualizar componentes
-			else if (existingSection is ChecklistSection checklistSection && updatedSectionRequest.Type == SectionTypeRequest.Checklist)
-			{
-				var updatedChecklistSectionRequest = (ChecklistSectionRequest)updatedSectionRequest;
-				await UpdateSectionComponentsAsync(checklistSection, updatedChecklistSectionRequest.Components ?? [], cancellationToken);
-			}
-		}
-
-		/// <summary>
-		/// Atualiza os componentes de uma seção de checklist de forma inteligente
-		/// </summary>
-		private async Task UpdateSectionComponentsAsync(ChecklistSection section, IEnumerable<ComponentRequest> requestComponents, CancellationToken cancellationToken)
+        /*
+        /// <summary>
+        /// Atualiza os componentes de uma seção de checklist de forma inteligente
+        /// </summary>
+        private async Task UpdateSectionComponentsAsync(ChecklistSection section, IEnumerable<ComponentRequest> requestComponents, CancellationToken cancellationToken)
 		{
 			// Buscar componentes existentes da seção
 			var existingComponents = section.Components;
@@ -343,5 +417,6 @@ namespace Kickoffa.API.Application.Services.Checklists
 				}
 			}
 		}
-	}
+		*/
+    }
 }

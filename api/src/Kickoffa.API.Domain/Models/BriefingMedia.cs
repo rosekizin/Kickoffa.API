@@ -47,7 +47,10 @@ namespace Kickoffa.API.Domain.Models
 
 		// Relacionamento
 		public virtual BriefingSection Section { get; private set; } = null!;
-		IBriefingSection IBriefingMedia.Section => Section;
+
+        public string S3FileKey => StoragePath.TrimStart('/'); // a key de um arquivo no S3 começa sem /;
+
+        IBriefingSection IBriefingMedia.Section => Section;
 
 		/// <inheritdoc/>
 		public void UpdateAltText(string? altText)
