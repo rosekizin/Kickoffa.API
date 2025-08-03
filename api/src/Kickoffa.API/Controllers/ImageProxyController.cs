@@ -137,7 +137,7 @@ namespace Kickoffa.API.Controllers
         {
             // Configurar headers de cache
             Response.Headers[HeaderNames.CacheControl] = "private, max-age=3600"; // Cache por 1 hora
-            Response.Headers[HeaderNames.LastModified] = image.LastModified.Value.ToString("R");
+            Response.Headers[HeaderNames.LastModified] = image.LastModified!.Value.ToString("R");
 
             if (!string.IsNullOrEmpty(image.ETag))
             {

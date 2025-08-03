@@ -83,7 +83,7 @@ namespace Kickoffa.API.Application.UnitTests.Services
 		public void ExtractImageUrlsFromContentJson_WithNullJson_ShouldReturnEmptyList()
 		{
 			// Act
-			var result = _service.ExtractImageUrlsFromContentJson(null);
+			var result = _service.ExtractImageUrlsFromContentJson(null!);
 
 			// Assert
 			Assert.Empty(result);

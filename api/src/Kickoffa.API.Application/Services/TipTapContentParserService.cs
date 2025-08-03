@@ -13,9 +13,12 @@ namespace Kickoffa.API.Application.Services
         /// </summary>
         /// <param name="contentJson">JSON do conteúdo do TipTap</param>
         /// <returns>Lista de URLs de imagens encontradas</returns>
-        public List<string> ExtractImageUrlsFromContentJson(string contentJson)
+        public List<string> ExtractImageUrlsFromContentJson(string? contentJson)
         {
             var imageUrls = new List<string>();
+
+            if(contentJson is null)
+                return imageUrls; 
 
             try
             {
