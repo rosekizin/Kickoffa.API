@@ -4,6 +4,7 @@ using Kickoffa.API.AspNet.Infrastructure.Extensions;
 using Kickoffa.API.AspNet.Infrastructure.Extensions.Service.Collection;
 using Kickoffa.API.AspNet.Infrastructure.Wrappers;
 using Kickoffa.API.Contracts.Newtonsoft;
+using Kickoffa.API.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Serilog;
@@ -68,6 +69,7 @@ namespace Kickoffa.API
 
             // Register services
             builder.Services.AddApplicationServices();
+            builder.Services.AddSingleton<IResultToActionResultConverter, ResultToActionResultConverter>();
 
             // Handlers
             builder.Services.AddErrorHandlers();

@@ -181,7 +181,7 @@ public class CreateCustomerRequestTests
 		{
 			FirstName = "João",
 			LastName = "Silva",
-			Cpf = null
+			Cpf = null!
 		};
 
 		// Act

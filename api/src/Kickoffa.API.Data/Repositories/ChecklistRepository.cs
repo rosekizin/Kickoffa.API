@@ -111,7 +111,9 @@ namespace Kickoffa.API.Data.Repositories
 			var checklist = await _context.Checklists
 				//.AsSplitQuery() // Divide em múltiplas queries menores e mais eficientes
 				.Include(c => c.Customer)
-				.Include(c => c.Sections)
+                .Include(c => c.Sections)
+                    .ThenInclude(s => ((BriefingSection)s).Media)
+                .Include(c => c.Sections)
 					.ThenInclude(s => ((ChecklistSection)s).Components)
 						.ThenInclude(comp => comp.Status)
 				.Include(c => c.Sections)
@@ -289,7 +291,8 @@ namespace Kickoffa.API.Data.Repositories
 			IQueryable<Checklist> query = _context
 				.Checklists
 				.AsNoTracking()
-				.Include(c => c.Customer);
+				.Include(c => c.Customer)
+				.Include(c => c.Sections);
 
 			// Aplicar filtro de busca
 			if (!string.IsNullOrWhiteSpace(search))

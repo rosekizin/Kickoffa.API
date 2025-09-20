@@ -1,3 +1,5 @@
+using Amazon.S3;
+using Kickoffa.API.Application.Configuration;
 using Kickoffa.API.Application.Factories;
 using Kickoffa.API.Application.Interfaces;
 using Kickoffa.API.Application.Interfaces.Checkilists;
@@ -40,14 +42,20 @@ public static class ApplicationServiceCollectionExtensions
 		// Registrar services
 		services.AddScoped<ICustomerService, CustomerService>();
 		services.AddScoped<IUserService, UserService>();
-		services.AddScoped<IEmailService, EmailService>();		
+		services.AddScoped<IEmailService, EmailService>();
 		services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 		services.AddScoped<IFileTypeService, FileTypeService>();
+		services.AddScoped<IFileUploadService, FileUploadService>();
+		services.AddScoped<IImageProxyService, ImageProxyService>();
+		services.AddScoped<ITipTapContentParserService, TipTapContentParserService>();
 		services.AddScoped<IChecklistService, ChecklistService>();
 		services.AddScoped<ICreateChecklistService, CreateChecklistService>();
 		services.AddScoped<IUpdateChecklistService, UpdateChecklistService>();
 		services.AddScoped<IMapChecklistToResponse, MapChecklistToResponse>();
+        services.AddScoped<IAddBriefingMediaService, AddBriefingMediaService>();
+        services.AddScoped<IUpdateBriefingSectionService, UpdateBriefingSectionService>();
+		services.AddScoped<IUpdateChecklistSectionService, UpdateChecklistSectionService>();
 
 		// Register wrappers
 		services.AddScoped<IUserManagerWrapper, UserManagerWrapper>();
@@ -55,6 +63,9 @@ public static class ApplicationServiceCollectionExtensions
 
 		// HttpContextAccessor necessário para CurrentUserService
 		services.AddHttpContextAccessor();
+
+		// Configurar AWS S3
+		services.AddAwsS3Services();
 
 		return services;
 	}
@@ -105,6 +116,42 @@ public static class ApplicationServiceCollectionExtensions
 			options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 			options.Cookie.SameSite = SameSiteMode.Strict;
 			options.Cookie.Name = "KickoffaAuth";
+		});
+
+		return services;
+	}
+
+	/// <summary>
+	/// Configura os serviços do AWS S3
+	/// </summary>
+	/// <param name="services">Collection de serviços</param>
+	/// <returns>IServiceCollection para chaining</returns>
+	public static IServiceCollection AddAwsS3Services(this IServiceCollection services)
+	{
+		// Configurar AWS S3 Configuration
+		services.AddOptions<AwsS3Configuration>()
+			.BindConfiguration("AWS:S3")
+			.ValidateDataAnnotations()
+			.ValidateOnStart();
+
+		// Registrar cliente S3
+		services.AddScoped<IAmazonS3>(provider =>
+		{
+			var config = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<AwsS3Configuration>>().Value;
+
+			var s3Config = new Amazon.S3.AmazonS3Config
+			{
+				RegionEndpoint = Amazon.RegionEndpoint.GetBySystemName(config.Region)
+			};
+
+			// Se estiver usando LocalStack para desenvolvimento
+			if (config.UseLocalStack && !string.IsNullOrWhiteSpace(config.LocalStackUrl))
+			{
+				s3Config.ServiceURL = config.LocalStackUrl;
+				s3Config.ForcePathStyle = true;
+			}
+
+			return new Amazon.S3.AmazonS3Client(config.AccessKey, config.SecretKey, s3Config);
 		});
 
 		return services;
