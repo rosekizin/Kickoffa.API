@@ -291,7 +291,8 @@ namespace Kickoffa.API.Data.Repositories
 			IQueryable<Checklist> query = _context
 				.Checklists
 				.AsNoTracking()
-				.Include(c => c.Customer);
+				.Include(c => c.Customer)
+				.Include(c => c.Sections);
 
 			// Aplicar filtro de busca
 			if (!string.IsNullOrWhiteSpace(search))
